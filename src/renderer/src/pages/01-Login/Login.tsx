@@ -1,28 +1,50 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import './Login.css'
 import { InputText } from 'primereact/inputtext'
-import { UserRound } from 'lucide-react'
+import { KeyRound, UserRound } from 'lucide-react'
 import { Password } from 'primereact/password'
 import { Button } from 'primereact/button'
+import { useNavigate } from 'react-router-dom'
+import { Toast } from 'primereact/toast'
 
 import LoginImage from '../../assets/login/loginImage.png'
+import { handleLogin } from './Login.function'
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const toast = useRef<Toast>(null)
+  const navigate = useNavigate()
 
-  const handleLogin = () => {
-    console.log('Login clicked')
+  const onLogin = async () => {
+    const result = await handleLogin(username, password)
+
+    if (result.success) {
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Login Successful',
+        detail: 'Welcome to Snehalayaa Silks ERP!',
+        life: 3000
+      })
+      setTimeout(() => navigate('/dashboard'), 1000)
+    } else {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Login Failed',
+        detail: result.message,
+        life: 3000
+      })
+    }
   }
 
   return (
     <div className="loginComponent">
-      {/* Left half - Image */}
+      <Toast ref={toast} position="top-right" />
+
       <div className="loginLeft">
         <img src={LoginImage} alt="ERP Banner" className="loginImage" />
       </div>
 
-      {/* Right half - Form */}
       <div className="loginRight">
         <div className="loginForm">
           <h2 className="login-title">Welcome to Snehalayaa Silks ERP</h2>
@@ -39,7 +61,10 @@ const Login: React.FC = () => {
             />
           </div>
 
-          <div className="mt-3">
+          <div className="p-inputgroup mt-3">
+            <span className="p-inputgroup-addon">
+              <KeyRound strokeWidth={1.25} />
+            </span>
             <Password
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
@@ -59,7 +84,7 @@ const Login: React.FC = () => {
             label="Login"
             className="w-full mt-3 uppercase font-bold"
             style={{ backgroundColor: '#5e317c', borderColor: '#5e317c' }}
-            onClick={handleLogin}
+            onClick={onLogin}
           />
         </div>
       </div>

@@ -1,6 +1,9 @@
 /* PASSWORD */
 .p-password-input.p-inputtext.p-component {
   width: 100%;
+  height: 100%;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
 }
 
 .p-icon-field.p-icon-field-right {
@@ -123,9 +126,9 @@
   font-size: 0.75rem;
 }
 
-.p-toast-message-content {
+/* .p-toast-message-content {
   gap: 10px;
-}
+} */
 
 .p-dropdown.p-component.p-inputwrapper.p-dropdown-clearable.p-inputwrapper-filled svg {
   margin-top: -7px;
