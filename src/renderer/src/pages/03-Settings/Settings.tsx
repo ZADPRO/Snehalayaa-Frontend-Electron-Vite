@@ -13,7 +13,8 @@ import { Divider } from 'primereact/divider'
 
 import './Settings.css'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
-import SettingsOverview from '../../components/03-SettingsComponents/SettingsOverview'
+import SettingsOverview from '../../components/03-SettingsComponents/SettingsOverview/SettingsOverview'
+import SettingsCategories from '../../components/03-SettingsComponents/SettingsCategories/SettingsCategories'
 
 // Sidebar items config
 const sidebarItems = [
@@ -27,7 +28,7 @@ const sidebarItems = [
     key: 'categories',
     label: 'Categories',
     icon: <FolderKanban size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
+    component: <SettingsCategories />
   },
   {
     key: 'subcategories',
@@ -71,19 +72,19 @@ const Settings: React.FC = () => {
   const [activeKey, setActiveKey] = useState('categories')
 
   return (
-    <div className="settings-container">
+    <div className="settingsContainer">
       <ComponentHeader title="Settings" subtitle="Monday, Jun 15, 2025" />
 
-      <div className="settings-main">
+      <div className="settingsMain">
         {/* Sidebar */}
-        <div className="settings-sidebar">
+        <div className="settingsSidebar">
           {sidebarItems.map((item) => {
             const isActive = item.key === activeKey
             return (
               <div
                 key={item.key}
                 onClick={() => setActiveKey(item.key)}
-                className={`sidebar-item ${isActive ? 'active' : ''}`}
+                className={`sidebarItem ${isActive ? 'active' : ''}`}
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -95,7 +96,7 @@ const Settings: React.FC = () => {
         <Divider layout="vertical" />
 
         {/* Main Content */}
-        <div className="settings-content">
+        <div className="settingsContent">
           {sidebarItems.find((item) => item.key === activeKey)?.component}
         </div>
       </div>

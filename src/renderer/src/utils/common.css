@@ -133,3 +133,11 @@
 .p-dropdown.p-component.p-inputwrapper.p-dropdown-clearable.p-inputwrapper-filled svg {
   margin-top: -7px;
 }
+
+.p-button {
+  gap: 4px;
+}
+
+.p-button svg {
+  margin-top: 2px;
+}

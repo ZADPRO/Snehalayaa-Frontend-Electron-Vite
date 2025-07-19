@@ -1,12 +1,12 @@
 /* Full height layout */
-.settings-container {
+.settingsContainer {
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 /* Main layout under header */
-.settings-main {
+.settingsMain {
   flex: 1;
   display: flex;
   margin: 2px;
@@ -16,17 +16,17 @@
 }
 
 /* Sidebar */
-.settings-sidebar {
+.settingsSidebar {
   width: 20%;
   padding: 12px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
 }
 
 /* Sidebar item */
-.sidebar-item {
+.sidebarItem {
   display: flex;
   align-items: center;
   padding: 12px 16px;
@@ -38,11 +38,11 @@
   border-right: 3px solid transparent;
 }
 
-.sidebar-item:hover {
+.sidebarItem:hover {
   background-color: #f8edf6; /* very light shade near #6f1f5f */
 }
 
-.sidebar-item.active {
+.sidebarItem.active {
   background-color: #f0d6eb; /* light shade blend of #6f1f5f */
   color: #6f1f5f;
   margin: 0;
@@ -55,8 +55,24 @@
 }
 
 /* Main content area */
-.settings-content {
+.settingsContent {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
+}
+
+/* CATEGORIES */
+.p-toolbar.p-component {
+  padding: 10px;
+}
+
+.p-datatable-wrapper table thead tr th,
+.p-datatable-wrapper table tbody tr td {
+  padding: 10px;
+}
+
+.p-selection-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
