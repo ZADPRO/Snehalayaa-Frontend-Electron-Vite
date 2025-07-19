@@ -1,4 +1,4 @@
-import Login from '@renderer/pages/01-Login/Login'
+import Login from '../pages/01-Login/Login'
 import React from 'react'
 
 import { Route, Routes } from 'react-router-dom'
