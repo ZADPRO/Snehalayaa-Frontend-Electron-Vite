@@ -17,7 +17,7 @@ const ComponentHeader: React.FC<ComponentHeaderProps> = ({ title, subtitle }) =>
   return (
     <div className="flex justify-content-between py-1 px-4 headerIndiv">
       <div className="flex flex-column">
-        <p className="text-lg font-bold pb-1">{title}</p>
+        <p className="text-lg font-bold">{title}</p>
         <p className="text-xs">{subtitle}</p>
       </div>
 
@@ -27,7 +27,7 @@ const ComponentHeader: React.FC<ComponentHeaderProps> = ({ title, subtitle }) =>
           <Search className="lucide-search-icon" size={18} />
           <InputText placeholder="Search" className="search-input" />
         </div>
-        <Bell strokeWidth={1.25} onClick={() => setVisibleRight(true)} className="cursor-pointer" />
+        <Bell onClick={() => setVisibleRight(true)} className="cursor-pointer" />
       </div>
 
       <Sidebar visible={visibleRight} position="right" onHide={() => setVisibleRight(false)}>
