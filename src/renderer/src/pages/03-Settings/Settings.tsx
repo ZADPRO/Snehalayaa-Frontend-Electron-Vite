@@ -15,6 +15,7 @@ import './Settings.css'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import SettingsOverview from '../../components/03-SettingsComponents/SettingsOverview/SettingsOverview'
 import SettingsCategories from '../../components/03-SettingsComponents/SettingsCategories/SettingsCategories'
+import SettingsSubCategories from '../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories'
 
 // Sidebar items config
 const sidebarItems = [
@@ -34,7 +35,7 @@ const sidebarItems = [
     key: 'subcategories',
     label: 'Sub Categories',
     icon: <Layers3 size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
+    component: <SettingsSubCategories />
   },
   {
     key: 'branches',

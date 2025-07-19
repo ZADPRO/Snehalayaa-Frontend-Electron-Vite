@@ -2,6 +2,7 @@ export interface Category {
   refCategoryId: number
   categoryName: string
   categoryCode: string
+  profitMargin: any
   isActive: boolean
   isDelete: boolean
   createdAt: string
