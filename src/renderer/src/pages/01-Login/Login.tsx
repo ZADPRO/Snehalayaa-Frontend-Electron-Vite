@@ -100,7 +100,7 @@ const Login: React.FC = () => {
           <Button
             label={loading ? '' : 'Login'}
             className="w-full mt-3 uppercase font-bold flex justify-content-center align-items-center"
-            style={{ backgroundColor: '#5e317c', borderColor: '#5e317c' }}
+            style={{ backgroundColor: '#6f1f5f', borderColor: '#6f1f5f' }}
             onClick={onLogin}
             disabled={loading}
           >

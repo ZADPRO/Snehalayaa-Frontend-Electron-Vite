@@ -1,0 +1,8 @@
+.quick-notification {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: 6px 0;
+}
