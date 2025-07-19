@@ -6,6 +6,7 @@ import { Password } from 'primereact/password'
 import { Button } from 'primereact/button'
 import { useNavigate } from 'react-router-dom'
 import { Toast } from 'primereact/toast'
+import { ProgressSpinner } from 'primereact/progressspinner'
 
 import LoginImage from '../../assets/login/loginImage.png'
 import { handleLogin } from './Login.function'
@@ -13,11 +14,25 @@ import { handleLogin } from './Login.function'
 const Login: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
   const toast = useRef<Toast>(null)
   const navigate = useNavigate()
 
   const onLogin = async () => {
+    if (!username || !password) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Validation',
+        detail: 'Please enter both username and password.',
+        life: 3000
+      })
+      return
+    }
+
+    setLoading(true)
+
     const result = await handleLogin(username, password)
+    setLoading(false)
 
     if (result.success) {
       toast.current?.show({
@@ -81,11 +96,16 @@ const Login: React.FC = () => {
           </div>
 
           <Button
-            label="Login"
-            className="w-full mt-3 uppercase font-bold"
+            label={loading ? '' : 'Login'}
+            className="w-full mt-3 uppercase font-bold flex justify-content-center align-items-center"
             style={{ backgroundColor: '#5e317c', borderColor: '#5e317c' }}
             onClick={onLogin}
-          />
+            disabled={loading}
+          >
+            {loading && (
+              <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
+            )}
+          </Button>
         </div>
       </div>
     </div>
