@@ -1,0 +1,22 @@
+.headerIndiv {
+  border: 1px solid rgba(0, 0, 0, 0.158);
+}
+
+.custom-icon-field {
+  position: relative;
+  width: 25rem; /* same as w-25rem */
+}
+
+.lucide-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d; /* similar to Prime icon color */
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding-left: 2.2rem !important; /* space for icon */
+}

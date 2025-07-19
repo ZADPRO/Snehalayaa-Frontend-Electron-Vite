@@ -4,6 +4,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 
+// COMMON CSS FOR PRIME REACT CUSTOMIZATION
+import './utils/common.css'
+
 // IMPORT PRIME REACT
 import 'primeicons/primeicons.css'
 import { PrimeReactProvider } from 'primereact/api'

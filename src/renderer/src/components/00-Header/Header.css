@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.sidebar {
+  color: white;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 11;
+  background-color: #6f1f5f;
+  position: fixed;
+}
+
+.main_container {
+  display: flex;
+  position: sticky !important;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  overflow: auto;
+  z-index: 10;
+}
+
+.routes {
+  color: white;
+}
+
+.top_section {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between;
+  padding: 2vh 1.7vw;
+  font-size: 1.2rem;
+}
+
+.logo {
+  font-size: 1.3rem;
+  line-height: 0;
+}
+
+.link {
+  text-decoration: none;
+  align-items: center;
+  display: flex;
+  color: white;
+  gap: 10px;
+  border-right: 4px solid white transparent;
+  padding: 1.2vh 15px;
+  /* transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045); */
+  margin: 5px 10px;
+  border-radius: 8px;
+}
+
+.bars {
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.icon {
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+}
+
+.active {
+  color: #6f1f5f;
+  border-right: 4px solid white;
+  /* transition: 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045); */
+  background-color: white;
+  margin: 5px 10px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.link_text {
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.logout_section {
+  margin-top: auto;
+  padding: 10px 20px;
+}
+
+.p-fieldset-legend.p-unselectable-text {
+  margin-left: 20px !important;
+}
+
+.p-password.p-component.p-inputwrapper.p-input-icon-right
+  .p-icon-field.p-icon-field-right
+  .p-input-icon {
+  margin-top: -13px !important;
+}
+
+.logo_image {
+  width: 40px;
+  height: 40px;
+  margin: 20px 0px 10px 0px;
+  display: block;
+}
+
+.bottom_section {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom_icon_img {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+}
+
+.p-tooltip {
+  font-size: 0.75rem;
+  padding: 0px 10px;
+}
+
+.p-tooltip-text {
+  padding: 10px !important;
+  font-size: 15px;
+}

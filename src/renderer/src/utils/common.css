@@ -1,0 +1,135 @@
+/* PASSWORD */
+.p-password-input.p-inputtext.p-component {
+  width: 100%;
+  height: 100%;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.p-icon-field.p-icon-field-right {
+  width: 100%;
+}
+
+.p-column-header-content {
+  justify-content: space-between;
+}
+
+.p-float-label label {
+  margin-top: 4px;
+  background: white;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+
+.always-float label {
+  top: -0.75rem !important;
+  font-size: 0.75rem !important;
+  color: #6b7280;
+  transition: none !important;
+  background: white;
+  padding: 0px 4px;
+}
+
+.always-float .p-inputtext {
+  padding-top: 10px !important;
+}
+
+/* FLOAT LABEL COLORING */
+.p-float-label input:focus + label,
+.p-float-label input.p-filled + label {
+  color: #9c27b0;
+}
+
+.p-float-label .p-dropdown.p-focus + label,
+.p-float-label .p-dropdown.p-filled + label {
+  color: #9c27b0;
+}
+
+.p-float-label .p-multiselect.p-focus + label,
+.p-float-label .p-multiselect.p-filled + label {
+  color: #9c27b0;
+}
+
+.p-float-label .p-autocomplete.p-focus + label,
+.p-float-label .p-autocomplete.p-filled + label {
+  color: #9c27b0;
+}
+
+.p-float-label .p-calendar.p-focus + label,
+.p-float-label .p-calendar.p-filled + label {
+  color: #9c27b0;
+}
+
+.p-float-label label {
+  transition: all 0.2s ease;
+}
+
+.p-inputtext:enabled:focus {
+  box-shadow: none;
+}
+.p-calendar:not(.p-calendar-disabled).p-focus > .p-inputtext {
+  outline: none;
+  outline-offset: none;
+  box-shadow: none;
+  border-color: #9c27b0;
+}
+
+.p-button {
+  box-shadow: none;
+}
+
+.p-dropdown:not(.p-disabled).p-focus {
+  box-shadow: none;
+}
+
+.p-inputswitch-slider::before,
+::after {
+  margin-top: -10px;
+}
+
+.react-tel-input {
+  font-family: var(--font-family);
+  font-feature-settings: var(--font-feature-settings, normal);
+  font-size: 1rem;
+  color: #495057;
+  background: #ffffff;
+  /* border: 1px solid #ced4da; */
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+  appearance: none;
+  border-radius: 3px;
+  outline-color: transparent;
+}
+
+.form-control.p-inputtext {
+  position: relative;
+  font-size: 14px;
+  letter-spacing: 0.01rem;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-left: 48px;
+  margin-left: 0;
+  background: #ffffff;
+  border: 1px solid #cacaca;
+  border-radius: 3px !important;
+  line-height: 25px;
+  height: 2.5rem !important;
+  width: 100% !important;
+  outline: none;
+}
+
+.p-error {
+  color: #f44336;
+  font-size: 0.75rem;
+}
+
+/* .p-toast-message-content {
+  gap: 10px;
+} */
+
+.p-dropdown.p-component.p-inputwrapper.p-dropdown-clearable.p-inputwrapper-filled svg {
+  margin-top: -7px;
+}
