@@ -92,7 +92,9 @@ const Login: React.FC = () => {
 
           <div className="passwordFeatures mt-4">
             <span>Remember Me</span>
-            <span className="forgot">Forgot Password?</span>
+            <span className="forgot" onClick={() => navigate('/forgot-password')}>
+              Forgot Password?
+            </span>
           </div>
 
           <Button
