@@ -37,27 +37,27 @@
 /* FLOAT LABEL COLORING */
 .p-float-label input:focus + label,
 .p-float-label input.p-filled + label {
-  color: #9c27b0;
+  color: #6f1f5f;
 }
 
 .p-float-label .p-dropdown.p-focus + label,
 .p-float-label .p-dropdown.p-filled + label {
-  color: #9c27b0;
+  color: #6f1f5f;
 }
 
 .p-float-label .p-multiselect.p-focus + label,
 .p-float-label .p-multiselect.p-filled + label {
-  color: #9c27b0;
+  color: #6f1f5f;
 }
 
 .p-float-label .p-autocomplete.p-focus + label,
 .p-float-label .p-autocomplete.p-filled + label {
-  color: #9c27b0;
+  color: #6f1f5f;
 }
 
 .p-float-label .p-calendar.p-focus + label,
 .p-float-label .p-calendar.p-filled + label {
-  color: #9c27b0;
+  color: #6f1f5f;
 }
 
 .p-float-label label {
@@ -71,7 +71,7 @@
   outline: none;
   outline-offset: none;
   box-shadow: none;
-  border-color: #9c27b0;
+  border-color: #6f1f5f;
 }
 
 .p-button {
