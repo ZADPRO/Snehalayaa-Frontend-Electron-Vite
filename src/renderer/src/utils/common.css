@@ -141,3 +141,14 @@
 .p-button svg {
   margin-top: 2px;
 }
+
+/* SIDEBAR HEADER */
+.p-sidebar .p-sidebar-header {
+  padding: 10px 1rem;
+}
+
+/* MESSAGE WRAPPER */
+.p-message-wrapper {
+  padding: 10px;
+  margin-top: -15px;
+}
