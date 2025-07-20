@@ -160,3 +160,7 @@
 .p-button-primary {
   background-color: #6f1f5f;
 }
+
+.p-dialog .p-dialog-header {
+  padding: 10px;
+}

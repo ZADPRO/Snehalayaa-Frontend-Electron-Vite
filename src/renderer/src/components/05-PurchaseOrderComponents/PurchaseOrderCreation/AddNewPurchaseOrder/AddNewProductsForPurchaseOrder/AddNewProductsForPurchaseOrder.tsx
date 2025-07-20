@@ -6,6 +6,7 @@ import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { Category, SubCategory, Branch, Supplier } from '../AddNewPurchaseOrder.interface'
 import { Check } from 'lucide-react'
+import { formatINRCurrency } from './AddNewProductsForPurchaseOrder.function'
 
 interface Props {
   categories: Category[]
@@ -247,7 +248,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <InputText
               id="purchasePrice"
               keyfilter="num"
-              value={purchasePrice}
+              value={formatINRCurrency(purchasePrice)}
               onChange={(e) => setPurchasePrice(e.target.value)}
               className="w-full"
             />
@@ -274,7 +275,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
           <FloatLabel className="always-float">
             <InputText
               id="discountPrice"
-              value={Number(discount || 0).toFixed(2)}
+              value={formatINRCurrency(Number(discount || 0))}
               disabled
               className="w-full"
             />
@@ -283,7 +284,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
         <div className="flex-1">
           <FloatLabel className="always-float">
-            <InputText id="total" value={total.toFixed(2)} disabled className="w-full" />
+            <InputText id="total" value={formatINRCurrency(total)} disabled className="w-full" />
             <label htmlFor="total">Total</label>
           </FloatLabel>
         </div>
