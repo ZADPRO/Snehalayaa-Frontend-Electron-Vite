@@ -192,10 +192,12 @@ const AddNewPurchaseOrder: React.FC = () => {
           <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
           <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
           <Column field="productName" header="Name" />
+          <Column field="hsnCode" header="HSN" />
+          <Column field="category" header="Category" />
+          <Column field="subCategory" header="Subcategory" />
           <Column field="quantity" header="Quantity" />
           <Column field="purchasePrice" header="Price" />
           <Column field="discount" header="Disc %" />
-          <Column field="discount" header="Discount" />
           <Column field="total" header="Total" />
         </DataTable>
       </div>
@@ -238,7 +240,8 @@ const AddNewPurchaseOrder: React.FC = () => {
                   },
                   items: tableData,
                   invoiceNo,
-                  logoBase64
+                  logoBase64,
+                  action: 'download'
                 })
               }
             }}
@@ -249,7 +252,28 @@ const AddNewPurchaseOrder: React.FC = () => {
             icon={<Printer size={18} />}
             className="w-full gap-2 p-button-primary"
             disabled={!isSaved}
-            onClick={() => console.log('Print triggered')}
+            onClick={async () => {
+              const logoBase64 = await getBase64FromImage(logo)
+
+              if (selectedBranch && selectedSupplier) {
+                generateInvoicePdf({
+                  from: {
+                    name: selectedBranch.refBranchName,
+                    address: selectedBranch.refEmail
+                  },
+                  to: {
+                    name: selectedSupplier.supplierCompanyName,
+                    address: formatSupplierAddress(selectedSupplier),
+                    phone: selectedSupplier.supplierContactNumber,
+                    taxNo: selectedSupplier.supplierGSTNumber
+                  },
+                  items: tableData,
+                  invoiceNo,
+                  logoBase64,
+                  action: 'print'
+                })
+              }
+            }}
           />
         </div>
       </div>

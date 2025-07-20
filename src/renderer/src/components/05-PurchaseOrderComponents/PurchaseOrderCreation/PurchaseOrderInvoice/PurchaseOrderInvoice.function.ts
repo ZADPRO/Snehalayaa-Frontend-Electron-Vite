@@ -3,7 +3,11 @@ import autoTable from 'jspdf-autotable'
 import { InvoiceProps } from './PurchaseOrderInvoice.interface'
 
 export const generateInvoicePdf = (
-  props: InvoiceProps & { invoiceNo: string; logoBase64?: string }
+  props: InvoiceProps & {
+    invoiceNo: string
+    logoBase64?: string
+    action?: 'download' | 'print'
+  }
 ) => {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -16,19 +20,18 @@ export const generateInvoicePdf = (
   const pageHeight = doc.internal.pageSize.getHeight()
   const currentPage = 1
   const totalPages = 1
-
   const margin = 14
 
   // 1️⃣ Add logo image
   if (props.logoBase64) {
-    doc.addImage(props.logoBase64, 'PNG', margin, 10, 60, 24) // 100px x 250px = 35mm x 88mm
+    doc.addImage(props.logoBase64, 'PNG', margin, 10, 60, 24)
   }
 
   // 2️⃣ Add invoice number
   doc.setFontSize(12)
   doc.text(`Invoice No: ${props.invoiceNo}`, pageWidth - margin - 60, 15)
 
-  // 3️⃣ Add company details
+  // 3️⃣ Company details
   doc.setFontSize(10)
   const companyDetails = [
     'SVAP TEXTILES LLP',
@@ -37,14 +40,13 @@ export const generateInvoicePdf = (
   ]
   doc.text(companyDetails, margin, 40)
 
-  // 4️⃣ Add supplier details
+  // 4️⃣ Supplier details
   const supplier = [
     props.to.name,
     props.to.address || '',
     props.to.taxNo ? `Tax No: ${props.to.taxNo}` : '',
     props.to.phone ? `Mobile: ${props.to.phone}` : ''
   ].filter(Boolean)
-
   doc.text(supplier, pageWidth - margin - 70, 40)
 
   // 5️⃣ Dispatch details
@@ -65,7 +67,7 @@ export const generateInvoicePdf = (
 
   autoTable(doc, {
     startY: tableStartY,
-    theme: 'plain', // white table
+    theme: 'plain',
     head: [['S.No', 'Product', 'HSN', 'Qty', 'Price', 'Disc %', 'Disc Amt', 'Total']],
     body: props.items.map((item, i) => {
       const product = `${item.category} - ${item.subCategory} - ${item.productName}`
@@ -93,12 +95,27 @@ export const generateInvoicePdf = (
       fontStyle: 'bold'
     },
     didDrawPage: (data) => {
-      // If table goes beyond page
-      if (data.cursor.y > pageHeight - 20) {
+      if (data.cursor && data.cursor.y > pageHeight - 20) {
         doc.text('To be continued...', margin, pageHeight - 10)
       }
     }
   })
 
-  doc.save(`${props.invoiceNo}.pdf`)
+  // 🔁 Print or Download
+  if (props.action === 'print') {
+    doc.autoPrint()
+    const blob = doc.output('blob')
+    const url = URL.createObjectURL(blob)
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    iframe.src = url
+    document.body.appendChild(iframe)
+
+    iframe.onload = () => {
+      iframe.contentWindow?.focus()
+      iframe.contentWindow?.print()
+    }
+  } else {
+    doc.save(`${props.invoiceNo}.pdf`)
+  }
 }

@@ -31,6 +31,11 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   const [quantity, setQuantity] = useState('')
   const [purchasePrice, setPurchasePrice] = useState('')
   const [discount, setDiscount] = useState('')
+  const [hsnCode, setHsnCode] = useState('') // Added HSN Code state
+  const total =
+    Number(quantity) > 0 && Number(purchasePrice) > 0
+      ? Number(quantity) * Number(purchasePrice) - Number(discount || 0)
+      : 0
 
   const toast = useRef<Toast>(null)
 
@@ -51,35 +56,44 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       return
     }
 
+    const quantityNum = Number(quantity)
+    const priceNum = Number(purchasePrice)
+    const discountNum = Number(discount || 0)
+
     if (
       !selectedCategory ||
       !selectedSubCategory ||
       !productName.trim() ||
       !quantity ||
       !purchasePrice ||
-      Number(quantity) <= 0 ||
-      Number(purchasePrice) <= 0
+      isNaN(quantityNum) ||
+      isNaN(priceNum) ||
+      quantityNum <= 0 ||
+      priceNum <= 0 ||
+      discountNum < 0
     ) {
       toast.current?.show({
         severity: 'error',
         summary: 'Validation',
-        detail: 'Please fill all fields correctly (quantity and price should be > 0).',
-        life: 3000
+        detail:
+          'Please fill all fields correctly. Quantity and price should be > 0. Discount should be ≥ 0.',
+        life: 4000
       })
       return
     }
 
-    const total = Number(quantity) * Number(purchasePrice) - Number(discount || 0)
     const newItem = {
       productName,
-      quantity,
-      purchasePrice,
-      discount,
+      quantity: quantityNum,
+      purchasePrice: priceNum,
+      discount: discountNum,
       total,
-      pricePerUnit: purchasePrice,
+      hsnCode,
+      pricePerUnit: priceNum,
       category: selectedCategory?.categoryName || '',
       subCategory: selectedSubCategory?.subCategoryName || ''
     }
+
     onAdd(newItem)
 
     // Reset fields
@@ -87,6 +101,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     setQuantity('')
     setPurchasePrice('')
     setDiscount('')
+    setHsnCode('')
     setSelectedCategory(null)
     setSelectedSubCategory(null)
   }
@@ -202,8 +217,19 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Quantity, Price, Discount */}
+      {/* HSN, Quantity, Price */}
       <div className="flex gap-3">
+        <div className="flex-1">
+          <FloatLabel className="always-float">
+            <InputText
+              id="hsnCode"
+              value={hsnCode}
+              onChange={(e) => setHsnCode(e.target.value)}
+              className="w-full"
+            />
+            <label htmlFor="hsnCode">HSN Code</label>
+          </FloatLabel>
+        </div>
         <div className="flex-1">
           <FloatLabel className="always-float">
             <InputText
@@ -228,6 +254,10 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <label htmlFor="purchasePrice">Purchase Price</label>
           </FloatLabel>
         </div>
+      </div>
+
+      {/* Discount, Discount Price, Total */}
+      <div className="flex gap-3">
         <div className="flex-1">
           <FloatLabel className="always-float">
             <InputText
@@ -237,7 +267,24 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
               onChange={(e) => setDiscount(e.target.value)}
               className="w-full"
             />
-            <label htmlFor="discount">Discount</label>
+            <label htmlFor="discount">Discount %</label>
+          </FloatLabel>
+        </div>
+        <div className="flex-1">
+          <FloatLabel className="always-float">
+            <InputText
+              id="discountPrice"
+              value={Number(discount || 0).toFixed(2)}
+              disabled
+              className="w-full"
+            />
+            <label htmlFor="discountPrice">Discount Price</label>
+          </FloatLabel>
+        </div>
+        <div className="flex-1">
+          <FloatLabel className="always-float">
+            <InputText id="total" value={total.toFixed(2)} disabled className="w-full" />
+            <label htmlFor="total">Total</label>
           </FloatLabel>
         </div>
       </div>
