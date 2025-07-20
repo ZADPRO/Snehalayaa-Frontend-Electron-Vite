@@ -33,7 +33,7 @@ export interface Supplier {
   supplierGSTNumber: string
   supplierIFSC: string
   supplierId: number
-  supplierIsActive: boolean
+  supplierIsActive: string
   supplierName: string
   supplierPaymentTerms: string
   supplierState: string

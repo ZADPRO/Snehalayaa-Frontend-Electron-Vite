@@ -1,10 +1,11 @@
-// Updated AddNewPurchaseOrder.tsx
 import { Button } from 'primereact/button'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Divider } from 'primereact/divider'
 import { Dropdown } from 'primereact/dropdown'
 import { FloatLabel } from 'primereact/floatlabel'
+import { Toast } from 'primereact/toast'
+
 import React, { useEffect, useRef, useState } from 'react'
 
 import {
@@ -17,9 +18,11 @@ import { Branch, Supplier, Category, SubCategory } from './AddNewPurchaseOrder.i
 import { Check, CheckCheck, Download, Pencil, Plus, Printer, Trash2 } from 'lucide-react'
 import { Sidebar } from 'primereact/sidebar'
 import AddNewProductsForPurchaseOrder from './AddNewProductsForPurchaseOrder/AddNewProductsForPurchaseOrder'
+import { generateInvoicePdf } from '../PurchaseOrderInvoice/PurchaseOrderInvoice.function'
 
 const AddNewPurchaseOrder: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
+  const toast = useRef<Toast>(null)
 
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
 
@@ -44,6 +47,7 @@ const AddNewPurchaseOrder: React.FC = () => {
         fetchSubCategories()
       ])
       setBranches(branchData)
+      console.log('supplierData', supplierData)
       setSuppliers(supplierData)
       setCategories(categoryData)
       setSubCategories(subCategoryData)
@@ -66,8 +70,22 @@ const AddNewPurchaseOrder: React.FC = () => {
   const isEditEnabled = selectedRows.length === 1
   const isDeleteEnabled = selectedRows.length >= 1
 
+  const handleAddNewClick = () => {
+    if (!selectedBranch || !selectedSupplier) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Missing Address',
+        detail: 'Please choose both From and To address before adding a product.'
+      })
+    } else {
+      setVisibleRight(true)
+    }
+  }
+
   return (
     <div className="pt-3 flex h-full w-full">
+      <Toast ref={toast} />
+
       <div style={{ width: '80%' }}>
         <div className="flex gap-3 align-items-center">
           <div className="flex-1">
@@ -154,7 +172,7 @@ const AddNewPurchaseOrder: React.FC = () => {
             label="Add New"
             className="w-full gap-2 p-button-primary"
             icon={<Plus size={20} />}
-            onClick={() => setVisibleRight(true)}
+            onClick={handleAddNewClick}
           />
           <Button
             label={isSaved ? 'Close' : 'Save'}
@@ -167,8 +185,29 @@ const AddNewPurchaseOrder: React.FC = () => {
             icon={<Download size={18} />}
             className="w-full gap-2 p-button-primary"
             disabled={!isSaved}
-            onClick={() => console.log('Download triggered')}
+            onClick={() => {
+              if (selectedBranch && selectedSupplier) {
+                generateInvoicePdf({
+                  from: {
+                    name: selectedBranch.refBranchName,
+                    email: selectedBranch.refEmail
+                  },
+                  to: {
+                    name: selectedSupplier.supplierCompanyName,
+                    email: selectedSupplier.supplierEmail
+                  },
+                  items: tableData
+                })
+              } else {
+                toast.current?.show({
+                  severity: 'warn',
+                  summary: 'Missing Data',
+                  detail: 'Branch or Supplier data is missing'
+                })
+              }
+            }}
           />
+
           <Button
             label="Print"
             icon={<Printer size={18} />}

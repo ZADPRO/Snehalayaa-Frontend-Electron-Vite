@@ -17,7 +17,7 @@ export const fetchSuppliers = async (): Promise<Supplier[]> => {
       Authorization: localStorage.getItem('token') || ''
     }
   })
-  return res.data.data.filter((supplier: Supplier) => supplier.supplierIsActive === true)
+  return res.data.data.filter((supplier: Supplier) => supplier.supplierIsActive === 'true')
 }
 
 export const fetchCategories = async (): Promise<Category[]> => {
