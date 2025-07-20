@@ -139,7 +139,7 @@ const AddNewPurchaseOrder: React.FC = () => {
           <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
           <Column field="productName" header="Name" />
           <Column field="quantity" header="Quantity" />
-          <Column field="quantity" header="Price" />
+          <Column field="purchasePrice" header="Price" />
           <Column field="discount" header="Disc %" />
           <Column field="discount" header="Discount" />
           <Column field="total" header="Total" />

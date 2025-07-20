@@ -1,4 +1,3 @@
-// Updated AddNewProductsForPurchaseOrder.tsx
 import React, { useState, useEffect } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
@@ -29,6 +28,12 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   const [purchasePrice, setPurchasePrice] = useState('')
   const [discount, setDiscount] = useState('')
 
+  console.log('subCategories', subCategories)
+  console.log('selectedCategory', selectedCategory)
+  const filteredSubCategories = selectedCategory
+    ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
+    : []
+
   const handleAdd = () => {
     const total = Number(quantity) * Number(purchasePrice) - Number(discount || 0)
     const newItem = {
@@ -37,11 +42,13 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       purchasePrice,
       discount,
       total,
+      pricePerUnit: purchasePrice,
       category: selectedCategory?.categoryName || '',
       subCategory: selectedSubCategory?.subCategoryName || ''
     }
     onAdd(newItem)
 
+    // Reset fields
     setProductName('')
     setQuantity('')
     setPurchasePrice('')
@@ -64,12 +71,16 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <Dropdown
               id="category"
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.value)
+                setSelectedSubCategory(null)
+              }}
               options={categories}
               optionLabel="categoryName"
               placeholder="Select Category"
               className="w-full"
             />
+
             <label htmlFor="category">Category</label>
           </FloatLabel>
         </div>
@@ -79,11 +90,14 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
               id="subCategory"
               value={selectedSubCategory}
               onChange={(e) => setSelectedSubCategory(e.value)}
-              options={subCategories}
+              options={filteredSubCategories}
               optionLabel="subCategoryName"
-              placeholder="Select Sub Category"
+              placeholder={selectedCategory ? 'Select Sub Category' : 'Select Category First'}
               className="w-full"
+              disabled={!selectedCategory}
+              emptyMessage="No Sub Category Found"
             />
+
             <label htmlFor="subCategory">Sub-Category</label>
           </FloatLabel>
         </div>
