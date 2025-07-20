@@ -1,4 +1,5 @@
 import './assets/main.css'
+import './assets/base.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -16,7 +17,7 @@ import 'primereact/resources/primereact.css'
 // import 'primereact/resources/themes/lara-light-indigo/theme.css'
 
 // Import PrimeReact Themes
-// import 'primereact/resources/themes/bootstrap4-light-purple/theme.css'
+import 'primereact/resources/themes/bootstrap4-light-purple/theme.css'
 // import 'primereact/resources/themes/bootstrap4-light-blue/theme.css'
 // import 'primereact/resources/themes/bootstrap4-dark-blue/theme.css'
 // import 'primereact/resources/themes/bootstrap4-dark-purple/theme.css'
@@ -52,7 +53,7 @@ import 'primereact/resources/primereact.css'
 // import 'primereact/resources/themes/saga-blue/theme.css'
 // import 'primereact/resources/themes/saga-green/theme.css'
 // import 'primereact/resources/themes/saga-orange/theme.css'
-import 'primereact/resources/themes/saga-purple/theme.css'
+// import 'primereact/resources/themes/saga-purple/theme.css'
 // import 'primereact/resources/themes/vela-blue/theme.css'
 // import 'primereact/resources/themes/vela-green/theme.css'
 // import 'primereact/resources/themes/vela-orange/theme.css'

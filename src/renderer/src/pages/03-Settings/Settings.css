@@ -17,8 +17,8 @@
 
 /* Sidebar */
 .settingsSidebar {
-  width: 20%;
-  padding: 12px;
+  width: 17%;
+  padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
