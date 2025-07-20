@@ -7,33 +7,33 @@ export const fetchBranches = async (): Promise<Branch[]> => {
     headers: {
       Authorization: localStorage.getItem('token') || ''
     }
-  });
-  return res.data.data.filter((branch: Branch) => branch.isActive);
-};
+  })
+  return res.data.data.filter((branch: Branch) => branch.isActive)
+}
 
 export const fetchSuppliers = async (): Promise<Supplier[]> => {
   const res = await axios.get(`${baseURL}/admin/suppliers/read`, {
     headers: {
       Authorization: localStorage.getItem('token') || ''
     }
-  });
-  return res.data.data.filter((supplier: Supplier) => supplier.supplierIsActive === 'true');
-};
+  })
+  return res.data.data.filter((supplier: Supplier) => supplier.supplierIsActive === true)
+}
 
 export const fetchCategories = async (): Promise<Category[]> => {
   const res = await axios.get(`${baseURL}/admin/settings/categories`, {
     headers: {
       Authorization: localStorage.getItem('token') || ''
     }
-  });
-  return res.data.data;
-};
+  })
+  return res.data.data
+}
 
 export const fetchSubCategories = async (): Promise<SubCategory[]> => {
   const res = await axios.get(`${baseURL}/admin/settings/subcategories`, {
     headers: {
       Authorization: localStorage.getItem('token') || ''
     }
-  });
-  return res.data.data.filter((sub: SubCategory) => !sub.isDelete);
-};
+  })
+  return res.data.data.filter((sub: SubCategory) => !sub.isDelete)
+}

@@ -156,3 +156,7 @@
 .p-button-label.p-c {
   text-align: start;
 }
+
+.p-button-primary {
+  background-color: #6f1f5f;
+}

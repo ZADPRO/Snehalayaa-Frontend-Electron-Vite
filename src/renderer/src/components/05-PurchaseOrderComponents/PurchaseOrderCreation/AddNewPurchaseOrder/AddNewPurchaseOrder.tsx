@@ -19,7 +19,7 @@ import { Sidebar } from 'primereact/sidebar'
 import AddNewProductsForPurchaseOrder from './AddNewProductsForPurchaseOrder/AddNewProductsForPurchaseOrder'
 
 const AddNewPurchaseOrder: React.FC = () => {
-  const dt = useRef<DataTable<[]>>(null)
+  const dt = useRef<DataTable<any[]>>(null)
 
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
 
@@ -152,27 +152,27 @@ const AddNewPurchaseOrder: React.FC = () => {
         <div className="flex flex-column gap-1">
           <Button
             label="Add New"
-            className="w-full gap-2"
+            className="w-full gap-2 p-button-primary"
             icon={<Plus size={20} />}
             onClick={() => setVisibleRight(true)}
           />
           <Button
             label={isSaved ? 'Close' : 'Save'}
             icon={isSaved ? <CheckCheck size={20} /> : <Check size={20} />}
-            className="w-full gap-2"
+            className="w-full gap-2 p-button-primary"
             onClick={handleSave}
           />
           <Button
             label="Download"
             icon={<Download size={18} />}
-            className="w-full gap-2"
+            className="w-full gap-2 p-button-primary"
             disabled={!isSaved}
             onClick={() => console.log('Download triggered')}
           />
           <Button
             label="Print"
             icon={<Printer size={18} />}
-            className="w-full gap-2"
+            className="w-full gap-2 p-button-primary"
             disabled={!isSaved}
             onClick={() => console.log('Print triggered')}
           />
@@ -192,14 +192,8 @@ const AddNewPurchaseOrder: React.FC = () => {
           fromAddress={selectedBranch}
           toAddress={selectedSupplier}
           onAdd={handleAddProduct}
+          onClose={() => setVisibleRight(false)}
         />
-        <div className="mt-3 text-right">
-          <Button
-            label="Close Sidebar"
-            severity="secondary"
-            onClick={() => setVisibleRight(false)}
-          />
-        </div>
       </Sidebar>
     </div>
   )

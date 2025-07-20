@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
+import { Toast } from 'primereact/toast'
 import { Category, SubCategory, Branch, Supplier } from '../AddNewPurchaseOrder.interface'
+import { Check } from 'lucide-react'
 
 interface Props {
   categories: Category[]
@@ -11,6 +13,7 @@ interface Props {
   fromAddress: Branch | null
   toAddress: Supplier | null
   onAdd: (data: any) => void
+  onClose: () => void
 }
 
 const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
@@ -18,7 +21,8 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   subCategories,
   fromAddress,
   toAddress,
-  onAdd
+  onAdd,
+  onClose
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
@@ -28,13 +32,43 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   const [purchasePrice, setPurchasePrice] = useState('')
   const [discount, setDiscount] = useState('')
 
-  console.log('subCategories', subCategories)
-  console.log('selectedCategory', selectedCategory)
+  const toast = useRef<Toast>(null)
+
   const filteredSubCategories = selectedCategory
     ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
     : []
 
+  console.log('toAddress', toAddress)
+  console.log('fromAddress', fromAddress)
   const handleAdd = () => {
+    if (!fromAddress || !toAddress) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Validation',
+        detail: 'Please select the From and To address first.',
+        life: 3000
+      })
+      return
+    }
+
+    if (
+      !selectedCategory ||
+      !selectedSubCategory ||
+      !productName.trim() ||
+      !quantity ||
+      !purchasePrice ||
+      Number(quantity) <= 0 ||
+      Number(purchasePrice) <= 0
+    ) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Validation',
+        detail: 'Please fill all fields correctly (quantity and price should be > 0).',
+        life: 3000
+      })
+      return
+    }
+
     const total = Number(quantity) * Number(purchasePrice) - Number(discount || 0)
     const newItem = {
       productName,
@@ -59,12 +93,68 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
 
   return (
     <div className="flex flex-column gap-3">
-      <div className="mb-2">
-        <strong>From:</strong> {fromAddress?.refBranchName || 'N/A'}
-        <br />
-        <strong>To:</strong> {toAddress?.supplierCompanyName || 'N/A'}
+      <Toast ref={toast} />
+
+      {/* From and To Details */}
+      <div className="grid mb-2">
+        {/* Branch Details */}
+        <div className="col-6 p-3 surface-100">
+          <p className="mb-3">Branch Details</p>
+          <div>
+            <strong>Name:</strong> {fromAddress?.refBranchName || 'N/A'}
+          </div>
+          <div>
+            <strong>Email:</strong> {fromAddress?.refEmail || 'N/A'}
+          </div>
+          <div>
+            <strong>Mobile:</strong> {fromAddress?.refMobile || 'N/A'}
+          </div>
+          <div>
+            <strong>Location:</strong> {fromAddress?.refLocation || 'N/A'}
+          </div>
+          <div>
+            <strong>Branch Code:</strong> {fromAddress?.refBranchCode || 'N/A'}
+          </div>
+          <div>
+            <strong>Type:</strong> {fromAddress?.isMainBranch ? 'Main Branch' : 'Sub Branch'}
+          </div>
+        </div>
+        {/* Supplier Details */}
+        <div className="col-6 p-3 surface-100">
+          <p className="mb-3">Supplier Details</p>
+          <div>
+            <strong>Company Name:</strong> {toAddress?.supplierCompanyName || 'N/A'}
+          </div>
+          <div>
+            <strong>Contact Name:</strong> {toAddress?.supplierName || 'N/A'}
+          </div>
+          <div>
+            <strong>Email:</strong> {toAddress?.supplierEmail || 'N/A'}
+          </div>
+          <div>
+            <strong>Mobile:</strong> {toAddress?.supplierContactNumber || 'N/A'}
+          </div>
+          <div>
+            <strong>Address:</strong>
+            {`${toAddress?.supplierDoorNumber || ''}, ${toAddress?.supplierStreet || ''}, ${toAddress?.supplierCity || ''}, ${toAddress?.supplierState || ''}, ${toAddress?.supplierCountry || ''}`}
+          </div>
+          <div>
+            <strong>UPI:</strong> {toAddress?.supplierUPI || 'N/A'}
+          </div>
+          <div>
+            <strong>GST No:</strong> {toAddress?.supplierGSTNumber || 'N/A'}
+          </div>
+          <div>
+            <strong>Bank:</strong>{' '}
+            {`${toAddress?.supplierBankName || ''} - ${toAddress?.supplierBankACNumber || ''}`}
+          </div>
+          <div>
+            <strong>IFSC:</strong> {toAddress?.supplierIFSC || 'N/A'}
+          </div>
+        </div>
       </div>
 
+      {/* Category, Subcategory, Product Name */}
       <div className="flex gap-3">
         <div className="flex-1">
           <FloatLabel className="always-float">
@@ -80,7 +170,6 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
               placeholder="Select Category"
               className="w-full"
             />
-
             <label htmlFor="category">Category</label>
           </FloatLabel>
         </div>
@@ -97,7 +186,6 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
               disabled={!selectedCategory}
               emptyMessage="No Sub Category Found"
             />
-
             <label htmlFor="subCategory">Sub-Category</label>
           </FloatLabel>
         </div>
@@ -114,11 +202,13 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
       </div>
 
+      {/* Quantity, Price, Discount */}
       <div className="flex gap-3">
         <div className="flex-1">
           <FloatLabel className="always-float">
             <InputText
               id="quantity"
+              keyfilter="int"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               className="w-full"
@@ -130,6 +220,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
           <FloatLabel className="always-float">
             <InputText
               id="purchasePrice"
+              keyfilter="num"
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
               className="w-full"
@@ -141,6 +232,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
           <FloatLabel className="always-float">
             <InputText
               id="discount"
+              keyfilter="num"
               value={discount}
               onChange={(e) => setDiscount(e.target.value)}
               className="w-full"
@@ -150,8 +242,10 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
       </div>
 
-      <div className="flex justify-content-end mt-3">
-        <Button label="Add" onClick={handleAdd} />
+      {/* Actions */}
+      <div className="flex justify-content-end gap-2 mt-3">
+        <Button label="Close" severity="secondary" onClick={onClose} />
+        <Button label="Add" icon={<Check size={20} />} className="gap-2" onClick={handleAdd} />
       </div>
     </div>
   )

@@ -26,7 +26,8 @@ const PurchaseOrderCreation: React.FC = () => {
   })
 
   const editMode = Array.isArray(selectedPurchaseOrder) && selectedPurchaseOrder.length === 1
-  const _selectedCategory = editMode ? selectedPurchaseOrder[0] : null
+  const selectedCategory = editMode ? selectedPurchaseOrder[0] : null
+  console.log('selectedCategory', selectedCategory)
 
   const isSingleSelected = selectedPurchaseOrder.length === 1
   const isAnySelected = selectedPurchaseOrder.length > 0
