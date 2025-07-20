@@ -8,6 +8,8 @@ import { Toast } from 'primereact/toast'
 
 import React, { useEffect, useRef, useState } from 'react'
 
+import logo from '../../../../assets/logo/invoice.png'
+
 import {
   fetchBranches,
   fetchSuppliers,
@@ -55,6 +57,40 @@ const AddNewPurchaseOrder: React.FC = () => {
 
     loadData()
   }, [])
+
+  const formatSupplierAddress = (supplier: Supplier): string => {
+    return [
+      supplier.supplierDoorNumber,
+      supplier.supplierStreet,
+      supplier.supplierCity,
+      supplier.supplierState,
+      supplier.supplierCountry,
+      supplier.supplierPaymentTerms ? `PIN: ${supplier.supplierPaymentTerms}` : ''
+    ]
+      .filter(Boolean)
+      .join(', ')
+  }
+
+  const date = new Date()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = String(date.getFullYear()).slice(-2)
+
+  const invoiceIndex = 10001
+
+  const invoiceNo = `POINV-${month}-${year}-${invoiceIndex}`
+
+  const getBase64FromImage = (imgUrl: string): Promise<string> => {
+    return fetch(imgUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+      })
+  }
 
   const handleSave = () => {
     console.log('Selected Branch:', selectedBranch)
@@ -185,24 +221,24 @@ const AddNewPurchaseOrder: React.FC = () => {
             icon={<Download size={18} />}
             className="w-full gap-2 p-button-primary"
             disabled={!isSaved}
-            onClick={() => {
+            onClick={async () => {
+              const logoBase64 = await getBase64FromImage(logo)
+
               if (selectedBranch && selectedSupplier) {
                 generateInvoicePdf({
                   from: {
                     name: selectedBranch.refBranchName,
-                    email: selectedBranch.refEmail
+                    address: selectedBranch.refEmail
                   },
                   to: {
                     name: selectedSupplier.supplierCompanyName,
-                    email: selectedSupplier.supplierEmail
+                    address: formatSupplierAddress(selectedSupplier),
+                    phone: selectedSupplier.supplierContactNumber,
+                    taxNo: selectedSupplier.supplierGSTNumber
                   },
-                  items: tableData
-                })
-              } else {
-                toast.current?.show({
-                  severity: 'warn',
-                  summary: 'Missing Data',
-                  detail: 'Branch or Supplier data is missing'
+                  items: tableData,
+                  invoiceNo,
+                  logoBase64
                 })
               }
             }}

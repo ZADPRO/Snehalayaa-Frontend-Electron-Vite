@@ -3,14 +3,17 @@ export interface PartyDetails {
   address?: string
   email?: string
   phone?: string
+  taxNo?: string
 }
 
 export interface InvoiceItem {
+  category: string
+  subCategory: string
   productName: string
+  hsnCode?: string
   quantity: number
   purchasePrice: number
   discount: number
-  total: number
 }
 
 export interface InvoiceProps {
