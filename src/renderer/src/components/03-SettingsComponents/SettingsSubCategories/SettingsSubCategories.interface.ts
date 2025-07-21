@@ -6,7 +6,7 @@ export interface SubCategory {
   isActive: boolean
   createdAt: string
   createdBy: string
-  updatedAt?: string
-  updatedBy?: string
+  updatedAt: string
+  updatedBy: string
   isDelete: boolean
 }

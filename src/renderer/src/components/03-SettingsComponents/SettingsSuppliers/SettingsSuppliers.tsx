@@ -1,49 +1,81 @@
-/* eslint-disable prettier/prettier */
 import React, { useEffect, useRef, useState } from 'react'
-import { DataTable } from 'primereact/datatable'
-import { Column } from 'primereact/column'
-import { Button } from 'primereact/button'
-import { Toolbar } from 'primereact/toolbar'
-import { Toast } from 'primereact/toast'
-
 import {
-  fetchSubCategories,
-  deleteSubCategory,
+  fetchSupplier,
   exportCSV,
+  exportExcel,
   exportPdf,
-  exportExcel
-} from './SettingsSubCategories.function'
-import { SubCategory } from './SettingsSubCategories.interface'
+  deleteSupplier
+} from './SettingsSuppliers.function'
+import { Supplier } from './SettingsSuppliers.interface'
+import { DataTable } from 'primereact/datatable'
 import { FileSignature, FileSpreadsheet, FileText, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Column } from 'primereact/column'
+import { Toolbar } from 'primereact/toolbar'
+import { Button } from 'primereact/button'
+import { Toast } from 'primereact/toast'
 import { Tooltip } from 'primereact/tooltip'
 import { Sidebar } from 'primereact/sidebar'
-import SettingsAddEditSubCategories from './SettingsAddEditSubCategories/SettingsAddEditSubCategories'
+import SettingsAddEditSuppliers from './SettingsAddEditSuppliers/SettingsAddEditSuppliers'
 
-const SettingsSubCategories: React.FC = () => {
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
-  const [selectedSubCategories, setSelectedSubCategories] = useState<SubCategory[]>([])
-  const [editSubCategory, setEditSubCategory] = useState<SubCategory | null>(null)
-
-  const toast = useRef<Toast>(null)
-  const dt = useRef<DataTable<SubCategory[]>>(null)
+const SettingsSuppliers: React.FC = () => {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [selectedSuppliers, setSelectedSuppliers] = useState<Supplier[]>([])
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
 
+  const toast = useRef<Toast>(null)
+  const dt = useRef<DataTable<Supplier[]>>(null)
   const [exportLoading, setExportLoading] = useState({
     csv: false,
     excel: false,
     pdf: false
   })
-
   const load = async () => {
     try {
-      const data = await fetchSubCategories()
-      setSubCategories(data)
+      const data = await fetchSupplier()
+      setSuppliers(data)
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Failed to load subcategories',
+        detail: err.message || 'Failed to load Suppliers',
         life: 3000
+      })
+    }
+  }
+  useEffect(() => {
+    load()
+  }, [])
+
+  const editMode = Array.isArray(selectedSuppliers) && selectedSuppliers.length === 1
+  const selectedSupplier = editMode ? selectedSuppliers[0] : null
+
+  const handleDelete = async () => {
+    if (!selectedSuppliers.length) return
+
+    const categoryToDelete = selectedSuppliers[0]
+    try {
+      const res = await deleteSupplier(categoryToDelete.supplierId)
+      if (res.status) {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Success',
+          detail: res.message
+        })
+        setSelectedSuppliers([])
+        load()
+      } else if (res.confirmationNeeded) {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Needs Confirmation',
+          detail: res.message
+        })
+        // You can implement subcategory confirmation UI here if needed
+      }
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message || 'Failed to delete'
       })
     }
   }
@@ -59,7 +91,7 @@ const SettingsSubCategories: React.FC = () => {
   const handleExportExcel = () => {
     setExportLoading((prev) => ({ ...prev, excel: true }))
     setTimeout(() => {
-      exportExcel(subCategories)
+      exportExcel(suppliers)
       setExportLoading((prev) => ({ ...prev, excel: false }))
     }, 300)
   }
@@ -67,70 +99,35 @@ const SettingsSubCategories: React.FC = () => {
   const handleExportPDF = () => {
     setExportLoading((prev) => ({ ...prev, pdf: true }))
     setTimeout(() => {
-      exportPdf(subCategories)
+      exportPdf(suppliers)
       setExportLoading((prev) => ({ ...prev, pdf: false }))
     }, 300)
   }
 
-  const handleDelete = async () => {
-    if (!selectedSubCategories.length) return
-
-    const subCat = selectedSubCategories[0]
-
-    try {
-      const res = await deleteSubCategory(subCat.refSubCategoryId)
-      if (res.status) {
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Deleted',
-          detail: res.message
-        })
-        setSelectedSubCategories([])
-        load()
-      }
-    } catch (err: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message || 'Delete failed'
-      })
-    }
-  }
-
-  useEffect(() => {
-    load()
-  }, [])
-
-  const isSingleSelected = selectedSubCategories.length === 1
-  const isAnySelected = selectedSubCategories.length > 0
+  const isSingleSelected = selectedSuppliers.length === 1
+  const isAnySelected = selectedSuppliers.length > 0
 
   const leftToolbarTemplate = () => (
     <div className="flex gap-2">
       <Button
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
-        tooltip="Add Category"
+        tooltip="Add Supplier"
         tooltipOptions={{ position: 'left' }}
-        onClick={() => {
-          setEditSubCategory(null)
-          setVisibleRight(true)
-        }}
+        onClick={() => setVisibleRight(true)}
       />
       <Button
         icon={<Pencil size={16} strokeWidth={2} />}
         severity="info"
-        tooltip="Edit Category"
+        tooltip="Edit Supplier"
         tooltipOptions={{ position: 'left' }}
         disabled={!isSingleSelected}
-        onClick={() => {
-          setEditSubCategory(selectedSubCategories[0])
-          setVisibleRight(true)
-        }}
+        onClick={() => setVisibleRight(true)}
       />
       <Button
         icon={<Trash2 size={16} strokeWidth={2} />}
         severity="danger"
-        tooltip="Delete Categories"
+        tooltip="Delete Suppliers"
         tooltipOptions={{ position: 'left' }}
         disabled={!isAnySelected}
         onClick={handleDelete}
@@ -171,53 +168,54 @@ const SettingsSubCategories: React.FC = () => {
   )
 
   return (
-    <div>
+    <div className="">
       <Toast ref={toast} />
       <Toolbar className="mb-2" left={leftToolbarTemplate} right={rightToolbarTemplate} />
       <Tooltip target=".p-button" position="left" />
 
       <DataTable
-        value={subCategories}
-        selection={selectedSubCategories}
-        onSelectionChange={(e) => setSelectedSubCategories(e.value as SubCategory[])}
-        dataKey="refSubCategoryId"
+        ref={dt}
+        id="Suppliers-table"
+        value={suppliers}
+        selection={selectedSuppliers}
+        onSelectionChange={(e) => setSelectedSuppliers(e.value as Supplier[])}
+        dataKey="supplierId"
         selectionMode="multiple"
         paginator
-        rows={10}
+        showGridlines
         stripedRows
+        rows={10}
+        rowsPerPageOptions={[5, 10, 20]}
         responsiveLayout="scroll"
       >
         <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
-        <Column field="subCategoryCode" header="Code" sortable />
-        <Column field="subCategoryName" header="Name" sortable />
-        <Column field="refCategoryId" header="Category ID" />
-        <Column field="createdBy" header="Created By" />
-        <Column field="createdAt" header="Created At" />
+
+        <Column field="supplierCode" header="Code" sortable />
+        <Column field="supplierName" header="Name" sortable />
+        <Column field="supplierCompanyName" header="Company Name" sortable />
+        <Column field="supplierContactNumber" header="Contact Number" />
+        {/* <Column field="supplierIsActive" header="Status" /> */}
         <Column
-          field="isActive"
+          field="supplierIsActive"
           header="Status"
-          body={(rowData) => (rowData.isActive ? 'Active' : 'Inactive')}
+          body={(rowData) => (rowData.supplierIsActive === 'true' ? 'Active' : 'Inactive')}
         />
       </DataTable>
 
       <Sidebar
         visible={visibleRight}
         position="right"
-        header={editSubCategory ? 'Edit Sub-category' : 'Add Sub-category'}
+        header={editMode ? 'Edit Supplier' : 'Add Supplier'}
         onHide={() => {
           setVisibleRight(false)
-          setSelectedSubCategories([])
-          setEditSubCategory(null)
+          setSelectedSuppliers([])
         }}
         style={{ width: '50vw' }}
       >
-        <SettingsAddEditSubCategories
-          selectedSubCategory={editSubCategory}
-          onClose={() => {
-            setVisibleRight(false)
-            setEditSubCategory(null)
-          }}
+        <SettingsAddEditSuppliers
+          selectedSupplier={selectedSupplier}
+          onClose={() => setVisibleRight(false)}
           reloadData={load}
         />
       </Sidebar>
@@ -225,4 +223,4 @@ const SettingsSubCategories: React.FC = () => {
   )
 }
 
-export default SettingsSubCategories
+export default SettingsSuppliers
