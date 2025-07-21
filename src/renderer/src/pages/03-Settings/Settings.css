@@ -57,6 +57,7 @@
 /* Main content area */
 .settingsContent {
   flex: 1;
+  width: 81% !important;
   padding: 16px;
   overflow-y: auto;
 }

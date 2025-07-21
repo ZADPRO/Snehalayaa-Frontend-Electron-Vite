@@ -44,8 +44,6 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
     : []
 
-  console.log('toAddress', toAddress)
-  console.log('fromAddress', fromAddress)
   const handleAdd = () => {
     if (!fromAddress || !toAddress) {
       toast.current?.show({
@@ -91,8 +89,11 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       total,
       hsnCode,
       pricePerUnit: priceNum,
+      discountPrice: (priceNum * discountNum) / 100,
       category: selectedCategory?.categoryName || '',
-      subCategory: selectedSubCategory?.subCategoryName || ''
+      subCategory: selectedSubCategory?.subCategoryName || '',
+      refCategoryId: selectedCategory?.refCategoryId, // ← Include category ID
+      refSubCategoryId: selectedSubCategory?.refSubCategoryId // ← Include subcategory ID
     }
 
     onAdd(newItem)
@@ -204,6 +205,12 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             />
             <label htmlFor="subCategory">Sub-Category</label>
           </FloatLabel>
+
+          {selectedCategory && filteredSubCategories.length === 0 && (
+            <small className="text-sm text-color-danger">
+              <p className="mt-1">No sub category was found.</p>
+            </small>
+          )}
         </div>
         <div className="flex-1">
           <FloatLabel className="always-float">
@@ -225,9 +232,14 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <InputText
               id="hsnCode"
               value={hsnCode}
-              onChange={(e) => setHsnCode(e.target.value)}
+              onChange={(e) => {
+                const rawValue = e.target.value
+                const filtered = rawValue.replace(/[^a-zA-Z0-9]/g, '')
+                setHsnCode(filtered.toUpperCase())
+              }}
               className="w-full"
             />
+
             <label htmlFor="hsnCode">HSN Code</label>
           </FloatLabel>
         </div>
@@ -248,7 +260,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <InputText
               id="purchasePrice"
               keyfilter="num"
-              value={formatINRCurrency(purchasePrice)}
+              value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
               className="w-full"
             />
@@ -275,13 +287,22 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
           <FloatLabel className="always-float">
             <InputText
               id="discountPrice"
-              value={formatINRCurrency(Number(discount || 0))}
+              value={formatINRCurrency((Number(purchasePrice) * Number(discount || 0)) / 100)}
               disabled
               className="w-full"
             />
-            <label htmlFor="discountPrice">Discount Price</label>
+            <label htmlFor="discountPrice">Discount Price (Per Unit)</label>
           </FloatLabel>
+          <small className="text-sm text-color-secondary pt-2">
+            <p className="mt-1">
+              Total Discount:{' '}
+              {formatINRCurrency(
+                (Number(purchasePrice) * Number(discount || 0) * Number(quantity || 0)) / 100
+              )}
+            </p>
+          </small>
         </div>
+
         <div className="flex-1">
           <FloatLabel className="always-float">
             <InputText id="total" value={formatINRCurrency(total)} disabled className="w-full" />

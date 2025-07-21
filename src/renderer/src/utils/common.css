@@ -164,3 +164,7 @@
 .p-dialog .p-dialog-header {
   padding: 10px;
 }
+
+.p-datatable-wrapper {
+  scrollbar-width: thin;
+}

@@ -37,3 +37,20 @@ export const fetchSubCategories = async (): Promise<SubCategory[]> => {
   })
   return res.data.data.filter((sub: SubCategory) => !sub.isDelete)
 }
+
+export const createPurchaseOrder = async (payload: any): Promise<any> => {
+  const token = localStorage.getItem('token') || ''
+
+  const response = await axios.post(`${baseURL}/admin/purchaseOrder/create`, payload, {
+    headers: {
+      Authorization: token,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  if (response.data?.status) {
+    return response.data
+  } else {
+    throw new Error(response.data.message || 'Failed to create purchase order')
+  }
+}
