@@ -139,5 +139,32 @@
 } */
 
 .p-button svg {
-  margin-top: 2px;
+  /* margin-top: 2px; */
+}
+
+/* SIDEBAR HEADER */
+.p-sidebar .p-sidebar-header {
+  padding: 10px 1rem;
+}
+
+/* MESSAGE WRAPPER */
+.p-message-wrapper {
+  padding: 10px;
+  margin-top: -15px;
+}
+
+.p-button-label.p-c {
+  text-align: start;
+}
+
+.p-button-primary {
+  background-color: #6f1f5f;
+}
+
+.p-dialog .p-dialog-header {
+  padding: 10px;
+}
+
+.p-datatable-wrapper {
+  scrollbar-width: thin;
 }

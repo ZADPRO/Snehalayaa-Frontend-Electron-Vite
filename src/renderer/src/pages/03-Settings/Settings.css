@@ -17,8 +17,8 @@
 
 /* Sidebar */
 .settingsSidebar {
-  width: 20%;
-  padding: 12px;
+  width: 17%;
+  padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -57,6 +57,7 @@
 /* Main content area */
 .settingsContent {
   flex: 1;
+  width: 81% !important;
   padding: 16px;
   overflow-y: auto;
 }

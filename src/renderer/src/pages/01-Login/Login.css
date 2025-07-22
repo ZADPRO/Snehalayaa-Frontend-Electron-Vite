@@ -27,7 +27,7 @@
   width: 100%;
   max-width: 500px;
   background-color: rgb(255, 255, 255);
-  padding: 80px 60px;
+  padding: 40px 60px;
   border-radius: 15px;
 }
 
@@ -49,4 +49,8 @@
   cursor: pointer;
   color: #5e317c;
   font-weight: 500;
+}
+
+.loginButton span {
+  text-align: center !important;
 }
