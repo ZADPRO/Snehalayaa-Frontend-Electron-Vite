@@ -9,6 +9,7 @@ import { Toast } from 'primereact/toast'
 import { ProgressSpinner } from 'primereact/progressspinner'
 
 import LoginImage from '../../assets/login/loginImage.png'
+import logoImage from '../../assets/logo/invoice.png'
 import { handleLogin } from './Login.function'
 
 const Login: React.FC = () => {
@@ -62,7 +63,10 @@ const Login: React.FC = () => {
 
       <div className="loginRight">
         <div className="loginForm">
-          <h2 className="login-title">Welcome to Snehalayaa Silks ERP</h2>
+          <div className="loginImage flex justify-content-center align-items-center">
+            <img src={logoImage} alt="" style={{ width: '150px' }} />
+          </div>
+          <h2 className="login-title">Welcome to Snehalayaa Silks</h2>
 
           <div className="p-inputgroup">
             <span className="p-inputgroup-addon">
@@ -99,8 +103,11 @@ const Login: React.FC = () => {
 
           <Button
             label={loading ? '' : 'Login'}
-            className="w-full mt-3 uppercase font-bold flex justify-content-center align-items-center"
-            style={{ backgroundColor: '#6f1f5f', borderColor: '#6f1f5f' }}
+            className="w-full mt-3 loginButton uppercase font-bold flex justify-content-center align-items-center"
+            style={{
+              backgroundColor: '#6f1f5f',
+              borderColor: '#6f1f5f'
+            }}
             onClick={onLogin}
             disabled={loading}
           >
