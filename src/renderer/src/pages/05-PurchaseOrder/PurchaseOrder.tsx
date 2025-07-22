@@ -4,8 +4,9 @@ import PurchaseOrderOverview from '../../components/05-PurchaseOrderComponents/P
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import { Divider } from 'primereact/divider'
 // import PurchaseOrderProductCreation from '../../components/05-PurchaseOrderComponents/PurchaseOrderProductCreation/PurchaseOrderProductCreation'
-import PurchaseOrderCreation from '../../components/05-PurchaseOrderComponents/PurchaseOrderCreation/PurchaseOrderCreation'
+// import PurchaseOrderCreation from '../../components/05-PurchaseOrderComponents/PurchaseOrderCreation/PurchaseOrderCreation'
 import AddNewPurchaseOrder from '../../components/05-PurchaseOrderComponents/PurchaseOrderCreation/AddNewPurchaseOrder/AddNewPurchaseOrder'
+import PurchaseOrderList from '../../components/05-PurchaseOrderComponents/PurchaseOrderList/PurchaseOrderList'
 
 // Sidebar items config
 const sidebarItems = [
@@ -25,7 +26,7 @@ const sidebarItems = [
     key: 'purchaseOrder',
     label: 'Purchase Order',
     icon: <ShoppingBag size={20} className="sidebar-icon" />,
-    component: <PurchaseOrderCreation />
+    component: <PurchaseOrderList />
   },
   {
     key: 'createPurchaseOrder',
@@ -36,7 +37,7 @@ const sidebarItems = [
 ]
 
 const PurchaseOrder: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('createPurchaseOrder')
+  const [activeKey, setActiveKey] = useState('purchaseOrder')
 
   return (
     <div className="settingsContainer">
