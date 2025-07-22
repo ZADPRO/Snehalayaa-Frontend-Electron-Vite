@@ -5,12 +5,13 @@ import { InputText } from 'primereact/inputtext'
 import { Toast } from 'primereact/toast'
 import React, { useEffect, useRef, useState } from 'react'
 import {
+  CategoryOption,
   SettingsAddEditSubCategoryProps,
   SubCategoryFormData,
   SubCategoryStatusOptions
 } from './SettingsAddEditSubCategories.interface'
 import { SubCategory } from '../SettingsSubCategories.interface'
-import { createSubCategory, updateSubCategory } from './SettingsAddEditSubCategories.function'
+import { createSubCategory, updateSubCategory, fetchCategories } from './SettingsAddEditSubCategories.function'
 import { Check } from 'lucide-react'
 
 const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = ({
@@ -20,6 +21,7 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
 }) => {
   const toast = useRef<Toast>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
 
   const isEditMode = !!selectedSubCategory
 
@@ -58,6 +60,33 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
       [field]: value
     }))
   }
+
+  useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const categories = await fetchCategories()
+      
+      const mappedCategories = categories.map((cat: any) => ({
+        refCategoryId: cat.refCategoryId,
+        categoryName: cat.categoryName || cat.subCategoryName || 'Unnamed'
+      }))
+
+      setCategoryOptions(mappedCategories)
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message || 'Failed to load categories',
+        life: 3000
+      })
+    }
+  }
+
+  loadCategories()
+}, [])
+
+
+
 
   const handleSubmit = async () => {
     if (!formData.subCategoryName) {
@@ -112,6 +141,10 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
     }
   }
 
+
+
+
+
   return (
     <div className="mt-3">
       <Toast ref={toast} />
@@ -120,13 +153,18 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
-              <InputText
-                id="refCategoryId"
-                value={formData.refCategoryId}
-                className="w-full"
-                onChange={(e) => handleInputChange('refCategoryId', Number(e.target.value))}
-              />
-              <label htmlFor="refCategoryId">Category ID</label>
+               <Dropdown
+  id="refCategoryId"
+  className="w-full"
+  value={formData.refCategoryId}
+  options={categoryOptions}
+  onChange={(e) => handleInputChange('refCategoryId', e.value)}
+  optionLabel="categoryName"
+  optionValue="refCategoryId"
+  placeholder="Select Category"
+/>
+
+    <label htmlFor="refCategoryId">Category</label>
             </FloatLabel>
           </div>
           <div className="flex-1">

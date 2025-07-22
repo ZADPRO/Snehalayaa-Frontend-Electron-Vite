@@ -34,3 +34,8 @@ export interface SettingsAddEditSubCategoryProps {
   onClose: () => void
   reloadData: () => void
 }
+
+export interface CategoryOption {
+  refCategoryId: number
+  categoryName: string
+}

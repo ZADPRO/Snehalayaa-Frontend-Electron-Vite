@@ -22,3 +22,18 @@ export const updateSubCategory  = async (payload: Partial<SubCategory>) => {
   return response.data
 }
 
+export const fetchCategories = async (): Promise<SubCategory[]> => {
+  const token = localStorage.getItem('token') || ''
+  const response = await axios.get(`${baseURL}/admin/settings/categories`, {
+    headers: {
+      Authorization: token
+    }
+  })
+
+  console.log('response', response)
+  if (response.data?.status) {
+    return response.data.data
+  } else {
+    throw new Error(response.data.message || 'Failed to fetch subcategories')
+  }
+}
