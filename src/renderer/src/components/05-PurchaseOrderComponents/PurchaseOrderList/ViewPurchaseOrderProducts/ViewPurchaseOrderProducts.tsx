@@ -1,30 +1,20 @@
-import React, { JSX, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { Button } from 'primereact/button'
 import { Dialog } from 'primereact/dialog'
 import { RadioButton } from 'primereact/radiobutton'
-import { Check, X } from 'lucide-react'
+import { Dropdown } from 'primereact/dropdown'
+import { Check, X, Undo2 } from 'lucide-react'
+import {
+  fetchDummyProductsByPOId,
+  updateDummyProductStatus,
+  bulkAcceptDummyProducts,
+  bulkRejectDummyProducts,
+  bulkUndoDummyProducts
+} from './ViewPurchaseOrderProducts.function'
 
-interface Product {
-  productName: string
-  refCategoryid: number
-  refSubCategoryId: number
-  HSNCode: string
-  purchaseQuantity: string
-  purchasePrice: string
-  discountAmount: string
-  totalAmount: string
-  isReceived: boolean
-  acceptanceStatus: string
-}
-
-interface GroupedProductRow extends Product {
-  categoryName: string
-  subCategoryName: string
-  groupKey: string
-  status: string
-}
+import { ViewPurchaseOrderProductsProps, TableRow } from './ViewPurchaseOrderProducts.interface'
 
 const categoryMap: Record<number, string> = {
   24: 'Sarees',
@@ -37,81 +27,209 @@ const subCategoryMap: Record<number, string> = {
   5: 'Banarasi'
 }
 
-interface ViewProps {
-  rowData: { productDetails: Product[]; totalSummary: any }
-}
-
-const ViewPurchaseOrderProducts: React.FC<ViewProps> = ({ rowData }) => {
-  const [rows, setRows] = useState<GroupedProductRow[]>([])
+const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
+  console.log('rowData', rowData)
+  const [rows, setRows] = useState<TableRow[]>([])
+  const [selectedRows, setSelectedRows] = useState<TableRow[]>([])
   const [rejectionDialog, setRejectionDialog] = useState(false)
-  const [rejectionReason, setRejectionReason] = useState('Mismatch')
+  const [rejectionReason, setRejectionReason] = useState<'Mismatch' | 'Missing'>('Mismatch')
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
 
+  const [filterCategory, setFilterCategory] = useState<number | null>(null)
+  const [filterSubcategory, setFilterSubcategory] = useState<number | null>(null)
+
+  // Construct rows on mount/update
   useEffect(() => {
-    if (!rowData?.productDetails?.length) return
+    const loadData = async () => {
+      const data = await fetchDummyProductsByPOId(rowData.purchaseOrderId)
 
-    const transformed: GroupedProductRow[] = []
+      let idCounter = 1
+      const rows: TableRow[] = data.map((item: any) => ({
+        id: idCounter++,
+        productName: item.ProductName,
+        refCategoryid: item.RefCategoryID,
+        refSubCategoryId: item.RefSubCategoryID,
+        HSNCode: item.HSNCode,
+        purchaseQuantity: '1', // Single dummy item
+        purchasePrice: item.Price,
+        discountAmount: item.DiscountAmount,
+        totalAmount: item.Price,
+        isReceived: item.IsReceived === 'true',
+        acceptanceStatus: item.AcceptanceStatus,
+        status: item.IsReceived === 'true' ? 'Accepted' : item.AcceptanceStatus || 'Pending',
+        categoryName: categoryMap[item.RefCategoryID] || 'Unknown',
+        subCategoryName: subCategoryMap[item.RefSubCategoryID] || 'Unknown'
+      }))
 
-    rowData.productDetails.forEach((p) => {
-      const quantity = parseInt(p.purchaseQuantity || '0')
-      for (let i = 0; i < quantity; i++) {
-        transformed.push({
-          ...p,
-          categoryName: categoryMap[p.refCategoryid] || 'Unknown Category',
-          subCategoryName: subCategoryMap[p.refSubCategoryId] || 'Unknown Subcategory',
-          groupKey: `${categoryMap[p.refCategoryid] || 'Unknown'} - ${subCategoryMap[p.refSubCategoryId] || 'Unknown'}`,
-          status: 'Pending'
-        })
-      }
-    })
-
-    setRows(transformed)
-  }, [JSON.stringify(rowData?.productDetails)])
-
-  const handleAccept = (index: number) => {
-    setRows((prev) => prev.map((row, i) => (i === index ? { ...row, status: 'Accepted' } : row)))
-  }
-
-  const handleReject = (index: number) => {
-    setActiveRowIndex(index)
-    setRejectionDialog(true)
-  }
-
-  const confirmRejection = () => {
-    if (activeRowIndex !== null) {
-      setRows((prev) =>
-        prev.map((row, i) =>
-          i === activeRowIndex ? { ...row, status: `Rejected - ${rejectionReason}` } : row
-        )
-      )
+      setRows(rows)
     }
-    setRejectionDialog(false)
-    setActiveRowIndex(null)
-  }
 
-  const actionBodyTemplate = (_: any, options: any) => {
-    const rowData = rows[options.rowIndex]
-    return rowData.status === 'Pending' ? (
-      <div className="flex gap-2">
-        <Button
-          icon={<Check />}
-          className="p-button-success"
-          onClick={() => handleAccept(options.rowIndex)}
-        />
-        <Button
-          icon={<X />}
-          className="p-button-danger"
-          onClick={() => handleReject(options.rowIndex)}
-        />
-      </div>
-    ) : (
+    if (rowData.purchaseOrderId) {
+      loadData()
+    }
+  }, [rowData.purchaseOrderId])
+
+  // Serial Number Column
+  const serialBodyTemplate = (_rowData: TableRow, options: any) => options.rowIndex + 1
+
+  // Status Display
+  const statusColumn = (row: TableRow) => {
+    return (
       <span
-        className={`font-semibold ${rowData.status.includes('Rejected') ? 'text-red-500' : 'text-green-600'}`}
+        className={`font-semibold ${
+          row.status.includes('Rejected')
+            ? 'text-red-500'
+            : row.status === 'Accepted'
+              ? 'text-green-600'
+              : 'text-gray-500'
+        }`}
       >
-        {rowData.status}
+        {row.status}
       </span>
     )
   }
+
+  const handleAccept = async (id: number) => {
+    try {
+      await updateDummyProductStatus(id, true)
+      setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Accepted' } : row)))
+    } catch (error) {
+      console.error('Failed to accept product:', error)
+    }
+  }
+
+  const confirmRejection = async () => {
+    if (activeRowIndex !== null) {
+      try {
+        await updateDummyProductStatus(activeRowIndex, false, rejectionReason)
+        setRows((prev) =>
+          prev.map((row) =>
+            row.id === activeRowIndex ? { ...row, status: `Rejected - ${rejectionReason}` } : row
+          )
+        )
+      } catch (error) {
+        console.error('Failed to reject product:', error)
+      }
+    }
+    setActiveRowIndex(null)
+    setRejectionDialog(false)
+  }
+
+  const undoAction = async (id: number) => {
+    try {
+      await updateDummyProductStatus(id, 'undo')
+      setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Pending' } : row)))
+    } catch (error) {
+      console.error('Failed to undo product status:', error)
+    }
+  }
+
+  const actionBodyTemplate = (_: any, options: any) => {
+    const row = rows[options.rowIndex]
+
+    if (row.status === 'Pending') {
+      return (
+        <div className="flex gap-4">
+          <Button
+            text
+            style={{ padding: '0' }}
+            onClick={() => handleAccept(row.id)}
+            severity="success"
+          >
+            Accept
+          </Button>
+          <Button
+            text
+            style={{ padding: '0' }}
+            onClick={() => openRejectionDialog(row.id)}
+            severity="danger"
+          >
+            Reject
+          </Button>
+        </div>
+      )
+    } else {
+      return (
+        <Button
+          icon={<Undo2 size={16} />}
+          tooltip="Undo"
+          tooltipOptions={{ position: 'bottom' }}
+          style={{ padding: '0px' }}
+          className="p-button-secondary"
+          onClick={() => undoAction(row.id)}
+        />
+      )
+    }
+  }
+
+  const openRejectionDialog = (id: number) => {
+    setActiveRowIndex(id)
+    setRejectionDialog(true)
+  }
+
+  // Bulk Actions
+  const handleBulkAction = async (type: 'Accept' | 'Reject') => {
+    if (!selectedRows.length) return
+
+    const dummyProductIds = selectedRows.map((row) => row.id)
+
+    try {
+      if (type === 'Accept') {
+        await bulkAcceptDummyProducts(dummyProductIds)
+        setRows((prev) =>
+          prev.map((row) =>
+            dummyProductIds.includes(row.id) ? { ...row, status: 'Accepted' } : row
+          )
+        )
+      } else {
+        await bulkRejectDummyProducts(dummyProductIds, rejectionReason)
+        setRows((prev) =>
+          prev.map((row) =>
+            dummyProductIds.includes(row.id)
+              ? { ...row, status: `Rejected - ${rejectionReason}` }
+              : row
+          )
+        )
+      }
+      setSelectedRows([])
+    } catch (error) {
+      console.error('Bulk action failed', error)
+    }
+  }
+
+  // Filters
+  const filterDropdown = () => (
+    <div className="flex gap-3 mb-1">
+      <Dropdown
+        value={filterCategory}
+        options={Object.entries(categoryMap).map(([value, label]) => ({
+          label,
+          value: Number(value)
+        }))}
+        placeholder="Filter by Category"
+        onChange={(e) => setFilterCategory(e.value)}
+        showClear
+      />
+      <Dropdown
+        value={filterSubcategory}
+        options={Object.entries(subCategoryMap).map(([value, label]) => ({
+          label,
+          value: Number(value)
+        }))}
+        placeholder="Filter by Subcategory"
+        onChange={(e) => setFilterSubcategory(e.value)}
+        showClear
+      />
+    </div>
+  )
+
+  // Filtered rows
+  const filteredRows = rows.filter((row) => {
+    const categoryMatch = filterCategory === null || row.refCategoryid === filterCategory
+    const subcategoryMatch =
+      filterSubcategory === null || row.refSubCategoryId === filterSubcategory
+    return categoryMatch && subcategoryMatch
+  })
 
   const summaryHeader = () => {
     const totalQuantity = rowData.productDetails.reduce(
@@ -121,7 +239,7 @@ const ViewPurchaseOrderProducts: React.FC<ViewProps> = ({ rowData }) => {
     const { totalAmount, taxedAmount, payAmount } = rowData.totalSummary
 
     return (
-      <div className="p-4 border-round bg-gray-100 mb-3">
+      <div className="py-4 border-round bg-gray-100">
         <div className="text-lg font-semibold mb-2">Order Summary</div>
         <div className="grid">
           <div className="col-3">
@@ -141,48 +259,57 @@ const ViewPurchaseOrderProducts: React.FC<ViewProps> = ({ rowData }) => {
     )
   }
 
-  // Group by key and render each group with header + rows
-  const renderGroupedTable = () => {
-    const grouped: Record<string, GroupedProductRow[]> = {}
-    rows.forEach((row) => {
-      if (!grouped[row.groupKey]) grouped[row.groupKey] = []
-      grouped[row.groupKey].push(row)
-    })
-
-    const output: JSX.Element[] = []
-    let serial = 1
-
-    Object.entries(grouped).forEach(([group, groupRows], groupIndex) => {
-      output.push(
-        <div key={groupIndex} className="mb-4">
-          <div className="bg-blue-50 text-blue-900 font-semibold px-3 py-2 border-round-top">
-            {group}
-          </div>
-          <DataTable value={groupRows} scrollable showGridlines className="border-x border-b">
-            <Column header="S.No" body={() => serial++} style={{ width: '80px' }} />
-            <Column header="Product Name" field="productName" />
-            <Column header="HSN Code" field="HSNCode" />
-            <Column header="Price" field="purchasePrice" />
-            <Column header="Discount" field="discountAmount" />
-            <Column header="Total" field="totalAmount" />
-            <Column
-              header="Status / Action"
-              body={actionBodyTemplate}
-              style={{ minWidth: '180px' }}
-            />
-          </DataTable>
-        </div>
-      )
-    })
-
-    return output
-  }
-
   return (
     <div className="card">
       {summaryHeader()}
+      <div className="flex gap-2 align-items-center justify-content-between">
+        {filterDropdown()}
 
-      {renderGroupedTable()}
+        <div className="flex justify-content-between align-items-center mb-1">
+          <div className="flex gap-2">
+            <Button
+              label="Accept"
+              icon={<Check size={18} />}
+              disabled={!selectedRows.length}
+              onClick={() => handleBulkAction('Accept')}
+              className="p-button-sm p-button-success"
+            />
+            <Button
+              label="Reject"
+              icon={<X size={18} />}
+              disabled={!selectedRows.length}
+              onClick={() => setRejectionDialog(true)}
+              className="p-button-sm p-button-danger"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="flex my-3 justify-content-end">
+        <span className="text-sm text-gray-500">Selected Items: {selectedRows.length}</span>
+      </div>
+
+      <DataTable
+        value={filteredRows}
+        selectionMode="multiple"
+        selection={selectedRows}
+        onSelectionChange={(e) => setSelectedRows(e.value)}
+        dataKey="id"
+        paginator
+        rows={10}
+        rowsPerPageOptions={[10, 20, 50]}
+        scrollable
+        showGridlines
+      >
+        <Column selectionMode="multiple" />
+        <Column header="S.No" body={serialBodyTemplate} />
+        <Column header="Product Name" field="productName" style={{ minWidth: '200px' }} />
+        <Column header="Category" field="categoryName" />
+        <Column header="Subcategory" field="subCategoryName" />
+        <Column header="HSN Code" field="HSNCode" style={{ minWidth: '100px' }} />
+        <Column header="Price" field="purchasePrice" />
+        <Column header="Status" body={statusColumn} />
+        <Column header="Action" body={actionBodyTemplate} />
+      </DataTable>
 
       <Dialog
         header="Rejection Reason"
@@ -195,7 +322,14 @@ const ViewPurchaseOrderProducts: React.FC<ViewProps> = ({ rowData }) => {
               onClick={() => setRejectionDialog(false)}
               className="p-button-text"
             />
-            <Button label="Confirm" onClick={confirmRejection} autoFocus />
+            <Button
+              label="Confirm"
+              onClick={() => {
+                if (activeRowIndex) confirmRejection()
+                else handleBulkAction('Reject')
+              }}
+              autoFocus
+            />
           </div>
         }
       >
