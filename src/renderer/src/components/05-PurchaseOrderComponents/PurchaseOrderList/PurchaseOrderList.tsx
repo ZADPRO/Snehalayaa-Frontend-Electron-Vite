@@ -184,12 +184,16 @@ const PurchaseOrderList: React.FC = () => {
       <Sidebar
         visible={visibleRight}
         position="right"
-        header={'View Products'}
+        header={
+          <span style={{ textTransform: 'uppercase', fontWeight: '600', fontSize: '1.2rem' }}>
+            View products
+          </span>
+        }
         onHide={() => {
           setVisibleRight(false)
           setSelectedPurchaseOrder([])
         }}
-        style={{ width: '60vw' }}
+        style={{ width: '65vw' }}
       >
         {/* <ViewPurchaseOrderProducts
           rowData={selectedRowData ?? { productDetails: [], totalSummary: {} }}
