@@ -78,7 +78,6 @@ const SettingsAddEditCategories: React.FC<SettingsAddEditCategoriesProps> = ({
 
     try {
       setIsSubmitting(true)
-
       const result = selectedCategory
         ? await updateCategory(payload)
         : await createCategory(payload)

@@ -27,7 +27,7 @@ const topRoutes = [
   },
   {
     path: '/pomgmt',
-    name: 'Purchsae Order',
+    name: 'Purchase Order',
     icon: <ShoppingCart />
   },
   {

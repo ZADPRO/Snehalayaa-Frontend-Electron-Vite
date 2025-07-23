@@ -16,6 +16,8 @@ import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import SettingsOverview from '../../components/03-SettingsComponents/SettingsOverview/SettingsOverview'
 import SettingsCategories from '../../components/03-SettingsComponents/SettingsCategories/SettingsCategories'
 import SettingsSubCategories from '../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories'
+import SettingsSuppliers from '../../components/03-SettingsComponents/SettingsSuppliers/SettingsSuppliers'
+import SettingsBranch from '../../components/03-SettingsComponents/SettingsBranch/SettingsBranch'
 
 // Sidebar items config
 const sidebarItems = [
@@ -41,13 +43,13 @@ const sidebarItems = [
     key: 'branches',
     label: 'Branches',
     icon: <Landmark size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
+    component: <SettingsBranch />
   },
   {
     key: 'suppliers',
     label: 'Suppliers',
     icon: <PackageSearch size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
+    component: <SettingsSuppliers />
   },
   {
     key: 'users',
