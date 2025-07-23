@@ -7,6 +7,7 @@ import Dashboard from '../pages/02-Dashboard/Dashboard'
 import Settings from '../pages/03-Settings/Settings'
 import Header from '../components/00-Header/Header'
 import PurchaseOrder from '../pages/05-PurchaseOrder/PurchaseOrder'
+import Inventory from '../pages/06-Inventory/Inventory'
 
 const MainAppRoutes: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ const MainAppRoutes: React.FC = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/pomgmt" element={<PurchaseOrder />} />
+                <Route path="/inventory" element={<Inventory />} />
               </Routes>
             </Header>
           }
