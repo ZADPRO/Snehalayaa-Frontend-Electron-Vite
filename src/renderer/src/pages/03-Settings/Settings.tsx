@@ -18,6 +18,7 @@ import SettingsCategories from '../../components/03-SettingsComponents/SettingsC
 import SettingsSubCategories from '../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories'
 import SettingsSuppliers from '../../components/03-SettingsComponents/SettingsSuppliers/SettingsSuppliers'
 import SettingsBranch from '../../components/03-SettingsComponents/SettingsBranch/SettingsBranch'
+import SettingsEmployees from '../../components/03-SettingsComponents/SettingsEmployees/SettingsEmployees'
 
 // Sidebar items config
 const sidebarItems = [
@@ -67,7 +68,7 @@ const sidebarItems = [
     key: 'employees',
     label: 'Employees',
     icon: <BadgeInfo size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
+    component: <SettingsEmployees />
   }
 ]
 
