@@ -1,4 +1,4 @@
-import { Blocks, PackagePlus, ShoppingBag } from 'lucide-react'
+import { Blocks, PackageCheck, PackagePlus, PackageX, ShoppingBag } from 'lucide-react'
 import React, { useState } from 'react'
 import PurchaseOrderOverview from '../../components/05-PurchaseOrderComponents/PurchaseOrderOverview/PurchaseOrderOverview'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
@@ -7,6 +7,8 @@ import { Divider } from 'primereact/divider'
 // import PurchaseOrderCreation from '../../components/05-PurchaseOrderComponents/PurchaseOrderCreation/PurchaseOrderCreation'
 import AddNewPurchaseOrder from '../../components/05-PurchaseOrderComponents/PurchaseOrderCreation/AddNewPurchaseOrder/AddNewPurchaseOrder'
 import PurchaseOrderList from '../../components/05-PurchaseOrderComponents/PurchaseOrderList/PurchaseOrderList'
+import PurchaseOrderCatalog from '../../components/05-PurchaseOrderComponents/PurchaseOrderCatalog/PurchaseOrderCatalog'
+import PurchaseOrderRejectedProducts from '../../components/05-PurchaseOrderComponents/PurchaseOrderRejectedProducts/PurchaseOrderRejectedProducts'
 
 // Sidebar items config
 const sidebarItems = [
@@ -33,6 +35,18 @@ const sidebarItems = [
     label: 'Create PO',
     icon: <PackagePlus size={20} className="sidebar-icon" />,
     component: <AddNewPurchaseOrder />
+  },
+  {
+    key: 'acceptedProducts',
+    label: 'Products',
+    icon: <PackageCheck size={20} className="sidebar-icon" />,
+    component: <PurchaseOrderCatalog />
+  },
+  {
+    key: 'rejectedProducts',
+    label: 'Rejected Products',
+    icon: <PackageX size={20} className="sidebar-icon" />,
+    component: <PurchaseOrderRejectedProducts />
   }
 ]
 
@@ -41,7 +55,7 @@ const PurchaseOrder: React.FC = () => {
 
   return (
     <div className="settingsContainer">
-      <ComponentHeader title="Settings" subtitle="Monday, Jun 15, 2025" />
+      <ComponentHeader title="Purchase Order" subtitle="Overall Management" />
 
       <div className="settingsMain">
         {/* Sidebar */}

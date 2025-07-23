@@ -63,4 +63,5 @@ export interface PurchaseOrder {
   branchDetails: BranchDetails
   productDetails: ProductDetails[]
   totalSummary: TotalSummary
+  purchaseOrderId: number
 }

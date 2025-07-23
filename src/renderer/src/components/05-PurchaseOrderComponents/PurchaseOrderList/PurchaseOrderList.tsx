@@ -4,7 +4,7 @@ import { Button } from 'primereact/button'
 
 import React, { useRef, useState, useEffect } from 'react'
 
-import { FileText, FileSpreadsheet, FileSignature } from 'lucide-react'
+import { FileText, FileSpreadsheet, FileSignature, Printer, Download } from 'lucide-react'
 import { Tooltip } from 'primereact/tooltip'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
@@ -13,6 +13,10 @@ import ViewPurchaseOrderProducts from './ViewPurchaseOrderProducts/ViewPurchaseO
 
 import { fetchCategories } from './PurchaseOrderList.function'
 import { PurchaseOrder } from './PurchaseOrderList.interface'
+import { generateInvoicePdf } from '../PurchaseOrderCreation/PurchaseOrderInvoice/PurchaseOrderInvoice.function'
+import { InvoiceProps } from '../PurchaseOrderCreation/PurchaseOrderInvoice/PurchaseOrderInvoice.interface'
+
+import logo from '../../../assets/logo/invoice.png'
 
 const PurchaseOrderList: React.FC = () => {
   const toast = useRef<Toast>(null)
@@ -79,6 +83,80 @@ const PurchaseOrderList: React.FC = () => {
       /> */}
     </div>
   )
+
+  const mapToInvoiceProps = (po: PurchaseOrder): InvoiceProps => {
+    return {
+      from: {
+        name: 'SVAP TEXTILES LLP',
+        address: 'NO. 23, VENKATNARAYANA ROAD, T.NAGAR, CHENNAI, INDIA',
+        phone: '',
+        taxNo: ''
+      },
+      to: {
+        name: po.supplierDetails.supplierName,
+        address: po.supplierDetails.supplierAddress,
+        email: po.supplierDetails.supplierEmail,
+        phone: po.supplierDetails.supplierContactNumber,
+        taxNo: po.supplierDetails.supplierGSTNumber
+      },
+      items: po.productDetails
+        .filter((item) => item.isDelete === false)
+        .map((item) => ({
+          category: `Category ${item.refCategoryid}`,
+          subCategory: `SubCategory ${item.refSubCategoryId}`,
+          productName: item.productName,
+          hsnCode: item.HSNCode,
+          quantity: Number(item.purchaseQuantity) || 0,
+          purchasePrice: Number(item.purchasePrice) || 0,
+          discount: Number(item.discountPrice) || 0
+        }))
+    }
+  }
+
+  const getBase64FromImage = (imgUrl: string): Promise<string> => {
+    return fetch(imgUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+      })
+  }
+
+  const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') => {
+    const invoiceProps = mapToInvoiceProps(po)
+
+    const logoBase64 = await getBase64FromImage(logo)
+
+    generateInvoicePdf({
+      ...invoiceProps,
+      invoiceNo: po.totalSummary.poNumber,
+      action,
+      logoBase64: logoBase64
+    })
+  }
+
+  const actionColumn = (rowData: PurchaseOrder) => {
+    return (
+      <div className="flex gap-2">
+        <Button
+          icon={<Printer size={16} />}
+          severity="info"
+          tooltip="Print Invoice"
+          onClick={() => handleInvoice(rowData, 'print')}
+        />
+        <Button
+          icon={<Download size={16} />}
+          severity="success"
+          tooltip="Download Invoice"
+          onClick={() => handleInvoice(rowData, 'download')}
+        />
+      </div>
+    )
+  }
 
   const rightToolbarTemplate = () => (
     <div className="flex gap-2">
@@ -160,7 +238,7 @@ const PurchaseOrderList: React.FC = () => {
           header="PO Number"
           body={(rowData) => (
             <span
-              className="text-blue-600 cursor-pointer"
+              className="cursor-pointer font-bold underline"
               onClick={() => {
                 setSelectedRowData(rowData)
                 setVisibleRight(true)
@@ -179,17 +257,22 @@ const PurchaseOrderList: React.FC = () => {
         />
         <Column field="totalSummary.createdBy" header="Created By" />
         <Column field="totalSummary.createdAt" header="Created At" />
+        <Column header="Actions" body={actionColumn} />
       </DataTable>
 
       <Sidebar
         visible={visibleRight}
         position="right"
-        header={'View Products'}
+        header={
+          <span style={{ textTransform: 'uppercase', fontWeight: '600', fontSize: '1.2rem' }}>
+            View products
+          </span>
+        }
         onHide={() => {
           setVisibleRight(false)
           setSelectedPurchaseOrder([])
         }}
-        style={{ width: '60vw' }}
+        style={{ width: '65vw' }}
       >
         {/* <ViewPurchaseOrderProducts
           rowData={selectedRowData ?? { productDetails: [], totalSummary: {} }}
