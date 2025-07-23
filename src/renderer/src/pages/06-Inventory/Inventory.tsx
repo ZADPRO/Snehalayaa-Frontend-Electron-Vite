@@ -2,12 +2,9 @@ import React, { useState } from 'react'
 import {
   FolderKanban,
   Layers3,
-  Landmark,
-  PackageSearch,
-  UsersRound,
+
   BadgeInfo,
   PanelsTopLeft,
-  SlidersVertical
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
