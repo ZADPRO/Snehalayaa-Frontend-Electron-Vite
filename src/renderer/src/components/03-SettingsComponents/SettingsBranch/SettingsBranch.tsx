@@ -1,52 +1,53 @@
-/* eslint-disable prettier/prettier */
 import React, { useEffect, useRef, useState } from 'react'
-import { DataTable } from 'primereact/datatable'
-import { Column } from 'primereact/column'
-import { Button } from 'primereact/button'
-import { Toolbar } from 'primereact/toolbar'
-import { Toast } from 'primereact/toast'
-
+import { Branch } from './SettingsBranch.interface'
 import {
-  fetchSubCategories,
-  deleteSubCategory,
+  deleteBranch,
   exportCSV,
+  exportExcel,
   exportPdf,
-  exportExcel
-} from './SettingsSubCategories.function'
-import { SubCategory } from './SettingsSubCategories.interface'
+  fetchBranch
+} from './SettingsBranch.function'
+import { DataTable } from 'primereact/datatable'
+import { Toast } from 'primereact/toast'
+import { Button } from 'primereact/button'
 import { FileSignature, FileSpreadsheet, FileText, Pencil, Plus, Trash2 } from 'lucide-react'
-import { Tooltip } from 'primereact/tooltip'
 import { Sidebar } from 'primereact/sidebar'
-import SettingsAddEditSubCategories from './SettingsAddEditSubCategories/SettingsAddEditSubCategories'
+import { Column } from 'primereact/column'
+import { Toolbar } from 'primereact/toolbar'
+import { Tooltip } from 'primereact/tooltip'
+import SettingsAddEditBranch from './SettingsAddEditBranch/SettingsAddEditBranch'
 
-const SettingsSubCategories: React.FC = () => {
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
-  const [selectedSubCategories, setSelectedSubCategories] = useState<SubCategory[]>([])
-  const [editSubCategory, setEditSubCategory] = useState<SubCategory | null>(null)
-
-  const toast = useRef<Toast>(null)
-  const dt = useRef<DataTable<SubCategory[]>>(null)
+const SettingsBranch: React.FC = () => {
+  const [branch, setBranch] = useState<Branch[]>([])
+  const [selectedBranch, setSelectedBranch] = useState<Branch[]>([])
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
 
+  const toast = useRef<Toast>(null)
+  const dt = useRef<DataTable<Branch[]>>(null)
   const [exportLoading, setExportLoading] = useState({
     csv: false,
     excel: false,
     pdf: false
   })
-
   const load = async () => {
     try {
-      const data = await fetchSubCategories()
-      setSubCategories(data)
+      const data = await fetchBranch()
+      setBranch(data)
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Failed to load subcategories',
+        detail: err.message || 'Failed to load branch',
         life: 3000
       })
     }
   }
+  useEffect(() => {
+    load()
+  }, [])
+
+  const editMode = Array.isArray(selectedBranch) && selectedBranch.length === 1
+  const selectedBranches = editMode ? selectedBranch[0] : null
 
   const handleExportCSV = () => {
     setExportLoading((prev) => ({ ...prev, csv: true }))
@@ -59,7 +60,7 @@ const SettingsSubCategories: React.FC = () => {
   const handleExportExcel = () => {
     setExportLoading((prev) => ({ ...prev, excel: true }))
     setTimeout(() => {
-      exportExcel(subCategories)
+      exportExcel(branch)
       setExportLoading((prev) => ({ ...prev, excel: false }))
     }, 300)
   }
@@ -67,70 +68,67 @@ const SettingsSubCategories: React.FC = () => {
   const handleExportPDF = () => {
     setExportLoading((prev) => ({ ...prev, pdf: true }))
     setTimeout(() => {
-      exportPdf(subCategories)
+      exportPdf(branch)
       setExportLoading((prev) => ({ ...prev, pdf: false }))
     }, 300)
   }
 
   const handleDelete = async () => {
-    if (!selectedSubCategories.length) return
+    if (!setSelectedBranch.length) return
 
-    const subCat = selectedSubCategories[0]
-
+    const categoryToDelete = selectedBranch[0]
+    console.log('categoryToDelete', selectedBranch)
     try {
-      const res = await deleteSubCategory(subCat.refSubCategoryId)
+      const res = await deleteBranch(categoryToDelete.refBranchId)
       if (res.status) {
         toast.current?.show({
           severity: 'success',
-          summary: 'Deleted',
+          summary: 'Success',
           detail: res.message
         })
-        setSelectedSubCategories([])
+        setSelectedBranch([])
         load()
+      } else if (res.confirmationNeeded) {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Needs Confirmation',
+          detail: res.message
+        })
+        // You can implement subcategory confirmation UI here if needed
       }
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Delete failed'
+        detail: err.message || 'Failed to delete'
       })
     }
   }
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  const isSingleSelected = selectedSubCategories.length === 1
-  const isAnySelected = selectedSubCategories.length > 0
+  const isSingleSelected = selectedBranch.length === 1
+  const isAnySelected = selectedBranch.length > 0
 
   const leftToolbarTemplate = () => (
     <div className="flex gap-2">
       <Button
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
-        tooltip="Add Category"
+        tooltip="Add Branch"
         tooltipOptions={{ position: 'left' }}
-        onClick={() => {
-          setEditSubCategory(null)
-          setVisibleRight(true)
-        }}
+        onClick={() => setVisibleRight(true)}
       />
       <Button
         icon={<Pencil size={16} strokeWidth={2} />}
         severity="info"
-        tooltip="Edit Category"
+        tooltip="Edit Branch"
         tooltipOptions={{ position: 'left' }}
         disabled={!isSingleSelected}
-        onClick={() => {
-          setEditSubCategory(selectedSubCategories[0])
-          setVisibleRight(true)
-        }}
+        onClick={() => setVisibleRight(true)}
       />
       <Button
         icon={<Trash2 size={16} strokeWidth={2} />}
         severity="danger"
-        tooltip="Delete Categories"
+        tooltip="Delete Branch"
         tooltipOptions={{ position: 'left' }}
         disabled={!isAnySelected}
         onClick={handleDelete}
@@ -171,29 +169,34 @@ const SettingsSubCategories: React.FC = () => {
   )
 
   return (
-    <div>
+    <div className="">
       <Toast ref={toast} />
       <Toolbar className="mb-2" left={leftToolbarTemplate} right={rightToolbarTemplate} />
       <Tooltip target=".p-button" position="left" />
 
       <DataTable
-        value={subCategories}
-        selection={selectedSubCategories}
-        onSelectionChange={(e) => setSelectedSubCategories(e.value as SubCategory[])}
-        dataKey="refSubCategoryId"
+        ref={dt}
+        id="Branch-table"
+        value={branch}
+        selection={selectedBranch}
+        onSelectionChange={(e) => setSelectedBranch(e.value as Branch[])}
+        dataKey="refBranchId"
         selectionMode="multiple"
         paginator
-        rows={10}
+        showGridlines
         stripedRows
+        rows={10}
+        rowsPerPageOptions={[5, 10, 20]}
         responsiveLayout="scroll"
       >
         <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
-        <Column field="subCategoryCode" header="Code" sortable />
-        <Column field="subCategoryName" header="Name" sortable />
-        <Column field="refCategoryId" header="Category ID" />
-        <Column field="createdBy" header="Created By" />
-        <Column field="createdAt" header="Created At" />
+
+        <Column field="refBranchCode" header="Code" sortable />
+        <Column field="refBranchName" header="Branch Name" sortable />
+        <Column field="refLocation" header="Location" sortable />
+        <Column field="refMobile" header="Contact Number" />
+        <Column field="refEmail" header="Email" />
         <Column
           field="isActive"
           header="Status"
@@ -204,20 +207,16 @@ const SettingsSubCategories: React.FC = () => {
       <Sidebar
         visible={visibleRight}
         position="right"
-        header={editSubCategory ? 'Edit Sub-category' : 'Add Sub-category'}
+        // header={editMode ? 'Edit Branch' : 'Add Branch'}
         onHide={() => {
           setVisibleRight(false)
-          setSelectedSubCategories([])
-          setEditSubCategory(null)
+          setSelectedBranch([])
         }}
         style={{ width: '50vw' }}
       >
-        <SettingsAddEditSubCategories
-          selectedSubCategory={editSubCategory}
-          onClose={() => {
-            setVisibleRight(false)
-            setEditSubCategory(null)
-          }}
+        <SettingsAddEditBranch
+          selectedBranches={selectedBranches}
+          onClose={() => setVisibleRight(false)}
           reloadData={load}
         />
       </Sidebar>
@@ -225,4 +224,4 @@ const SettingsSubCategories: React.FC = () => {
   )
 }
 
-export default SettingsSubCategories
+export default SettingsBranch

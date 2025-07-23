@@ -11,13 +11,12 @@ import {
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
-import './Settings.css'
+import './Inventory.css'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
-import SettingsOverview from '../../components/03-SettingsComponents/SettingsOverview/SettingsOverview'
-import SettingsCategories from '../../components/03-SettingsComponents/SettingsCategories/SettingsCategories'
-import SettingsSubCategories from '../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories'
-import SettingsSuppliers from '../../components/03-SettingsComponents/SettingsSuppliers/SettingsSuppliers'
-import SettingsBranch from '../../components/03-SettingsComponents/SettingsBranch/SettingsBranch'
+import InventoryOverview from '../../components/08-InventoryComponents/InventoryOverview/InventoryOverview'
+import InventoryStockTake from '../../components/08-InventoryComponents/InventoryStockTake/InventoryStockTake'
+import InventoryTracker from '../../components/08-InventoryComponents/InventoryTracker/InventoryTracker'
+
 
 // Sidebar items config
 const sidebarItems = [
@@ -25,50 +24,27 @@ const sidebarItems = [
     key: 'overview',
     label: 'Overview',
     icon: <PanelsTopLeft size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
+    component: <InventoryOverview />
   },
   {
-    key: 'categories',
-    label: 'Categories',
+    key: 'stockIntake',
+    label: 'Stock Intake',
     icon: <FolderKanban size={20} className="sidebar-icon" />,
-    component: <SettingsCategories />
+    component: <InventoryStockTake />
   },
   {
-    key: 'subcategories',
-    label: 'Sub Categories',
+    key: 'stockReturn',
+    label: 'Stock Return',
     icon: <Layers3 size={20} className="sidebar-icon" />,
-    component: <SettingsSubCategories />
+    component: <InventoryOverview />
   },
   {
-    key: 'branches',
-    label: 'Branches',
-    icon: <Landmark size={20} className="sidebar-icon" />,
-    component: <SettingsBranch />
-  },
-  {
-    key: 'suppliers',
-    label: 'Suppliers',
-    icon: <PackageSearch size={20} className="sidebar-icon" />,
-    component: <SettingsSuppliers />
-  },
-  {
-    key: 'users',
-    label: 'Users Roles',
-    icon: <UsersRound size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
-  },
-  {
-    key: 'attributes',
-    label: 'Attributes',
-    icon: <SlidersVertical size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
-  },
-  {
-    key: 'employees',
-    label: 'Employees',
+    key: 'inventorytracker',
+    label: 'Inventory Tracker',
     icon: <BadgeInfo size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
-  }
+    component: <InventoryTracker />
+  },
+  
 ]
 
 const Settings: React.FC = () => {
@@ -76,7 +52,15 @@ const Settings: React.FC = () => {
 
   return (
     <div className="settingsContainer">
-      <ComponentHeader title="Settings" subtitle="Monday, Jun 15, 2025" />
+<ComponentHeader 
+  title="Inventory" 
+  subtitle={new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })}
+/>
 
       <div className="settingsMain">
         {/* Sidebar */}
