@@ -6,95 +6,15 @@ import { Dialog } from 'primereact/dialog'
 import { RadioButton } from 'primereact/radiobutton'
 import { Dropdown } from 'primereact/dropdown'
 import { Check, X, Undo2 } from 'lucide-react'
-import { fetchDummyProductsByPOId } from './ViewPurchaseOrderProducts.function'
+import {
+  fetchDummyProductsByPOId,
+  updateDummyProductStatus,
+  bulkAcceptDummyProducts,
+  bulkRejectDummyProducts,
+  bulkUndoDummyProducts
+} from './ViewPurchaseOrderProducts.function'
 
-interface Product {
-  productName: string
-  refCategoryid: number
-  refSubCategoryId: number
-  HSNCode: string
-  purchaseQuantity: string
-  purchasePrice: string
-  discountAmount: string
-  totalAmount: string
-  isReceived: boolean
-  acceptanceStatus: string
-}
-
-interface SupplierDetails {
-  supplierId: number
-  supplierName: string
-  supplierCompanyName: string
-  supplierGSTNumber: string
-  supplierAddress: string
-  supplierPaymentTerms: string
-  supplierEmail: string
-  supplierContactNumber: string
-}
-
-interface BranchDetails {
-  branchId: number
-  branchName: string
-  branchEmail: string
-  branchAddress: string
-}
-
-interface ProductDetails {
-  productName: string
-  refCategoryid: number
-  refSubCategoryId: number
-  HSNCode: string
-  purchaseQuantity: string
-  purchasePrice: string
-  discountPrice: string
-  discountAmount: string
-  totalAmount: string
-  isReceived: boolean
-  acceptanceStatus: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  isDelete: boolean
-}
-
-interface TotalSummary {
-  poNumber: string
-  supplierId: number
-  branchId: number
-  status: number
-  expectedDate: string
-  modeOfTransport: string
-  subTotal: string
-  discountOverall: string
-  payAmount: string
-  isTaxApplied: boolean
-  taxPercentage: string
-  taxedAmount: string
-  totalAmount: string
-  totalPaid: string
-  paymentPending: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  isDelete: boolean
-}
-
-interface PurchaseOrder {
-  supplierDetails: SupplierDetails
-  branchDetails: BranchDetails
-  productDetails: ProductDetails[]
-  totalSummary: TotalSummary
-  purchaseOrderId: number
-}
-
-interface TableRow extends Product {
-  id: number
-  status: 'Pending' | 'Accepted' | 'Rejected - Mismatch' | 'Rejected - Missing'
-  categoryName: string
-  subCategoryName: string
-}
+import { ViewPurchaseOrderProductsProps, TableRow } from './ViewPurchaseOrderProducts.interface'
 
 const categoryMap: Record<number, string> = {
   24: 'Sarees',
@@ -107,7 +27,7 @@ const subCategoryMap: Record<number, string> = {
   5: 'Banarasi'
 }
 
-const ViewPurchaseOrderProducts: React.FC<PurchaseOrder> = ({ rowData }) => {
+const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
   console.log('rowData', rowData)
   const [rows, setRows] = useState<TableRow[]>([])
   const [selectedRows, setSelectedRows] = useState<TableRow[]>([])
@@ -169,22 +89,47 @@ const ViewPurchaseOrderProducts: React.FC<PurchaseOrder> = ({ rowData }) => {
     )
   }
 
+  const handleAccept = async (id: number) => {
+    try {
+      await updateDummyProductStatus(id, true)
+      setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Accepted' } : row)))
+    } catch (error) {
+      console.error('Failed to accept product:', error)
+    }
+  }
+
+  const confirmRejection = async () => {
+    if (activeRowIndex !== null) {
+      try {
+        await updateDummyProductStatus(activeRowIndex, false, rejectionReason)
+        setRows((prev) =>
+          prev.map((row) =>
+            row.id === activeRowIndex ? { ...row, status: `Rejected - ${rejectionReason}` } : row
+          )
+        )
+      } catch (error) {
+        console.error('Failed to reject product:', error)
+      }
+    }
+    setActiveRowIndex(null)
+    setRejectionDialog(false)
+  }
+
+  const undoAction = async (id: number) => {
+    try {
+      await updateDummyProductStatus(id, 'undo')
+      setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Pending' } : row)))
+    } catch (error) {
+      console.error('Failed to undo product status:', error)
+    }
+  }
+
   const actionBodyTemplate = (_: any, options: any) => {
     const row = rows[options.rowIndex]
 
     if (row.status === 'Pending') {
       return (
         <div className="flex gap-4">
-          {/* <Button
-            icon={<Check />}
-            className="p-button-success"
-            onClick={() => handleAccept(row.id)}
-          />
-          <Button
-            icon={<X />}
-            className="p-button-danger"
-            onClick={() => openRejectionDialog(row.id)}
-          /> */}
           <Button
             text
             style={{ padding: '0' }}
@@ -217,42 +162,39 @@ const ViewPurchaseOrderProducts: React.FC<PurchaseOrder> = ({ rowData }) => {
     }
   }
 
-  const handleAccept = (id: number) => {
-    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Accepted' } : row)))
-  }
-
   const openRejectionDialog = (id: number) => {
     setActiveRowIndex(id)
     setRejectionDialog(true)
   }
 
-  const confirmRejection = () => {
-    if (activeRowIndex) {
-      setRows((prev) =>
-        prev.map((row) =>
-          row.id === activeRowIndex ? { ...row, status: `Rejected - ${rejectionReason}` } : row
-        )
-      )
-    }
-    setActiveRowIndex(null)
-    setRejectionDialog(false)
-  }
-
-  const undoAction = (id: number) => {
-    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Pending' } : row)))
-  }
-
   // Bulk Actions
-  const handleBulkAction = (type: 'Accept' | 'Reject') => {
+  const handleBulkAction = async (type: 'Accept' | 'Reject') => {
     if (!selectedRows.length) return
-    setRows((prev) =>
-      prev.map((row) =>
-        selectedRows.some((sel) => sel.id === row.id)
-          ? { ...row, status: type === 'Accept' ? 'Accepted' : `Rejected - ${rejectionReason}` }
-          : row
-      )
-    )
-    setSelectedRows([])
+
+    const dummyProductIds = selectedRows.map((row) => row.id)
+
+    try {
+      if (type === 'Accept') {
+        await bulkAcceptDummyProducts(dummyProductIds)
+        setRows((prev) =>
+          prev.map((row) =>
+            dummyProductIds.includes(row.id) ? { ...row, status: 'Accepted' } : row
+          )
+        )
+      } else {
+        await bulkRejectDummyProducts(dummyProductIds, rejectionReason)
+        setRows((prev) =>
+          prev.map((row) =>
+            dummyProductIds.includes(row.id)
+              ? { ...row, status: `Rejected - ${rejectionReason}` }
+              : row
+          )
+        )
+      }
+      setSelectedRows([])
+    } catch (error) {
+      console.error('Bulk action failed', error)
+    }
   }
 
   // Filters
@@ -354,6 +296,7 @@ const ViewPurchaseOrderProducts: React.FC<PurchaseOrder> = ({ rowData }) => {
         dataKey="id"
         paginator
         rows={10}
+        rowsPerPageOptions={[10, 20, 50]}
         scrollable
         showGridlines
       >
