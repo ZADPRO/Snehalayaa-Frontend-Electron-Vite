@@ -1,4 +1,4 @@
-import { Blocks, PackageCheck, PackagePlus, PackageX, ShoppingBag } from 'lucide-react'
+import { Barcode, Blocks, PackageCheck, PackagePlus, PackageX, ShoppingBag } from 'lucide-react'
 import React, { useState } from 'react'
 import PurchaseOrderOverview from '../../components/05-PurchaseOrderComponents/PurchaseOrderOverview/PurchaseOrderOverview'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
@@ -9,6 +9,7 @@ import AddNewPurchaseOrder from '../../components/05-PurchaseOrderComponents/Pur
 import PurchaseOrderList from '../../components/05-PurchaseOrderComponents/PurchaseOrderList/PurchaseOrderList'
 import PurchaseOrderCatalog from '../../components/05-PurchaseOrderComponents/PurchaseOrderCatalog/PurchaseOrderCatalog'
 import PurchaseOrderRejectedProducts from '../../components/05-PurchaseOrderComponents/PurchaseOrderRejectedProducts/PurchaseOrderRejectedProducts'
+import BarcodeCreation from '../../components/05-PurchaseOrderComponents/BarcodeCreation/BarcodeCreation'
 
 // Sidebar items config
 const sidebarItems = [
@@ -47,6 +48,12 @@ const sidebarItems = [
     label: 'Rejected Products',
     icon: <PackageX size={20} className="sidebar-icon" />,
     component: <PurchaseOrderRejectedProducts />
+  },
+  {
+    key: 'barcodeCreation',
+    label: 'Barcode Creation',
+    icon: <Barcode size={20} className="sidebar-icon" />,
+    component: <BarcodeCreation />
   }
 ]
 
