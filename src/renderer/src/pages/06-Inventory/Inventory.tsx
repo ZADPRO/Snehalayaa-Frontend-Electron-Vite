@@ -25,12 +25,12 @@ const sidebarItems = [
   },
   {
     key: 'stockIntake',
-    label: 'Stock Intake',
+    label: 'Stock Take',
     icon: <FolderKanban size={20} className="sidebar-icon" />,
     component: <InventoryStockTake />
   },
   {
-    key: 'stockReturn',
+    key: 'stock Transfer',
     label: 'Stock Return',
     icon: <Layers3 size={20} className="sidebar-icon" />,
     component: <InventoryOverview />
