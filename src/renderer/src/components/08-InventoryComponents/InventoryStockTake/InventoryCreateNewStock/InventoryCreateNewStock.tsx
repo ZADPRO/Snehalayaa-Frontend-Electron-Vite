@@ -28,7 +28,7 @@ import BoxDialog from '../../BoxDialog/BoxDialog'
 const AddNewStockProductOrder: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
   const toast = useRef<Toast>(null)
-  const [productSelectionTotal, setProductSelectionTotal] = useState<number>(0)
+  // const [productSelectionTotal, setProductSelectionTotal] = useState<number>(0)
 
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
 

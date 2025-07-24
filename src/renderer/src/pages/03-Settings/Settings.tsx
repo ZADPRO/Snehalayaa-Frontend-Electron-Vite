@@ -5,8 +5,9 @@ import {
   Landmark,
   PackageSearch,
   // UsersRound,
-  BadgeInfo,
+  // BadgeInfo,
   PanelsTopLeft,
+  IdCard
   // SlidersVertical
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
@@ -67,7 +68,7 @@ const sidebarItems = [
   {
     key: 'employees',
     label: 'Employees',
-    icon: <BadgeInfo size={20} className="sidebar-icon" />,
+    icon: <IdCard size={20} className="sidebar-icon" />,
     component: <SettingsEmployees />
   }
 ]

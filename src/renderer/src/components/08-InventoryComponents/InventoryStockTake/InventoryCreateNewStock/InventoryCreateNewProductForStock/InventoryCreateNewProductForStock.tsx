@@ -18,8 +18,7 @@ interface Props {
   onAdd: (data: any) => void
   onClose: () => void
   productToEdit?: any // <-- add this line (optional)
-    onTotalChange?: (total: number) => void // ✅ add this
-
+  onTotalChange?: (total: number) => void // ✅ add this
 }
 
 const InventoryCreateNewProductForStock: React.FC<Props> = ({
@@ -32,6 +31,7 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
   productToEdit,
   onTotalChange
 }) => {
+  console.log('onTotalChange', onTotalChange)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
   const [selectedProducts, setSelectedProducts] = useState<Products[] | null>(null)
@@ -64,11 +64,10 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
         )
       : []
 
-const totalPrice = (selectedProducts ?? []).reduce(
-  (acc, product) => acc + Number(product.poPrice || 0),
-  0
-)
-
+  const totalPrice = (selectedProducts ?? []).reduce(
+    (acc, product) => acc + Number(product.poPrice || 0),
+    0
+  )
 
   useEffect(() => {
     const loadProducts = async () => {

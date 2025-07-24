@@ -3,8 +3,8 @@ export interface CatalogFormData {
   sku: string
   gtin: string
   brand: string
-  category: string
-  subcategory: string
+  category: number // changed from string
+  subcategory: number
   description: string
   detailedDescription: string
   price: string

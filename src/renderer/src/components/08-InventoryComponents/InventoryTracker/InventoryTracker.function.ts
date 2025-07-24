@@ -12,7 +12,7 @@ export const exportPdf = (categories: inventory[]) => {
   const doc = new jsPDF()
   autoTable(doc, {
     head: [['Code', 'Name', 'Created By', 'Created At', 'Status']],
-    body: categories.map((item) => [
+    body: categories.map((_item) => [
     //   item.createdBy,
     //   item.createdAt,
     //   item.isActive ? 'Active' : 'Inactive'
@@ -23,7 +23,7 @@ export const exportPdf = (categories: inventory[]) => {
 
 export const exportExcel = (categories: inventory[]) => {
   const worksheet = XLSX.utils.json_to_sheet(
-    categories.map((item) => ({
+    categories.map((_item) => ({
     //   CreatedBy: item.createdBy,
     //   CreatedAt: item.createdAt,
     //   Status: item.isActive ? 'Active' : 'Inactive'

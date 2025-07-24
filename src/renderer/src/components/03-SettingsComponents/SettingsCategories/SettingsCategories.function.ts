@@ -71,3 +71,18 @@ export const exportExcel = (categories: Category[]) => {
   })
   saveAs(blob, `categories_export_${new Date().getTime()}.xlsx`)
 }
+
+export const bulkDeleteCategories = async (
+  categoryIds: number[],
+  forceDelete: boolean = false
+): Promise<any> => {
+  const token = localStorage.getItem('token') || ''
+  const response = await axios.delete(`${baseURL}/admin/settings/categories`, {
+    headers: { Authorization: token },
+    data: {
+      categoryIds,
+      forceDelete
+    }
+  })
+  return response.data
+}

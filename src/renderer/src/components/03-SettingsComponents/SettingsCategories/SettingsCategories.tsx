@@ -12,7 +12,8 @@ import {
   deleteCategory,
   exportCSV,
   exportExcel,
-  exportPdf
+  exportPdf,
+  bulkDeleteCategories
 } from './SettingsCategories.function'
 
 import { Category } from './SettingsCategories.interface'
@@ -80,9 +81,12 @@ const SettingsCategories: React.FC = () => {
   const handleDelete = async () => {
     if (!selectedCategories.length) return
 
-    const categoryToDelete = selectedCategories[0]
+    const idsToDelete = selectedCategories.map((cat) => cat.refCategoryId)
+
     try {
-      const res = await deleteCategory(categoryToDelete.refCategoryId)
+      const res = await bulkDeleteCategories(idsToDelete)
+      console.log('idsToDelete', idsToDelete)
+
       if (res.status) {
         toast.current?.show({
           severity: 'success',
@@ -97,13 +101,19 @@ const SettingsCategories: React.FC = () => {
           summary: 'Needs Confirmation',
           detail: res.message
         })
-        // You can implement subcategory confirmation UI here if needed
+        // Optional: Show list of subcategories from res.subcategoriesMap in a dialog here
+      } else {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: res.message
+        })
       }
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Failed to delete'
+        detail: err.message || 'Failed to delete categories'
       })
     }
   }

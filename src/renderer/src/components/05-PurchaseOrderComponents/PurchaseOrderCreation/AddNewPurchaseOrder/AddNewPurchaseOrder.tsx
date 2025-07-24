@@ -18,7 +18,7 @@ import {
   createPurchaseOrder
 } from './AddNewPurchaseOrder.function'
 import { Branch, Supplier, Category, SubCategory } from './AddNewPurchaseOrder.interface'
-import { Check, CheckCheck, Download, Eye, Pencil, Plus, Printer, Trash2 } from 'lucide-react'
+import { Check, CheckCheck, Download, Pencil, Plus, Printer, Trash2, Upload } from 'lucide-react'
 import { Sidebar } from 'primereact/sidebar'
 import AddNewProductsForPurchaseOrder from './AddNewProductsForPurchaseOrder/AddNewProductsForPurchaseOrder'
 import { generateInvoicePdf } from '../PurchaseOrderInvoice/PurchaseOrderInvoice.function'
@@ -38,8 +38,8 @@ const AddNewPurchaseOrder: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([])
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
 
-  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
+  const [selectedBranch, setSelectedBranch] = useState<Supplier | null>(null)
+  const [selectedSupplier, setSelectedSupplier] = useState<Branch | null>(null)
 
   const [tableData, setTableData] = useState<any[]>([])
   const [selectedRows, setSelectedRows] = useState<any[]>([])
@@ -113,22 +113,22 @@ const AddNewPurchaseOrder: React.FC = () => {
   }
 
   const buildPayload = () => {
-    const supplierDetails = selectedSupplier && {
-      supplierId: selectedSupplier.supplierId,
-      supplierName: selectedSupplier.supplierName,
-      supplierCompanyName: selectedSupplier.supplierCompanyName,
-      supplierGSTNumber: selectedSupplier.supplierGSTNumber,
-      supplierAddress: formatSupplierAddress(selectedSupplier),
-      supplierPaymentTerms: selectedSupplier.supplierPaymentTerms,
-      supplierEmail: selectedSupplier.supplierEmail,
-      supplierContactNumber: selectedSupplier.supplierContactNumber
+    const supplierDetails = selectedBranch && {
+      supplierId: selectedBranch.supplierId,
+      supplierName: selectedBranch.supplierName,
+      supplierCompanyName: selectedBranch.supplierCompanyName,
+      supplierGSTNumber: selectedBranch.supplierGSTNumber,
+      supplierAddress: formatSupplierAddress(selectedBranch),
+      supplierPaymentTerms: selectedBranch.supplierPaymentTerms,
+      supplierEmail: selectedBranch.supplierEmail,
+      supplierContactNumber: selectedBranch.supplierContactNumber
     }
 
-    const branchDetails = selectedBranch && {
-      branchId: selectedBranch.refBranchId,
-      branchName: selectedBranch.refBranchName,
-      branchEmail: selectedBranch.refEmail,
-      branchAddress: selectedBranch.refLocation
+    const branchDetails = selectedSupplier && {
+      branchId: selectedSupplier.refBranchId,
+      branchName: selectedSupplier.refBranchName,
+      branchEmail: selectedSupplier.refEmail,
+      branchAddress: selectedSupplier.refLocation
     }
 
     const productDetails = tableData.map((item) => ({
@@ -214,51 +214,51 @@ const AddNewPurchaseOrder: React.FC = () => {
     }
   }
 
-const handleAddProduct = (newItem: any) => {
-  console.log('🔍 New item added:', newItem)
+  const handleAddProduct = (newItem: any) => {
+    console.log('🔍 New item added:', newItem)
 
-  setTableData((prev) => {
-    const updatedData = [...prev]
+    setTableData((prev) => {
+      const updatedData = [...prev]
 
-    const existingIndex = updatedData.findIndex(
-      (item) =>
-        item.refCategoryId === newItem.refCategoryId &&
-        item.refSubCategoryId === newItem.refSubCategoryId &&
-        item.productName.trim().toLowerCase() === newItem.productName.trim().toLowerCase()
-    )
+      const existingIndex = updatedData.findIndex(
+        (item) =>
+          item.refCategoryId === newItem.refCategoryId &&
+          item.refSubCategoryId === newItem.refSubCategoryId &&
+          item.productName.trim().toLowerCase() === newItem.productName.trim().toLowerCase()
+      )
 
-    if (existingIndex !== -1) {
-      console.log('✅ Match found at index:', existingIndex)
-      console.log('🛠️ Updating existing product:', updatedData[existingIndex])
+      if (existingIndex !== -1) {
+        console.log('✅ Match found at index:', existingIndex)
+        console.log('🛠️ Updating existing product:', updatedData[existingIndex])
 
-      // Update logic
-      const existing = updatedData[existingIndex]
-      const updatedItem = {
-        ...existing,
-        quantity: existing.quantity + newItem.quantity,
-        purchasePrice: newItem.purchasePrice,
-        discount: newItem.discount || existing.discount || 0,
-        discountPrice: newItem.discountPrice || 0,
-        total: (existing.quantity + newItem.quantity) * newItem.purchasePrice - (newItem.discount || 0)
+        // Update logic
+        const existing = updatedData[existingIndex]
+        const updatedItem = {
+          ...existing,
+          quantity: existing.quantity + newItem.quantity,
+          purchasePrice: newItem.purchasePrice,
+          discount: newItem.discount || existing.discount || 0,
+          discountPrice: newItem.discountPrice || 0,
+          total:
+            (existing.quantity + newItem.quantity) * newItem.purchasePrice - (newItem.discount || 0)
+        }
+
+        updatedData[existingIndex] = updatedItem
+
+        console.log('🔁 Updated product:', updatedItem)
+        return updatedData
+      } else {
+        const newRow = {
+          id: prev.length + 1,
+          ...newItem,
+          total: newItem.quantity * newItem.purchasePrice - (newItem.discount || 0)
+        }
+
+        console.log('➕ No match found. Adding new product:', newRow)
+        return [...prev, newRow]
       }
-
-      updatedData[existingIndex] = updatedItem
-
-      console.log('🔁 Updated product:', updatedItem)
-      return updatedData
-    } else {
-      const newRow = {
-        id: prev.length + 1,
-        ...newItem,
-        total: newItem.quantity * newItem.purchasePrice - (newItem.discount || 0)
-      }
-
-      console.log('➕ No match found. Adding new product:', newRow)
-      return [...prev, newRow]
-    }
-  })
-}
-
+    })
+  }
 
   const isEditEnabled = selectedRows.length === 1
   const isDeleteEnabled = selectedRows.length >= 1
@@ -288,8 +288,8 @@ const handleAddProduct = (newItem: any) => {
                 id="fromAddress"
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.value)}
-                options={branches}
-                optionLabel="refBranchName"
+                options={suppliers}
+                optionLabel="supplierCompanyName"
                 placeholder="Select From Address"
                 className="w-full"
               />
@@ -302,8 +302,8 @@ const handleAddProduct = (newItem: any) => {
                 id="toAddress"
                 value={selectedSupplier}
                 onChange={(e) => setSelectedSupplier(e.value)}
-                options={suppliers}
-                optionLabel="supplierCompanyName"
+                options={branches}
+                optionLabel="refBranchName"
                 placeholder="Select To Address"
                 className="w-full"
               />
@@ -410,11 +410,11 @@ const handleAddProduct = (newItem: any) => {
             className="w-full gap-2 p-button-primary"
             onClick={handleSave}
           />
-          <Button
+          {/* <Button
             label="Preview"
             icon={<Eye size={20} />}
             className="w-full gap-2 p-button-primary"
-          />
+          /> */}
           <Button
             label="Download"
             icon={<Download size={18} />}
@@ -455,14 +455,14 @@ const handleAddProduct = (newItem: any) => {
               if (selectedBranch && selectedSupplier) {
                 generateInvoicePdf({
                   from: {
-                    name: selectedBranch.refBranchName,
-                    address: selectedBranch.refEmail
+                    name: selectedSupplier.refBranchName,
+                    address: selectedSupplier.refEmail
                   },
                   to: {
-                    name: selectedSupplier.supplierCompanyName,
-                    address: formatSupplierAddress(selectedSupplier),
-                    phone: selectedSupplier.supplierContactNumber,
-                    taxNo: selectedSupplier.supplierGSTNumber
+                    name: selectedBranch.supplierCompanyName,
+                    address: formatSupplierAddress(selectedBranch),
+                    phone: selectedBranch.supplierContactNumber,
+                    taxNo: selectedBranch.supplierGSTNumber
                   },
                   items: tableData,
                   invoiceNo,
@@ -478,6 +478,12 @@ const handleAddProduct = (newItem: any) => {
             icon={<Pencil size={18} />}
             className="w-full gap-2 p-button-primary"
             onClick={() => setShowSupplierDialog(true)}
+          />
+
+          <Button
+            label="Upload Invoice"
+            icon={<Upload size={20} />}
+            className="w-full gap-2 p-button-primary"
           />
         </div>
         <div className="flex flex-column gap-2 pb-3 surface-100 border-round">
@@ -546,8 +552,8 @@ const handleAddProduct = (newItem: any) => {
         <AddNewProductsForPurchaseOrder
           categories={categories}
           subCategories={subCategories}
-          fromAddress={selectedBranch}
-          toAddress={selectedSupplier}
+          fromAddress={selectedSupplier}
+          toAddress={selectedBranch}
           onAdd={handleAddProduct}
           onClose={() => setVisibleRight(false)}
         />

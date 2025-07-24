@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
 // import { FolderKanban } from 'lucide-react'
@@ -150,12 +150,12 @@ const PurchaseOrderOverview: React.FC = () => {
         ))}
       </div>
 
-      <div className="card flex shadow-2">
+      <div className="card flex shadow-2 mt-4">
         <div className="flex-1 gap-3 mt-3">
           <Card
             title=" Purchase Order"
             style={{
-              width: '350px',
+              // width: '350px',
               height: '400px',
               //   borderRadius: 12,
               backgroundColor: '#fff',

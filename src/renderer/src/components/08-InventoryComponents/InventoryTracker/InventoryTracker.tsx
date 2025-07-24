@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { DataTable } from 'primereact/datatable'
 import { Toast } from 'primereact/toast'
 import { inventory } from './InventoryTracker.interface'
@@ -10,8 +10,8 @@ import { Tooltip } from 'primereact/tooltip'
 import { Column } from 'primereact/column'
 
 const InventoryTracker: React.FC = () => {
-  const [inventory, setInventory] = useState<inventory[]>([])
-  const [selectedinventory, setSelectedInventory] = useState<inventory[]>([])
+  const [inventory, _setInventory] = useState<inventory[]>([])
+  const [selectedinventory, _setSelectedInventory] = useState<inventory[]>([])
 
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<inventory[]>>(null)
@@ -103,7 +103,7 @@ const InventoryTracker: React.FC = () => {
         <Column field="quantity" header="Quantity" />
         <Column field="branchName" header="Branch Name" />
         <Column field="createdBy" header="Created By" />
-        <Column field="createdAt" header="Created At" sortable/>
+        <Column field="createdAt" header="Created At" sortable />
         {/* <Column
           field="isActive"
           header="Status"

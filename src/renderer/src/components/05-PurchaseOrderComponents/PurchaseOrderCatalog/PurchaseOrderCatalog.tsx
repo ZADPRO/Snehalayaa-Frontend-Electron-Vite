@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { FileSignature, FileSpreadsheet, FileText } from 'lucide-react'
 import { Button } from 'primereact/button'
-import { DataTable, DataTableSelectionChangeEvent } from 'primereact/datatable'
+import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { Toolbar } from 'primereact/toolbar'
 import { Tooltip } from 'primereact/tooltip'
@@ -73,7 +73,7 @@ const PurchaseOrderCatalog: React.FC = () => {
         rows={10}
         rowsPerPageOptions={[10, 20, 30]}
         selection={selectedProducts}
-        onSelectionChange={(e: DataTableSelectionChangeEvent) => setSelectedProducts(e.value)}
+        onSelectionChange={(e) => setSelectedProducts(e.value)}
         selectionMode="multiple"
         dataKey="DummyProductsID"
       >
