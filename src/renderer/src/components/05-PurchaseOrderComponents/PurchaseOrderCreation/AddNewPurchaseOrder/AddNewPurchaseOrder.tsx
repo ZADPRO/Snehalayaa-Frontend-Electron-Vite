@@ -235,7 +235,7 @@ const AddNewPurchaseOrder: React.FC = () => {
         const existing = updatedData[existingIndex]
         const updatedItem = {
           ...existing,
-          quantity: existing.quantity + newItem.quantity,
+          quantity: newItem.quantity,
           purchasePrice: newItem.purchasePrice,
           discount: newItem.discount || existing.discount || 0,
           discountPrice: newItem.discountPrice || 0,
@@ -373,7 +373,7 @@ const AddNewPurchaseOrder: React.FC = () => {
           <Column
             header="Name"
             body={(rowData) => {
-              const combined = `${rowData.category || ''} - ${rowData.subCategory || ''} - ${rowData.productName || ''}`
+              const combined = `${rowData.category || ''} - ${rowData.subCategory || ''}`
               return (
                 <span
                   className="name-tooltip"
@@ -556,6 +556,7 @@ const AddNewPurchaseOrder: React.FC = () => {
           toAddress={selectedBranch}
           onAdd={handleAddProduct}
           onClose={() => setVisibleRight(false)}
+          existingProducts={tableData}
         />
       </Sidebar>
 
