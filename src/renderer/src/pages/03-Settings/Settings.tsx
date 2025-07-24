@@ -4,10 +4,10 @@ import {
   Layers3,
   Landmark,
   PackageSearch,
-  UsersRound,
+  // UsersRound,
   BadgeInfo,
   PanelsTopLeft,
-  SlidersVertical
+  // SlidersVertical
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
@@ -52,18 +52,18 @@ const sidebarItems = [
     icon: <PackageSearch size={20} className="sidebar-icon" />,
     component: <SettingsSuppliers />
   },
-  {
-    key: 'users',
-    label: 'Users Roles',
-    icon: <UsersRound size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
-  },
-  {
-    key: 'attributes',
-    label: 'Attributes',
-    icon: <SlidersVertical size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
-  },
+  // {
+  //   key: 'users',
+  //   label: 'Users Roles',
+  //   icon: <UsersRound size={20} className="sidebar-icon" />,
+  //   component: <SettingsOverview />
+  // },
+  // {
+  //   key: 'attributes',
+  //   label: 'Attributes',
+  //   icon: <SlidersVertical size={20} className="sidebar-icon" />,
+  //   component: <SettingsOverview />
+  // },
   {
     key: 'employees',
     label: 'Employees',
