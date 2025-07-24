@@ -168,3 +168,10 @@
 .p-datatable-wrapper {
   scrollbar-width: thin;
 }
+
+.hidden-for-print {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: visible;
+}
