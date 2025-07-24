@@ -213,18 +213,52 @@ const AddNewPurchaseOrder: React.FC = () => {
       })
     }
   }
-  const handleAddProduct = (newItem: any) => {
-    console.log('newItem', newItem)
-    setTableData((prev) => [
-      ...prev,
-      {
+
+const handleAddProduct = (newItem: any) => {
+  console.log('🔍 New item added:', newItem)
+
+  setTableData((prev) => {
+    const updatedData = [...prev]
+
+    const existingIndex = updatedData.findIndex(
+      (item) =>
+        item.refCategoryId === newItem.refCategoryId &&
+        item.refSubCategoryId === newItem.refSubCategoryId &&
+        item.productName.trim().toLowerCase() === newItem.productName.trim().toLowerCase()
+    )
+
+    if (existingIndex !== -1) {
+      console.log('✅ Match found at index:', existingIndex)
+      console.log('🛠️ Updating existing product:', updatedData[existingIndex])
+
+      // Update logic
+      const existing = updatedData[existingIndex]
+      const updatedItem = {
+        ...existing,
+        quantity: existing.quantity + newItem.quantity,
+        purchasePrice: newItem.purchasePrice,
+        discount: newItem.discount || existing.discount || 0,
+        discountPrice: newItem.discountPrice || 0,
+        total: (existing.quantity + newItem.quantity) * newItem.purchasePrice - (newItem.discount || 0)
+      }
+
+      updatedData[existingIndex] = updatedItem
+
+      console.log('🔁 Updated product:', updatedItem)
+      return updatedData
+    } else {
+      const newRow = {
         id: prev.length + 1,
         ...newItem,
-        refCategoryId: newItem.refCategoryId, // ← Add category ID
-        refSubCategoryId: newItem.refSubCategoryId // ← Add subcategory ID
+        total: newItem.quantity * newItem.purchasePrice - (newItem.discount || 0)
       }
-    ])
-  }
+
+      console.log('➕ No match found. Adding new product:', newRow)
+      return [...prev, newRow]
+    }
+  })
+}
+
 
   const isEditEnabled = selectedRows.length === 1
   const isDeleteEnabled = selectedRows.length >= 1

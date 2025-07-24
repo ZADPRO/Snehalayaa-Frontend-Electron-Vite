@@ -13,6 +13,7 @@ import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import InventoryOverview from '../../components/08-InventoryComponents/InventoryOverview/InventoryOverview'
 import InventoryStockTake from '../../components/08-InventoryComponents/InventoryStockTake/InventoryStockTake'
 import InventoryTracker from '../../components/08-InventoryComponents/InventoryTracker/InventoryTracker'
+import InventoryStockTransfer from '../../components/08-InventoryComponents/InventoryStockTransfer/InventoryStockTransfer'
 
 
 // Sidebar items config
@@ -30,10 +31,10 @@ const sidebarItems = [
     component: <InventoryStockTake />
   },
   {
-    key: 'stock Transfer',
-    label: 'Stock Return',
+    key: 'stockTransfer',
+    label: 'Stock Transfer',
     icon: <Layers3 size={20} className="sidebar-icon" />,
-    component: <InventoryOverview />
+    component: <InventoryStockTransfer />
   },
   {
     key: 'inventorytracker',
@@ -45,7 +46,7 @@ const sidebarItems = [
 ]
 
 const Settings: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('categories')
+  const [activeKey, setActiveKey] = useState('overview')
 
   return (
     <div className="settingsContainer">
