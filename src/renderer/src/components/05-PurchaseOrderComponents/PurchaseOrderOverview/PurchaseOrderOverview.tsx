@@ -22,7 +22,7 @@ const PurchaseOrderOverview: React.FC = () => {
   const stockReturn = 50
 
   const cardHeader = (
-    <div className="flex justify-between items-center">
+    <div className="flex justify-content-between align-items-center w-full">
       <span className="text-xl font-semibold text-gray-800">Category</span>
       <Calendar
         value={dateRange}
@@ -31,6 +31,7 @@ const PurchaseOrderOverview: React.FC = () => {
         readOnlyInput
         inputStyle={{ display: 'none' }}
         showIcon
+        appendTo="self" // 🔑 anchors the popup to the calendar's DOM position
         className="p-inputtext-sm"
       />
     </div>
@@ -196,35 +197,34 @@ const PurchaseOrderOverview: React.FC = () => {
         </div>
 
         <div className="flex-1 gap-3 mt-3 ml-3 shadow-2">
-      <Card
-        header={cardHeader}
-        style={{
-          width: '830px',
-          height: '400px',
-          backgroundColor: '#fff',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'relative',
-          padding: '20px'
-        }}
-      >
-        {/* Stat Cards */}
-        <div className="grid grid-cols-4 gap-4 mt-4">
-          {stats.map((item, idx) => (
-            <div
-              key={idx}
-              className="rounded-lg p-4 shadow-md text-center"
-              style={{ backgroundColor: '#f8f9fa' }}
-            >
-              <h3 className="text-md font-medium text-gray-600">{item.title}</h3>
-              <p className="text-3xl font-bold mt-2" style={{ color: item.color }}>
-                {item.count}
-              </p>
+          <Card
+            header={cardHeader}
+            style={{
+              width: '830px',
+              height: '400px',
+              backgroundColor: '#fff',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              padding: '20px'
+            }}
+          >
+            <div className="flex flex-cols-4 gap-4 mt-4">
+              {stats.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-lg p-4 shadow-md text-center"
+                  style={{ backgroundColor: '#f8f9fa' }}
+                >
+                  <h3 className="text-md font-medium text-gray-600">{item.title}</h3>
+                  <p className="text-3xl font-bold mt-2" style={{ color: item.color }}>
+                    {item.count}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
+          </Card>
         </div>
-      </Card>
-    </div>
       </div>
     </div>
   )
