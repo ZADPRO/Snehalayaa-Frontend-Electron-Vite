@@ -71,7 +71,8 @@ const SettingsAddEditCategories: React.FC<SettingsAddEditCategoriesProps> = ({
       categoryName: formData.categoryName,
       categoryCode: formData.categoryCode,
       isActive: formData.selectedStatus.isActive,
-      profitMargin: parseFloat(formData.profitMargin || '0')
+      // profitMargin: parseFloat(formData.profitMargin || '0')
+      profitMargin: (formData.profitMargin || '0')
     }
 
     if (selectedCategory) payload.refCategoryId = selectedCategory.refCategoryId
