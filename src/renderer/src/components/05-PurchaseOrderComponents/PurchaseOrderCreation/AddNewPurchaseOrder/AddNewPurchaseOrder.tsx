@@ -18,7 +18,17 @@ import {
   createPurchaseOrder
 } from './AddNewPurchaseOrder.function'
 import { Branch, Supplier, Category, SubCategory } from './AddNewPurchaseOrder.interface'
-import { Check, CheckCheck, Download, Pencil, Plus, Printer, Trash2, Upload } from 'lucide-react'
+import {
+  Check,
+  CheckCheck,
+  Download,
+  LoaderCircle,
+  Pencil,
+  Plus,
+  Printer,
+  Trash2,
+  Upload
+} from 'lucide-react'
 import { Sidebar } from 'primereact/sidebar'
 import AddNewProductsForPurchaseOrder from './AddNewProductsForPurchaseOrder/AddNewProductsForPurchaseOrder'
 import { generateInvoicePdf } from '../PurchaseOrderInvoice/PurchaseOrderInvoice.function'
@@ -58,6 +68,9 @@ const AddNewPurchaseOrder: React.FC = () => {
   const [showSupplierDialog, setShowSupplierDialog] = useState(false)
   const [creditDays, setCreditDays] = useState('')
   const [creditDate, setCreditDate] = useState<Date | null>(null)
+
+  const [isDownloading, setIsDownloading] = useState(false)
+  const [isPrinting, setIsPrinting] = useState(false)
   // const [isPreviousPaymentDone, setIsPreviousPaymentDone] = useState(false)
 
   useEffect(() => {
@@ -181,7 +194,60 @@ const AddNewPurchaseOrder: React.FC = () => {
     }
   }
 
+  // const handleSave = async () => {
+  //   if (!selectedBranch || !selectedSupplier) {
+  //     toast.current?.show({
+  //       severity: 'warn',
+  //       summary: 'Missing Address',
+  //       detail: 'Please select both branch and supplier before saving.'
+  //     })
+  //     return
+  //   }
+
+  //   try {
+  //     const payload = buildPayload()
+  //     console.log('payload', payload)
+
+  //     const res = await createPurchaseOrder(payload)
+
+  //     toast.current?.show({
+  //       severity: 'success',
+  //       summary: 'Purchase Order Saved',
+  //       detail: res.message || 'Your purchase order has been saved successfully.'
+  //     })
+
+  //     setIsSaved(true)
+  //   } catch (error) {
+  //     console.error('Error saving purchase order:', error)
+  //     toast.current?.show({
+  //       severity: 'error',
+  //       summary: 'Save Failed',
+  //       detail: (error as Error).message
+  //     })
+  //   }
+  // }
+
   const handleSave = async () => {
+    if (isSaved) {
+      // ⛔ If already saved, now act as "Close" => Reset the form
+      setSelectedBranch(null)
+      setSelectedSupplier(null)
+      setTableData([])
+      setSelectedRows([])
+      setIsSaved(false)
+      setCreditDays('')
+      setCreditDate(null)
+      setPendingAmountInput('')
+      setApplyTax(false)
+      toast.current?.show({
+        severity: 'info',
+        summary: 'Form Reset',
+        detail: 'Purchase order form has been reset.'
+      })
+      return
+    }
+
+    // 🟢 If not saved, do save logic
     if (!selectedBranch || !selectedSupplier) {
       toast.current?.show({
         severity: 'warn',
@@ -193,8 +259,6 @@ const AddNewPurchaseOrder: React.FC = () => {
 
     try {
       const payload = buildPayload()
-      console.log('payload', payload)
-
       const res = await createPurchaseOrder(payload)
 
       toast.current?.show({
@@ -416,59 +480,71 @@ const AddNewPurchaseOrder: React.FC = () => {
             className="w-full gap-2 p-button-primary"
           /> */}
           <Button
-            label="Download"
-            icon={<Download size={18} />}
+            label={isDownloading ? 'Downloading...' : 'Download'}
+            icon={
+              isDownloading ? <LoaderCircle className="spin" size={18} /> : <Download size={18} />
+            }
             className="w-full gap-2 p-button-primary"
-            disabled={!isSaved}
+            disabled={!isSaved || isDownloading}
             onClick={async () => {
-              const logoBase64 = await getBase64FromImage(logo)
+              setIsDownloading(true)
+              try {
+                const logoBase64 = await getBase64FromImage(logo)
 
-              if (selectedBranch && selectedSupplier) {
-                generateInvoicePdf({
-                  from: {
-                    name: selectedBranch.refBranchName,
-                    address: selectedBranch.refEmail
-                  },
-                  to: {
-                    name: selectedSupplier.supplierCompanyName,
-                    address: formatSupplierAddress(selectedSupplier),
-                    phone: selectedSupplier.supplierContactNumber,
-                    taxNo: selectedSupplier.supplierGSTNumber
-                  },
-                  items: tableData,
-                  invoiceNo,
-                  logoBase64,
-                  action: 'download'
-                })
+                if (selectedBranch && selectedSupplier) {
+                  await generateInvoicePdf({
+                    from: {
+                      name: selectedSupplier.refBranchName,
+                      address: selectedSupplier.refEmail
+                    },
+                    to: {
+                      name: selectedBranch.supplierCompanyName,
+                      address: formatSupplierAddress(selectedBranch),
+                      phone: selectedBranch.supplierContactNumber,
+                      taxNo: selectedBranch.supplierGSTNumber
+                    },
+                    items: tableData,
+                    invoiceNo,
+                    logoBase64,
+                    action: 'download'
+                  })
+                }
+              } finally {
+                setIsDownloading(false)
               }
             }}
           />
 
           <Button
-            label="Print"
-            icon={<Printer size={18} />}
+            label={isPrinting ? 'Printing...' : 'Print'}
+            icon={isPrinting ? <LoaderCircle className="spin" size={18} /> : <Printer size={18} />}
             className="w-full gap-2 p-button-primary"
-            disabled={!isSaved}
+            disabled={!isSaved || isPrinting}
             onClick={async () => {
-              const logoBase64 = await getBase64FromImage(logo)
+              setIsPrinting(true)
+              try {
+                const logoBase64 = await getBase64FromImage(logo)
 
-              if (selectedBranch && selectedSupplier) {
-                generateInvoicePdf({
-                  from: {
-                    name: selectedSupplier.refBranchName,
-                    address: selectedSupplier.refEmail
-                  },
-                  to: {
-                    name: selectedBranch.supplierCompanyName,
-                    address: formatSupplierAddress(selectedBranch),
-                    phone: selectedBranch.supplierContactNumber,
-                    taxNo: selectedBranch.supplierGSTNumber
-                  },
-                  items: tableData,
-                  invoiceNo,
-                  logoBase64,
-                  action: 'print'
-                })
+                if (selectedBranch && selectedSupplier) {
+                  await generateInvoicePdf({
+                    from: {
+                      name: selectedSupplier.refBranchName,
+                      address: selectedSupplier.refEmail
+                    },
+                    to: {
+                      name: selectedBranch.supplierCompanyName,
+                      address: formatSupplierAddress(selectedBranch),
+                      phone: selectedBranch.supplierContactNumber,
+                      taxNo: selectedBranch.supplierGSTNumber
+                    },
+                    items: tableData,
+                    invoiceNo,
+                    logoBase64,
+                    action: 'print'
+                  })
+                }
+              } finally {
+                setIsPrinting(false)
               }
             }}
           />

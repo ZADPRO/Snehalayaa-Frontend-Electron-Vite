@@ -11,6 +11,8 @@ import PurchaseOrderCatalog from '../../components/05-PurchaseOrderComponents/Pu
 import PurchaseOrderRejectedProducts from '../../components/05-PurchaseOrderComponents/PurchaseOrderRejectedProducts/PurchaseOrderRejectedProducts'
 import BarcodeCreation from '../../components/05-PurchaseOrderComponents/BarcodeCreation/BarcodeCreation'
 
+import './PurchaseOrder.css'
+
 // Sidebar items config
 const sidebarItems = [
   {
