@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Dropdown } from 'primereact/dropdown'
@@ -15,6 +15,7 @@ interface Props {
   toAddress: Supplier | null
   onAdd: (data: any) => void
   onClose: () => void
+  editItem?: any // Add this
 }
 
 const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
@@ -23,7 +24,8 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   fromAddress,
   toAddress,
   onAdd,
-  onClose
+  onClose,
+  editItem
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
@@ -107,6 +109,21 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     setSelectedCategory(null)
     setSelectedSubCategory(null)
   }
+useEffect(() => {
+  if (editItem) {
+    setSelectedCategory(
+      categories.find((cat) => cat.refCategoryId === editItem.refCategoryId) || null
+    )
+    setSelectedSubCategory(
+      subCategories.find((sub) => sub.refSubCategoryId === editItem.refSubCategoryId) || null
+    )
+    setProductName(editItem.productName || '')
+    setQuantity(editItem.quantity?.toString() || '')
+    setPurchasePrice(editItem.purchasePrice?.toString() || '')
+    setDiscount(editItem.discount?.toString() || '')
+    setHsnCode(editItem.hsnCode || '')
+  }
+}, [editItem, categories, subCategories])
 
   return (
     <div className="flex flex-column gap-3">

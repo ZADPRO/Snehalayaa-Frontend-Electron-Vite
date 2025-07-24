@@ -2,7 +2,7 @@ import { Toast } from 'primereact/toast'
 import React, { useEffect, useRef, useState } from 'react'
 import { Employee } from './SettingsEmployees.interface'
 import { Button } from 'primereact/button'
-import { Plus, Pencil, Trash2} from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Toolbar } from 'primereact/toolbar'
 import { Tooltip } from 'primereact/tooltip'
 import { DataTable } from 'primereact/datatable'
@@ -23,25 +23,24 @@ const SettingsEmployees: React.FC = () => {
   const isSingleSelected = selectedEmployee.length === 1
   const isAnySelected = selectedEmployee.length > 0
 
-  
-    const load = async () => {
-      try {
-        const data = await fetchEmployees()
-        console.log('data', data)
-        setEmployee(data)
-      } catch (err: any) {
-        toast.current?.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.message || 'Failed to load categories',
-          life: 3000
-        })
-      }
+  const load = async () => {
+    try {
+      const data = await fetchEmployees()
+      console.log('data', data)
+      setEmployee(data)
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message || 'Failed to load categories',
+        life: 3000
+      })
     }
-    useEffect(() => {
-      load()
-    }, [])
-  
+  }
+  useEffect(() => {
+    load()
+  }, [])
+
   const handleDelete = async () => {
     if (!selectedEmployee.length) return
 
@@ -100,7 +99,7 @@ const SettingsEmployees: React.FC = () => {
       />
     </div>
   )
- 
+
   return (
     <div className="">
       <Toast ref={toast} />
@@ -127,12 +126,12 @@ const SettingsEmployees: React.FC = () => {
 
         <Column field="RefUserFName" header="Name" sortable />
         <Column field="RefUserCustId" header="User CustId" sortable />
-        <Column field="RefUserRefUserDesignation" header="User RefUserDesignation" />
+        <Column field="RefUserDesignation" header="Designation" />
         <Column field="email" header="Email" />
         <Column
           field="RefUserStatus"
           header="Status"
-        //   body={(rowData) => (rowData.isActive ? 'Active' : 'Inactive')}
+          //   body={(rowData) => (rowData.isActive ? 'Active' : 'Inactive')}
         />
       </DataTable>
 

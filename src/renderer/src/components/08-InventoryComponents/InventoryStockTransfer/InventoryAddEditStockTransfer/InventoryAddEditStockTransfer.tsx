@@ -12,9 +12,9 @@ import {
   bulkAcceptDummyProducts,
   bulkRejectDummyProducts,
   // bulkUndoDummyProducts
-} from './ViewPurchaseOrderProducts.function'
+} from './InventoryAddEditStockTransfer.functions'
 
-import { ViewPurchaseOrderProductsProps, TableRow } from './ViewPurchaseOrderProducts.interface'
+import { ViewPurchaseOrderProductsProps, TableRow } from './InventoryAddEditStockTransfer.interfece'
 
 const categoryMap: Record<number, string> = {
   24: 'Sarees',
@@ -27,7 +27,7 @@ const subCategoryMap: Record<number, string> = {
   5: 'Banarasi'
 }
 
-const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
+const InventoryAddEditStockTransfer: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
   console.log('rowData', rowData)
   const [rows, setRows] = useState<TableRow[]>([])
   const [selectedRows, setSelectedRows] = useState<TableRow[]>([])
@@ -364,4 +364,4 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
   )
 }
 
-export default ViewPurchaseOrderProducts
+export default InventoryAddEditStockTransfer
