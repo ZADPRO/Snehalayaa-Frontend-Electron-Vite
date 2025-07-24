@@ -1,8 +1,15 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
+import { FolderKanban } from 'lucide-react'
+import { Category } from './InventoryOverview.interface'
+import { fetchCategories } from './InventoryOverview.function'
+import { Toast } from 'primereact/toast'
 
 const InventoryOverview: React.FC = () => {
+  const [categories, setCategories] = useState<Category[]>([])
+  const toast = useRef<Toast>(null)
+
   const stockIntake = 30
   const stockReturn = 50
   //   const total = stockIntake + stockReturn
@@ -37,20 +44,34 @@ const InventoryOverview: React.FC = () => {
     }
   }
 
-  const categories = [
-    { name: 'Silk', count: 10 },
-    { name: 'Cotton', count: 24 },
-    { name: 'Cotton', count: 45 },
-    { name: 'Cotton', count: 56 },
-    { name: 'Cotton', count: 46 },
-    { name: 'Cotton', count: 64 },
-    { name: 'Cotton', count: 20 },
-    { name: 'Cotton', count: 20 },
-    { name: 'Cotton', count: 20 }
-  ]
+  const load = async () => {
+    try {
+      const data = await fetchCategories()
+      console.log('fetchCategories', fetchCategories)
+
+      // Add static count for each category
+      const updatedWithStaticCounts = data.map((cat, index) => ({
+        ...cat,
+        count: 10 + index * 2 // Example static count logic
+      }))
+
+      setCategories(updatedWithStaticCounts)
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message || 'Failed to load categories',
+        life: 3000
+      })
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [])
   return (
     <div>
-      <div className="card flex">
+      {/* <div className="card flex">
         <div className="flex-1 gap-3 mr-3">
           <Card title="Inventory">
             <p className="m-0">14</p>
@@ -71,9 +92,67 @@ const InventoryOverview: React.FC = () => {
             <p className="m-0">13</p>
           </Card>
         </div>
-      </div>
+      </div> */}
+      <div className="flex gap-4">
+  {[
+    { title: 'Inventory', count: 14, percent: 10, color: '#007bff' },
+    { title: 'Inventory', count: 10, percent: 20, color: '#28a745' },
+    { title: 'Inventory', count: 12, percent: 50, color: '#ffc107' },
+    { title: 'Inventory', count: 13, percent: 60, color: '#dc3545' },
+  ].map((item, idx) => (
+    <div className="flex-1 shadow-2" key={idx}>
+      <Card title={item.title}>
+        <div
+          style={{
+            background: '#f0f0f0',
+            borderRadius: '4px',
+            height: '6px',
+            marginBottom: '12px',
+            width: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              background: item.color,
+              width: `${item.percent}%`,
+              height: '100%',
+            }}
+          />
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-2xl font-bold text-gray-800 text-right">{item.count}</span>
+        </div>
+      </Card>
+    </div>
+  ))}
+</div>
 
-      <div className="card flex">
+      {/* <Card title="Dropbox Storage">
+        <div
+          style={{
+            background: '#fbe4ed',
+            borderRadius: '4px',
+            height: '6px',
+            marginBottom: '16px',
+            width: '100%',
+            overflow: 'hidden'
+          }}
+        >
+          <div
+            style={{
+              background: '#ef476f',
+              width: `${(4.1 / 100) * 100}%`,
+              height: '100%'
+            }}
+          />
+        </div>
+        <div className="flex justify-content-between align-items-center">
+          <span>1</span>
+        </div>
+      </Card> */}
+
+      <div className="card flex shadow-2">
         <div className="flex-1 gap-3 mt-3">
           <Card
             title=" Stocks"
@@ -119,7 +198,7 @@ const InventoryOverview: React.FC = () => {
           </Card>
         </div>
 
-        <div className="flex-1 gap-3 mt-3 ml-3 ">
+        <div className="flex-1 gap-3 mt-3 ml-3 shadow-2">
           <Card
             title="Category"
             style={{
@@ -130,121 +209,13 @@ const InventoryOverview: React.FC = () => {
               //   padding: '20px 14px',
               //   boxSizing: 'border-box',
               display: 'flex',
-
               position: 'relative'
             }}
           >
-            {/* <div className="flex gap-2">
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-3">
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-3">
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-              <div className="flex-1">
-                <Card
-                  title=""
-                  style={{
-                    width: '260px',
-                    height: '90px'
-                    //   display: 'flex',
-                    //   position: 'relative'
-                  }}
-                ></Card>
-              </div>
-            </div> */}
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
                 <div
-                  key={cat.name}
+                  key={cat.refCategoryId}
                   className="px-4 shadow-2"
                   style={{
                     width: '260px',
@@ -258,8 +229,11 @@ const InventoryOverview: React.FC = () => {
                   }}
                 >
                   <div className="flex w-full align-items-center justify-content-between">
-                    <span className="text-xl font-bold">{cat.name}</span>
-                    <span className="text-xl font-semibold text-right">{cat.count}</span>
+                    <span className="text-xl flex items-center gap-2">
+                      <FolderKanban />
+                      {cat.categoryName}
+                    </span>
+                    <span className="text-xl font-semibold text-right">{cat.count ?? 0}</span>
                   </div>
                 </div>
               ))}

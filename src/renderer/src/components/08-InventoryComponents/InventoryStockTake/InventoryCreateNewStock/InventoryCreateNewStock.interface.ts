@@ -46,3 +46,11 @@ export interface SubCategory {
   categoryName: string; // ← Add this
 }
 
+export interface ProductRow {
+  id: number
+  poName: string
+  poSKU: string
+  poHSN: string
+  purchasePrice: string
+  quantity: number
+}

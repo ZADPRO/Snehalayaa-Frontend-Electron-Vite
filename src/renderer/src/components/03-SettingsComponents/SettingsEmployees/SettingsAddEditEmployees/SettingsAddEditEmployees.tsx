@@ -106,10 +106,10 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
     }
   }, [selectedEmployees, roleTypes, branches])
 
-  const isDropdownLoading = branches.length === 0 || roleTypes.length === 0
-  if (isDropdownLoading) {
-    return <div className="p-4">Loading employee data...</div>
-  }
+  // const isDropdownLoading = branches.length === 0 || roleTypes.length === 0
+  // if (isDropdownLoading) {
+  //   return <div className="p-4"></div>
+  // }
 
   const handleInputChange = (
     field: keyof EmployeeFormData,
@@ -226,7 +226,7 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
               className="w-full"
               onChange={(e) => handleInputChange('RefUserRefUserDesignation', e.target.value)}
             />
-            <label htmlFor="RefUserRefUserDesignation"> User RefUserDesignation</label>
+            <label htmlFor="RefUserRefUserDesignation"> Designation</label>
           </FloatLabel>
         </div>
       </div>
