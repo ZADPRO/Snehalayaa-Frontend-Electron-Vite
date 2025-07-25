@@ -21,14 +21,18 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@chakra-ui/react": "^3.22.0",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "axios": "^1.10.0",
     "bwip-js": "^4.7.0",
     "chart.js": "^4.5.0",
     "country-state-city": "^3.2.1",
     "electron-updater": "^6.3.9",
     "file-saver": "^2.0.5",
+    "framer-motion": "^12.23.9",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
