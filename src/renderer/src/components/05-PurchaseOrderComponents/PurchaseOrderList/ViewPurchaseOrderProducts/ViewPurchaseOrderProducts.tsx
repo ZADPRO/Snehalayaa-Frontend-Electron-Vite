@@ -11,34 +11,53 @@ import {
   updateDummyProductStatus,
   bulkAcceptDummyProducts,
   bulkRejectDummyProducts,
+  fetchSubCategories,
+  fetchCategories
   // bulkUndoDummyProducts
 } from './ViewPurchaseOrderProducts.function'
 
 import { ViewPurchaseOrderProductsProps, TableRow } from './ViewPurchaseOrderProducts.interface'
 
-const categoryMap: Record<number, string> = {
-  24: 'Sarees',
-  25: 'Designer Wear'
-}
-
-const subCategoryMap: Record<number, string> = {
-  1: 'Cotton',
-  4: 'Silk',
-  5: 'Banarasi'
-}
-
 const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
   console.log('rowData', rowData)
+  const [categoryMap, setCategoryMap] = useState<Record<number, string>>({})
+  const [subCategoryMap, setSubCategoryMap] = useState<Record<number, string>>({})
+
   const [rows, setRows] = useState<TableRow[]>([])
   const [selectedRows, setSelectedRows] = useState<TableRow[]>([])
   const [rejectionDialog, setRejectionDialog] = useState(false)
   const [rejectionReason, setRejectionReason] = useState<'Mismatch' | 'Missing'>('Mismatch')
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
 
+  const [isDropdownDataLoaded, setIsDropdownDataLoaded] = useState(false)
+
   const [filterCategory, setFilterCategory] = useState<number | null>(null)
   const [filterSubcategory, setFilterSubcategory] = useState<number | null>(null)
 
   // Construct rows on mount/update
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      const categories = await fetchCategories()
+      const subCategories = await fetchSubCategories()
+
+      const categoryMapData: Record<number, string> = {}
+      categories.forEach((cat: any) => {
+        categoryMapData[cat.refCategoryId] = cat.categoryName
+      })
+
+      const subCategoryMapData: Record<number, string> = {}
+      subCategories.forEach((sub: any) => {
+        subCategoryMapData[sub.refSubCategoryId] = sub.subCategoryName
+      })
+
+      setCategoryMap(categoryMapData)
+      setSubCategoryMap(subCategoryMapData)
+      setIsDropdownDataLoaded(true) // ✅ flag set
+    }
+
+    fetchDropdownData()
+  }, [])
+
   useEffect(() => {
     const loadData = async () => {
       const data = await fetchDummyProductsByPOId(rowData.purchaseOrderId)
@@ -50,7 +69,7 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
         refCategoryid: item.RefCategoryID,
         refSubCategoryId: item.RefSubCategoryID,
         HSNCode: item.HSNCode,
-        purchaseQuantity: '1', // Single dummy item
+        purchaseQuantity: '1',
         purchasePrice: item.Price,
         discountAmount: item.DiscountAmount,
         totalAmount: item.Price,
@@ -64,10 +83,15 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
       setRows(rows)
     }
 
-    if (rowData.purchaseOrderId) {
+    if (rowData.purchaseOrderId && isDropdownDataLoaded) {
       loadData()
     }
-  }, [rowData.purchaseOrderId])
+  }, [rowData.purchaseOrderId, isDropdownDataLoaded, categoryMap, subCategoryMap])
+
+  useEffect(() => {
+    console.log('categoryMap ready:', categoryMap)
+    console.log('subCategoryMap ready:', subCategoryMap)
+  }, [categoryMap, subCategoryMap])
 
   // Serial Number Column
   const serialBodyTemplate = (_rowData: TableRow, options: any) => options.rowIndex + 1
@@ -302,7 +326,6 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
       >
         <Column selectionMode="multiple" />
         <Column header="S.No" body={serialBodyTemplate} />
-        <Column header="Product Name" field="productName" style={{ minWidth: '200px' }} />
         <Column header="Category" field="categoryName" />
         <Column header="Subcategory" field="subCategoryName" />
         <Column header="HSN Code" field="HSNCode" style={{ minWidth: '100px' }} />

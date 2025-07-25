@@ -9,7 +9,6 @@ import { Sidebar } from 'primereact/sidebar'
 
 import {
   fetchCategories,
-  deleteCategory,
   exportCSV,
   exportExcel,
   exportPdf,

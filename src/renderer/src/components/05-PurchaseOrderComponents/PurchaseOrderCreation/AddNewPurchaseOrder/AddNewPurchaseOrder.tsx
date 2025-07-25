@@ -165,8 +165,8 @@ const AddNewPurchaseOrder: React.FC = () => {
 
     const totalSummary = {
       poNumber: invoiceNo,
-      supplierId: selectedSupplier?.supplierId,
-      branchId: selectedBranch?.refBranchId,
+      supplierId: selectedBranch?.supplierId,
+      branchId: selectedSupplier?.refBranchId,
       status: 1,
       expectedDate: creditDate?.toISOString() || new Date().toISOString(),
       modeOfTransport: 'Road',
@@ -193,39 +193,6 @@ const AddNewPurchaseOrder: React.FC = () => {
       totalSummary
     }
   }
-
-  // const handleSave = async () => {
-  //   if (!selectedBranch || !selectedSupplier) {
-  //     toast.current?.show({
-  //       severity: 'warn',
-  //       summary: 'Missing Address',
-  //       detail: 'Please select both branch and supplier before saving.'
-  //     })
-  //     return
-  //   }
-
-  //   try {
-  //     const payload = buildPayload()
-  //     console.log('payload', payload)
-
-  //     const res = await createPurchaseOrder(payload)
-
-  //     toast.current?.show({
-  //       severity: 'success',
-  //       summary: 'Purchase Order Saved',
-  //       detail: res.message || 'Your purchase order has been saved successfully.'
-  //     })
-
-  //     setIsSaved(true)
-  //   } catch (error) {
-  //     console.error('Error saving purchase order:', error)
-  //     toast.current?.show({
-  //       severity: 'error',
-  //       summary: 'Save Failed',
-  //       detail: (error as Error).message
-  //     })
-  //   }
-  // }
 
   const handleSave = async () => {
     if (isSaved) {

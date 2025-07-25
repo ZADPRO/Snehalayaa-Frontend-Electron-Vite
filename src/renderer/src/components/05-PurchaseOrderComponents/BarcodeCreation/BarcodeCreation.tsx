@@ -8,12 +8,15 @@ import { fetchAllPurchaseOrderProducts } from './BarcodeCreation.function'
 import { Button } from 'primereact/button'
 import Barcode from 'react-barcode'
 import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import bwipjs from 'bwip-js'
+
+import { ProgressSpinner } from 'primereact/progressspinner'
 
 const BarcodeCreation: React.FC = () => {
   const toast = useRef<Toast>(null)
   const [products, setProducts] = useState<PurchaseOrderProduct[]>([])
-  const [selectedRows, setSelectedRows] = useState<any[]>([])
+  const [selectedRows, setSelectedRows] = useState<PurchaseOrderProduct[]>([])
+  const [isGenerating, setIsGenerating] = useState(false)
 
   useEffect(() => {
     fetchAllPurchaseOrderProducts()
@@ -29,76 +32,126 @@ const BarcodeCreation: React.FC = () => {
   }, [])
 
   const handlePrint = async () => {
-    const pdf = new jsPDF('portrait', 'mm', 'a4')
-    console.log('pdf', pdf)
-    const pageWidth = pdf.internal.pageSize.getWidth()
-    const margin = 10
-    const cardWidth = 50
-    const cardHeight = 35
-    const gap = 5
+    if (!selectedRows.length) return
+    setIsGenerating(true)
 
-    let x = margin
-    let y = margin
+    try {
+      const pdf = new jsPDF('portrait', 'mm', 'a4')
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const margin = 10
+      const cardWidth = 60
+      const cardHeight = 40
+      const gap = 5
 
-    for (let i = 0; i < selectedRows.length; i++) {
-      console.log('selectedRows', selectedRows)
-      const p = selectedRows[i]
-      const element = document.getElementById(`barcode-card-${p.DummySKU}`)
-      if (!element) continue
+      let x = margin
+      let y = margin
 
-      // Convert HTML to canvas
-      const canvas = await html2canvas(element)
-      const imgData = canvas.toDataURL('image/png')
+      for (const p of selectedRows) {
+        const canvas = document.createElement('canvas')
 
-      // Add image to PDF
-      pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight)
-      console.log('pdf', pdf)
+        await (bwipjs as any).toCanvas(canvas, {
+          bcid: 'code128',
+          text: 'SS072500001',
+          scale: 2,
+          height: 10,
+          includetext: false
+        })
 
-      // Move to next position
-      x += cardWidth + gap
-      if (x + cardWidth > pageWidth - margin) {
-        x = margin
-        y += cardHeight + gap
-        if (y + cardHeight > pdf.internal.pageSize.getHeight() - margin) {
-          pdf.addPage()
-          y = margin
+        const imgData = canvas.toDataURL('image/png')
+
+        // Calculate center alignment
+        const centerX = x + cardWidth / 2
+
+        // Add Product Name centered
+        pdf.setFontSize(9)
+        pdf.text(p.ProductName, centerX, y + 6, { align: 'center' })
+
+        // Add Barcode centered
+        const barcodeWidth = 40
+        const barcodeHeight = 12
+        pdf.addImage(
+          imgData,
+          'PNG',
+          centerX - barcodeWidth / 2,
+          y + 10,
+          barcodeWidth,
+          barcodeHeight
+        )
+
+        // Add SKU centered
+        pdf.setFontSize(8)
+        pdf.text(`SKU: ${p.DummySKU}`, centerX, y + 26, { align: 'center' })
+
+        // Add Price with ₹ symbol centered
+        pdf.setFontSize(8)
+        const formattedPrice = `INR ${parseFloat(p.Price).toFixed(2)}`
+        pdf.text(formattedPrice, centerX, y + 30, { align: 'center' })
+
+        // Move to next card position
+        x += cardWidth + gap
+        if (x + cardWidth > pageWidth - margin) {
+          x = margin
+          y += cardHeight + gap
+          if (y + cardHeight > pageHeight - margin) {
+            pdf.addPage()
+            y = margin
+          }
         }
       }
-    }
 
-    // Auto print
-    pdf.autoPrint()
-    console.log('pdf', pdf)
-    const blob = pdf.output('blob')
-    const url = URL.createObjectURL(blob)
-    const iframe = document.createElement('iframe')
-    iframe.style.display = 'none'
-    iframe.src = url
-    document.body.appendChild(iframe)
+      // ✅ Print instead of download
+      const blob = pdf.output('blob')
+      const url = URL.createObjectURL(blob)
+      const iframe = document.createElement('iframe')
+      iframe.style.display = 'none'
+      iframe.src = url
+      document.body.appendChild(iframe)
 
-    iframe.onload = () => {
-      iframe.contentWindow?.focus()
-      iframe.contentWindow?.print()
+      iframe.onload = () => {
+        iframe.contentWindow?.focus()
+        iframe.contentWindow?.print()
+      }
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'PDF Generation Failed',
+        detail: err.message,
+        life: 4000
+      })
+    } finally {
+      setIsGenerating(false)
     }
   }
 
   return (
     <div>
       <Toast ref={toast} />
-      <Tooltip target=".p-button" position="left" />
-
-      <div className="flex items-center mb-3">
-        <h2 className="text-2xl font-bold text-purple-800 m-0">Product Barcode Selection</h2>
-        <div className="ml-auto">
-          <Button
-            label="Add to Print"
-            className="p-button-sm p-button-primary"
-            disabled={!selectedRows.length}
-            onClick={handlePrint}
-          />
+      <Tooltip target=".p-button" position="left" />{' '}
+      {isGenerating && (
+        <div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-70 z-50">
+          {' '}
+          <div className="text-center">
+            <ProgressSpinner />{' '}
+            <p className="mt-3 text-lg font-medium text-purple-800">
+              Generating PDF, please wait...
+            </p>{' '}
+          </div>{' '}
         </div>
-      </div>
-
+      )}{' '}
+      <div className="flex items-center mb-3">
+        {' '}
+        <h2 className="text-2xl font-bold text-purple-800 m-0">Product Barcode Selection</h2>{' '}
+        <div className="ml-auto">
+          {' '}
+          <Button
+            label="Generate Barcode PDF"
+            className="p-button-sm p-button-success"
+            disabled={!selectedRows.length || isGenerating}
+            onClick={handlePrint}
+          />{' '}
+        </div>{' '}
+      </div>{' '}
       <DataTable
         value={products}
         selection={selectedRows}
@@ -122,11 +175,12 @@ const BarcodeCreation: React.FC = () => {
         <Column field="HSNCode" header="HSN Code" />
         <Column field="DummySKU" header="SKU" />
         <Column field="Price" header="Price" />
-        <Column field="AcceptanceStatus" header="Status" />
-      </DataTable>
-
+        <Column field="AcceptanceStatus" header="Status" />{' '}
+      </DataTable>{' '}
       <div id="print-area" className="hidden-for-print">
-        <div className="barcode-grid">
+        {' '}
+        <div className="barcode-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          {' '}
           {selectedRows.map((p) => (
             <div
               key={p.DummySKU}
@@ -135,7 +189,7 @@ const BarcodeCreation: React.FC = () => {
                 width: '180px', // Approx. 50mm
                 height: '125px', // Approx. 35mm
                 padding: '10px',
-                border: '1px solid #ccc',
+                // border: '1px solid #ccc',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -143,14 +197,13 @@ const BarcodeCreation: React.FC = () => {
                 fontSize: '12px'
               }}
             >
-              <strong>{p.ProductName}</strong>
-              <Barcode value={p.DummySKU} height={40} width={1} displayValue={false} />
-              <div>{p.DummySKU}</div>
-              <div>₹ {parseFloat(p.Price).toFixed(2)}</div>
+              <strong>{p.ProductName}</strong>{' '}
+              <Barcode value={p.DummySKU} height={40} width={1} displayValue={false} />{' '}
+              <div>{p.DummySKU}</div> <div>₹ {parseFloat(p.Price).toFixed(2)}</div>{' '}
             </div>
-          ))}
-        </div>
-      </div>
+          ))}{' '}
+        </div>{' '}
+      </div>{' '}
     </div>
   )
 }

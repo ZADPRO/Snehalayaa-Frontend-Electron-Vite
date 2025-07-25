@@ -82,3 +82,23 @@ export const bulkUndoDummyProducts = async (dummyProductIds: number[]) => {
     return null
   }
 }
+
+export const fetchCategories = async () => {
+  try {
+    const response = await axios.get(`${baseURL}/admin/settings/categories`, { headers })
+    return response.data?.data || []
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+    return []
+  }
+}
+
+export const fetchSubCategories = async () => {
+  try {
+    const response = await axios.get(`${baseURL}/admin/settings/subcategories`, { headers })
+    return response.data?.data || []
+  } catch (error) {
+    console.error('Failed to fetch subcategories:', error)
+    return []
+  }
+}
