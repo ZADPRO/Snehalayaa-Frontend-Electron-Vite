@@ -4,7 +4,7 @@ import { baseURL } from '../../../../src/utils/helper'
 
 export const fetchAllPurchaseOrderProducts = async (): Promise<PurchaseOrderProduct[]> => {
   try {
-    const response = await axios.get(`${baseURL}/admin/purchaseOrder/list-all-products`, {
+    const response = await axios.get(`${baseURL}/admin/purchaseOrder/list-all-products-barcode`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem('token')}`

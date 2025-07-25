@@ -19,7 +19,6 @@ import {
 import { ViewPurchaseOrderProductsProps, TableRow } from './ViewPurchaseOrderProducts.interface'
 
 const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
-  console.log('rowData', rowData)
   const [categoryMap, setCategoryMap] = useState<Record<number, string>>({})
   const [subCategoryMap, setSubCategoryMap] = useState<Record<number, string>>({})
 
@@ -69,6 +68,7 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
         refCategoryid: item.RefCategoryID,
         refSubCategoryId: item.RefSubCategoryID,
         HSNCode: item.HSNCode,
+        dummyproductId: item.DummyProductsID,
         purchaseQuantity: '1',
         purchasePrice: item.Price,
         discountAmount: item.DiscountAmount,
@@ -87,11 +87,6 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
       loadData()
     }
   }, [rowData.purchaseOrderId, isDropdownDataLoaded, categoryMap, subCategoryMap])
-
-  useEffect(() => {
-    console.log('categoryMap ready:', categoryMap)
-    console.log('subCategoryMap ready:', subCategoryMap)
-  }, [categoryMap, subCategoryMap])
 
   // Serial Number Column
   const serialBodyTemplate = (_rowData: TableRow, options: any) => options.rowIndex + 1
@@ -113,10 +108,14 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
     )
   }
 
-  const handleAccept = async (id: number) => {
+  const handleAccept = async (dummyProductId: number) => {
     try {
-      await updateDummyProductStatus(id, true)
-      setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Accepted' } : row)))
+      await updateDummyProductStatus(dummyProductId, true)
+      setRows((prev) =>
+        prev.map((row) =>
+          row.dummyproductId === dummyProductId ? { ...row, status: 'Accepted' } : row
+        )
+      )
     } catch (error) {
       console.error('Failed to accept product:', error)
     }
@@ -138,18 +137,23 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
     setActiveRowIndex(null)
     setRejectionDialog(false)
   }
-
-  const undoAction = async (id: number) => {
+  const undoAction = async (dummyProductId: number) => {
     try {
-      await updateDummyProductStatus(id, 'undo')
-      setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status: 'Pending' } : row)))
+      await updateDummyProductStatus(dummyProductId, 'undo')
+      setRows((prev) =>
+        prev.map((row) =>
+          row.dummyproductId === dummyProductId ? { ...row, status: 'Pending' } : row
+        )
+      )
     } catch (error) {
       console.error('Failed to undo product status:', error)
     }
   }
 
   const actionBodyTemplate = (_: any, options: any) => {
+    console.log('options', options)
     const row = rows[options.rowIndex]
+    console.log('row', row)
 
     if (row.status === 'Pending') {
       return (
@@ -157,7 +161,7 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
           <Button
             text
             style={{ padding: '0' }}
-            onClick={() => handleAccept(row.id)}
+            onClick={() => handleAccept(row.dummyproductId)}
             severity="success"
           >
             Accept
@@ -165,7 +169,7 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
           <Button
             text
             style={{ padding: '0' }}
-            onClick={() => openRejectionDialog(row.id)}
+            onClick={() => openRejectionDialog(row.dummyproductId)}
             severity="danger"
           >
             Reject
@@ -195,21 +199,21 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
   const handleBulkAction = async (type: 'Accept' | 'Reject') => {
     if (!selectedRows.length) return
 
-    const dummyProductIds = selectedRows.map((row) => row.id)
+    const dummyProductIds = selectedRows.map((row) => row.dummyproductId)
 
     try {
       if (type === 'Accept') {
         await bulkAcceptDummyProducts(dummyProductIds)
         setRows((prev) =>
           prev.map((row) =>
-            dummyProductIds.includes(row.id) ? { ...row, status: 'Accepted' } : row
+            dummyProductIds.includes(row.dummyproductId) ? { ...row, status: 'Accepted' } : row
           )
         )
       } else {
         await bulkRejectDummyProducts(dummyProductIds, rejectionReason)
         setRows((prev) =>
           prev.map((row) =>
-            dummyProductIds.includes(row.id)
+            dummyProductIds.includes(row.dummyproductId)
               ? { ...row, status: `Rejected - ${rejectionReason}` }
               : row
           )
@@ -249,6 +253,7 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
 
   // Filtered rows
   const filteredRows = rows.filter((row) => {
+    console.log('row', row)
     const categoryMatch = filterCategory === null || row.refCategoryid === filterCategory
     const subcategoryMatch =
       filterSubcategory === null || row.refSubCategoryId === filterSubcategory
