@@ -1,6 +1,6 @@
 // import axios from "axios"
 // import { baseURL } from "../../../../../utils/helper"
-import { Products } from "./InventoryCreateNewProductForStock.interface"
+import { Products } from './InventoryCreateNewProductForStock.interface'
 
 export const formatINRCurrency = (value: string | number) => {
   const num = Number(value)
@@ -11,7 +11,6 @@ export const formatINRCurrency = (value: string | number) => {
     maximumFractionDigits: 2
   }).format(num)
 }
-
 
 // export const fetchProducts = async (): Promise<Products[]> => {
 //   const response = await axios.get(`${baseURL}/admin/products/read`, {
@@ -29,7 +28,7 @@ export const formatINRCurrency = (value: string | number) => {
 // }
 
 export const fetchProducts = async (): Promise<Products[]> => {
-    console.log('fetchProducts', fetchProducts)
+  console.log('fetchProducts', fetchProducts)
   return [
     {
       refPtId: 101,
@@ -231,5 +230,5 @@ export const fetchProducts = async (): Promise<Products[]> => {
       createdBy: 'admin',
       isDelete: false
     }
-  ];
-};
+  ]
+}

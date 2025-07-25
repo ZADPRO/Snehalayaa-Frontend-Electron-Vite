@@ -185,3 +185,8 @@
 .spin {
   animation: spin 1s linear infinite;
 }
+
+.customized-timeline .p-timeline-event-marker {
+  background-color: #1976d2;
+  color: white;
+}

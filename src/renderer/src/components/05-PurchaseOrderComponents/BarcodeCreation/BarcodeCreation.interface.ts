@@ -17,3 +17,11 @@ export interface PurchaseOrderProduct {
   UpdatedBy: string
   IsDelete: string
 }
+
+export interface SimplifiedPurchaseOrderProduct {
+  name: string
+  hsnCode: string
+  sku: string
+  price: string
+  status: string
+}
