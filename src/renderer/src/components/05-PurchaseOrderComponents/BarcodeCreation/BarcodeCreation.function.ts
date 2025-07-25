@@ -1,8 +1,10 @@
 import axios from 'axios'
-import { PurchaseOrderProduct } from './BarcodeCreation.interface'
+import { SimplifiedPurchaseOrderProduct } from './BarcodeCreation.interface'
 import { baseURL } from '../../../../src/utils/helper'
 
-export const fetchAllPurchaseOrderProducts = async (): Promise<PurchaseOrderProduct[]> => {
+export const fetchAllPurchaseOrderProducts = async (): Promise<
+  SimplifiedPurchaseOrderProduct[]
+> => {
   try {
     const response = await axios.get(`${baseURL}/admin/purchaseOrder/list-all-products-barcode`, {
       headers: {
@@ -10,7 +12,9 @@ export const fetchAllPurchaseOrderProducts = async (): Promise<PurchaseOrderProd
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
-    return response.data.data.filter((item: PurchaseOrderProduct) => item.IsReceived === 'true')
+    return response.data.data.filter(
+      (item: SimplifiedPurchaseOrderProduct) => item.status === 'Created'
+    )
   } catch (error) {
     console.error('Error fetching purchase order products:', error)
     throw new Error('Failed to fetch purchase order products')

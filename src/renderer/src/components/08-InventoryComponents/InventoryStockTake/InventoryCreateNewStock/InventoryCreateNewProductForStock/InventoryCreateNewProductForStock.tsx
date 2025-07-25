@@ -127,76 +127,6 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
     }
   }, [productToEdit, categories, subCategories, productOptions])
 
-  // const handleAdd = () => {
-  //   if (!fromAddress || !toAddress) {
-  //     toast.current?.show({
-  //       severity: 'warn',
-  //       summary: 'Validation',
-  //       detail: 'Please select the From and To address first.',
-  //       life: 3000
-  //     })
-  //     return
-  //   }
-
-  //   const quantityNum = Number(quantity)
-  //   const priceNum = Number(purchasePrice)
-  //   const discountNum = Number(discount || 0)
-
-  //   if (
-  //     !selectedCategory ||
-  //     !selectedSubCategory ||
-  //     !productName.trim() ||
-  //     !quantity ||
-  //     !purchasePrice ||
-  //     isNaN(quantityNum) ||
-  //     isNaN(priceNum) ||
-  //     quantityNum <= 0 ||
-  //     priceNum <= 0 ||
-  //     discountNum < 0 ||
-  //     productId == 0
-  //   ) {
-  //     toast.current?.show({
-  //       severity: 'error',
-  //       summary: 'Validation',
-  //       detail:
-  //         'Please fill all fields correctly. Quantity and price should be > 0. Discount should be ≥ 0.',
-  //       life: 4000
-  //     })
-  //     return
-  //   }
-
-  //   const newItem = {
-  //     productName,
-  //     productId,
-  //     quantity: quantityNum,
-  //     purchasePrice: priceNum,
-  //     discount: discountNum,
-  //     total,
-  //     hsnCode,
-  //     poSKU,
-  //     pricePerUnit: priceNum,
-  //     discountPrice: (priceNum * discountNum) / 100,
-  //     category: selectedCategory?.categoryName || '',
-  //     subCategory: selectedSubCategory?.subCategoryName || '',
-  //     refCategoryId: selectedCategory?.refCategoryId,
-  //     refSubCategoryId: selectedSubCategory?.refSubCategoryId
-  //   }
-  //   console.log('newItem', newItem)
-
-  //   onAdd(newItem)
-
-  //   // Reset fields
-  //   setProductName('')
-  //   setQuantity('')
-  //   setPurchasePrice('')
-  //   setDiscount('')
-  //   setHsnCode('')
-  //   setpoSKU('')
-  //   setSelectedCategory(null)
-  //   setSelectedSubCategory(null)
-  //   setSelectedProducts(null)
-  //   console.log('setSelectedSubCategory', setSelectedSubCategory)
-  // }
   const handleAdd = () => {
     if (!fromAddress || !toAddress) {
       toast.current?.show({
@@ -267,24 +197,7 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
         {/* Branch Details */}
         <div className="col-6 p-3 surface-100">
           <p className="mb-3">From Branch Details</p>
-          {/* <div>
-            <strong>Name:</strong> {fromAddress?.refBranchName || 'N/A'}
-          </div>
-          <div>
-            <strong>Email:</strong> {fromAddress?.refEmail || 'N/A'}
-          </div>
-          <div>
-            <strong>Mobile:</strong> {fromAddress?.refMobile || 'N/A'}
-          </div>
-          <div>
-            <strong>Location:</strong> {fromAddress?.refLocation || 'N/A'}
-          </div>
-          <div>
-            <strong>Branch Code:</strong> {fromAddress?.refBranchCode || 'N/A'}
-          </div>
-          <div>
-            <strong>Type:</strong> {fromAddress?.isMainBranch ? 'Main Branch' : 'Sub Branch'}
-          </div> */}
+
           <div className="gap-3">
             <strong>
               {fromAddress?.refBranchName || 'N/A'} : {fromAddress?.refBranchCode || 'N/A'}
@@ -298,24 +211,6 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
         <div className="col-6 p-3 surface-100">
           <p className="mb-3">To Branch Details</p>
 
-          {/* <div>
-            <strong>Name:</strong> {toAddress?.refBranchName || 'N/A'}
-          </div>
-          <div>
-            <strong>Email:</strong> {toAddress?.refEmail || 'N/A'}
-          </div>
-          <div>
-            <strong>Mobile:</strong> {toAddress?.refMobile || 'N/A'}
-          </div>
-          <div>
-            <strong>Location:</strong> {toAddress?.refLocation || 'N/A'}
-          </div>
-          <div>
-            <strong>Branch Code:</strong> {toAddress?.refBranchCode || 'N/A'}
-          </div>
-          <div>
-            <strong>Type:</strong> {toAddress?.isMainBranch ? 'Main Branch' : 'Sub Branch'}
-          </div> */}
           <div className="gap-3">
             <strong>
               {toAddress?.refBranchName || 'N/A'} : {toAddress?.refBranchCode || 'N/A'}
@@ -373,164 +268,7 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
             </small>
           )}
         </div>
-        {/* <div className="flex-1">
-          <FloatLabel className="always-float">
-            <Dropdown
-              id="product"
-              value={selectedProducts}
-              options={filteredProducts}
-              onChange={(e) => {
-                const product = e.value as Products
-                setSelectedProducts(product)
-                setProductId(product.refPtId)
-
-                setProductName(product.poName ?? '')
-                setHsnCode(product.poHSN || '')
-                setpoSKU(product.poSKU || '')
-                setPurchasePrice(product.poPrice?.toString() || '')
-                setDiscount(product.poDiscPercent?.toString() || '')
-              }}
-              optionLabel="poName"
-              placeholder="Select Product"
-              className="w-full"
-              emptyMessage="No products found"
-            />
-
-            <label htmlFor="product">Product</label>
-          </FloatLabel>
-        </div> */}
       </div>
-
-      {/* <div className="flex gap-3">
-        <div className="flex-1">
-          <FloatLabel className="always-float">
-            <InputText
-              id="hsnCode"
-              value={hsnCode}
-              onChange={(e) => {
-                const rawValue = e.target.value
-                const filtered = rawValue.replace(/[^a-zA-Z0-9]/g, '')
-                setHsnCode(filtered.toUpperCase())
-              }}
-              className="w-full"
-            />
-
-            <label htmlFor="hsnCode">HSN Code</label>
-          </FloatLabel>
-        </div>
-        <div className="flex-1">
-          <FloatLabel className="always-float">
-            <InputText
-              id="skuCode"
-              value={poSKU}
-              onChange={(e) => {
-                const rawValue = e.target.value
-                const filtered = rawValue.replace(/[^a-zA-Z0-9]/g, '')
-                setpoSKU(filtered.toUpperCase())
-              }}
-              className="w-full"
-            />
-
-            <label htmlFor="skuCode">SKU Code</label>
-          </FloatLabel>
-        </div>
-        <div className="flex-1">
-          <FloatLabel className="always-float">
-            <InputText
-              id="quantity"
-              keyfilter="int"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="w-full"
-            />
-            <label htmlFor="quantity">Quantity</label>
-          </FloatLabel>
-        </div>
-        <div className="flex-1">
-          <FloatLabel className="always-float">
-            <InputText
-              id="purchasePrice"
-              keyfilter="num"
-              value={purchasePrice}
-              onChange={(e) => setPurchasePrice(e.target.value)}
-              className="w-full"
-            />
-            <label htmlFor="purchasePrice">Purchase Price</label>
-          </FloatLabel>
-        </div>
-      </div>
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <FloatLabel className="always-float">
-            <InputText
-              id="discount"
-              keyfilter="num"
-              value={discount}
-              onChange={(e) => setDiscount(e.target.value)}
-              className="w-full"
-            />
-            <label htmlFor="discount">Discount %</label>
-          </FloatLabel>
-        </div>
-        <div className="flex-1">
-          <FloatLabel className="always-float">
-            <InputText
-              id="discountPrice"
-              value={formatINRCurrency((Number(purchasePrice) * Number(discount || 0)) / 100)}
-              disabled
-              className="w-full"
-            />
-            <label htmlFor="discountPrice">Discount Price (Per Unit)</label>
-          </FloatLabel>
-          <small className="text-sm text-color-secondary pt-2">
-            <p className="mt-1">
-              Total Discount:{' '}
-              {formatINRCurrency(
-                (Number(purchasePrice) * Number(discount || 0) * Number(quantity || 0)) / 100
-              )}
-            </p>
-          </small>
-        </div>
-
-        <div className="flex-1">
-          <FloatLabel className="always-float">
-            <InputText id="total" value={formatINRCurrency(total)} disabled className="w-full" />
-            <label htmlFor="total">Total</label>
-          </FloatLabel>
-        </div>
-      </div> */}
-
-      {/* Product List Table Instead of Dropdown */}
-      {/* <DataTable
-        value={filteredProducts}
-        paginator
-        rows={5}
-        selection={selectedProducts}
-        onSelectionChange={(e) => {
-          const product = e.value as Products
-          setSelectedProducts(product)
-          setProductId(product.refPtId)
-
-          setProductName(product.poName ?? '')
-          setHsnCode(product.poHSN || '')
-          setpoSKU(product.poSKU || '')
-          setPurchasePrice(product.poPrice?.toString() || '')
-          setDiscount(product.poDiscPercent?.toString() || '')
-        }}
-        selectionMode="single"
-        dataKey="refPtId"
-        emptyMessage="No products found for selected category and subcategory."
-        className="mt-2"
-      >
-        <Column field="poName" header="Product Name" sortable />
-        <Column field="poHSN" header="HSN Code" />
-        <Column field="poSKU" header="SKU Code" />
-        <Column
-          field="poPrice"
-          header="Price"
-          body={(rowData) => formatINRCurrency(rowData.poPrice)}
-        />
-      </DataTable> */}
 
       {/* Actions */}
       <div className="flex justify-content-between gap-2 mt-3">

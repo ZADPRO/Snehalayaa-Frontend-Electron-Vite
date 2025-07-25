@@ -3,7 +3,7 @@ import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { Tooltip } from 'primereact/tooltip'
 import { Toast } from 'primereact/toast'
-import { PurchaseOrderProduct } from './BarcodeCreation.interface'
+import { SimplifiedPurchaseOrderProduct } from './BarcodeCreation.interface'
 import { fetchAllPurchaseOrderProducts } from './BarcodeCreation.function'
 import { Button } from 'primereact/button'
 import Barcode from 'react-barcode'
@@ -14,8 +14,9 @@ import { ProgressSpinner } from 'primereact/progressspinner'
 
 const BarcodeCreation: React.FC = () => {
   const toast = useRef<Toast>(null)
-  const [products, setProducts] = useState<PurchaseOrderProduct[]>([])
-  const [selectedRows, setSelectedRows] = useState<PurchaseOrderProduct[]>([])
+  const [products, setProducts] = useState<SimplifiedPurchaseOrderProduct[]>([])
+  const [selectedRows, setSelectedRows] = useState<SimplifiedPurchaseOrderProduct[]>([])
+
   const [isGenerating, setIsGenerating] = useState(false)
 
   useEffect(() => {
@@ -65,7 +66,7 @@ const BarcodeCreation: React.FC = () => {
 
         // Add Product Name centered
         pdf.setFontSize(9)
-        pdf.text(p.ProductName, centerX, y + 6, { align: 'center' })
+        pdf.text(p.name, centerX, y + 6, { align: 'center' })
 
         // Add Barcode centered
         const barcodeWidth = 40
@@ -81,11 +82,11 @@ const BarcodeCreation: React.FC = () => {
 
         // Add SKU centered
         pdf.setFontSize(8)
-        pdf.text(`SKU: ${p.DummySKU}`, centerX, y + 26, { align: 'center' })
+        pdf.text(`SKU: ${p.sku}`, centerX, y + 26, { align: 'center' })
 
         // Add Price with ₹ symbol centered
         pdf.setFontSize(8)
-        const formattedPrice = `INR ${parseFloat(p.Price).toFixed(2)}`
+        const formattedPrice = `INR ${parseFloat(p.price).toFixed(2)}`
         pdf.text(formattedPrice, centerX, y + 30, { align: 'center' })
 
         // Move to next card position
@@ -171,11 +172,11 @@ const BarcodeCreation: React.FC = () => {
           style={{ minWidth: '50px' }}
         />
         <Column field="DummyProductsID" header="S.No" body={(_, { rowIndex }) => rowIndex + 1} />
-        <Column field="ProductName" header="Product Name" />
-        <Column field="HSNCode" header="HSN Code" />
-        <Column field="DummySKU" header="SKU" />
-        <Column field="Price" header="Price" />
-        <Column field="AcceptanceStatus" header="Status" />{' '}
+        <Column field="name" header="Product Name" />
+        <Column field="hsnCode" header="HSN Code" />
+        <Column field="sku" header="SKU" />
+        <Column field="price" header="Price" />
+        <Column field="status" header="Status" />
       </DataTable>{' '}
       <div id="print-area" className="hidden-for-print">
         {' '}
@@ -183,8 +184,8 @@ const BarcodeCreation: React.FC = () => {
           {' '}
           {selectedRows.map((p) => (
             <div
-              key={p.DummySKU}
-              id={`barcode-card-${p.DummySKU}`}
+              key={p.sku}
+              id={`barcode-card-${p.sku}`}
               style={{
                 width: '180px', // Approx. 50mm
                 height: '125px', // Approx. 35mm
@@ -197,9 +198,9 @@ const BarcodeCreation: React.FC = () => {
                 fontSize: '12px'
               }}
             >
-              <strong>{p.ProductName}</strong>{' '}
-              <Barcode value={p.DummySKU} height={40} width={1} displayValue={false} />{' '}
-              <div>{p.DummySKU}</div> <div>₹ {parseFloat(p.Price).toFixed(2)}</div>{' '}
+              <strong>{p.name}</strong>{' '}
+              <Barcode value={p.sku} height={40} width={1} displayValue={false} />{' '}
+              <div>{p.sku}</div> <div>₹ {parseFloat(p.price).toFixed(2)}</div>{' '}
             </div>
           ))}{' '}
         </div>{' '}
