@@ -94,39 +94,39 @@ const InventoryOverview: React.FC = () => {
         </div>
       </div> */}
       <div className="flex gap-4">
-  {[
-    { title: 'Inventory', count: 14, percent: 10, color: '#007bff' },
-    { title: 'Inventory', count: 10, percent: 20, color: '#28a745' },
-    { title: 'Inventory', count: 12, percent: 50, color: '#ffc107' },
-    { title: 'Inventory', count: 13, percent: 60, color: '#dc3545' },
-  ].map((item, idx) => (
-    <div className="flex-1 shadow-2" key={idx}>
-      <Card title={item.title}>
-        <div
-          style={{
-            background: '#f0f0f0',
-            borderRadius: '4px',
-            height: '6px',
-            marginBottom: '12px',
-            width: '100%',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              background: item.color,
-              width: `${item.percent}%`,
-              height: '100%',
-            }}
-          />
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold text-gray-800 text-right">{item.count}</span>
-        </div>
-      </Card>
-    </div>
-  ))}
-</div>
+        {[
+          { title: 'Inventory', count: 14, percent: 10, color: '#007bff' },
+          { title: 'Inventory', count: 10, percent: 20, color: '#28a745' },
+          { title: 'Inventory', count: 12, percent: 50, color: '#ffc107' },
+          { title: 'Inventory', count: 13, percent: 60, color: '#dc3545' }
+        ].map((item, idx) => (
+          <div className="flex-1 shadow-2" key={idx}>
+            <Card title={item.title}>
+              <div
+                style={{
+                  background: '#f0f0f0',
+                  borderRadius: '4px',
+                  height: '6px',
+                  marginBottom: '12px',
+                  width: '100%',
+                  overflow: 'hidden'
+                }}
+              >
+                <div
+                  style={{
+                    background: item.color,
+                    width: `${item.percent}%`,
+                    height: '100%'
+                  }}
+                />
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-2xl font-bold text-gray-800 text-right">{item.count}</span>
+              </div>
+            </Card>
+          </div>
+        ))}
+      </div>
 
       {/* <Card title="Dropbox Storage">
         <div
@@ -157,7 +157,6 @@ const InventoryOverview: React.FC = () => {
           <Card
             title=" Stocks"
             style={{
-              width: '350px',
               height: '400px',
               //   borderRadius: 12,
               backgroundColor: '#fff',

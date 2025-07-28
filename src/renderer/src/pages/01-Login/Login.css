@@ -54,3 +54,7 @@
 .loginButton span {
   text-align: center !important;
 }
+
+.forgotPasswordButton .p-button-label.p-c{
+  text-align: center;
+}
