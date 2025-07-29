@@ -21,7 +21,7 @@ export const fetchBranch = async (): Promise<Branch[]> => {
   }
 }
 
-export const deleteBranch  = async (
+export const deleteBranch = async (
   refBranchId: number,
   forceDelete: boolean = false
 ): Promise<any> => {
