@@ -30,7 +30,7 @@ export const deleteCategory = async (
   const response = await axios.delete(url, {
     headers: { Authorization: token }
   })
-
+  console.log('response', response)
   return response.data
 }
 
@@ -84,5 +84,6 @@ export const bulkDeleteCategories = async (
       forceDelete
     }
   })
+  console.log('response', response)
   return response.data
 }

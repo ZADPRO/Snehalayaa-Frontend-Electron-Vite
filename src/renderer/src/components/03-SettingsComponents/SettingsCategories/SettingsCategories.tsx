@@ -13,17 +13,21 @@ import {
   exportExcel,
   exportPdf,
   bulkDeleteCategories
+  // deleteCategory
 } from './SettingsCategories.function'
 
 import { Category } from './SettingsCategories.interface'
 import SettingsAddEditCategories from './SettingsAddEditCategories/SettingsAddEditCategories'
 
 import { Plus, Pencil, Trash2, FileText, FileSpreadsheet, FileSignature } from 'lucide-react'
+import { ConfirmDialog } from 'primereact/confirmdialog'
 
 const SettingsCategories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
+  const [pendingForceDeleteIds, setPendingForceDeleteIds] = useState<number[]>([])
+  const [showForceDialog, setShowForceDialog] = useState(false)
 
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<Category[]>>(null)
@@ -77,6 +81,49 @@ const SettingsCategories: React.FC = () => {
     load()
   }, [])
 
+  //   const handleDelete = async () => {
+  //     if (!selectedCategories.length) return
+
+  //     const idsToDelete = selectedCategories.map((cat) => cat.refCategoryId)
+
+  //     try {
+  //       const res = await bulkDeleteCategories(idsToDelete)
+  //       console.log('idsToDelete', idsToDelete)
+
+  //       if (res.status) {
+  //         toast.current?.show({
+  //           severity: 'success',
+  //           summary: 'Success',
+  //           detail: res.message
+  //         })
+  //         setSelectedCategories([])
+  //         load()
+  //       } else if (res.confirmationNeeded) {
+  //         toast.current?.show({
+  //           severity: 'warn',
+  //           summary: 'Needs Confirmation',
+  //           detail: res.message
+  //         })
+  //         // Optional: Show list of subcategories from res.subcategoriesMap in a dialog here
+  //       } else {
+  //         toast.current?.show({
+  //           severity: 'error',
+  //           summary: 'Error',
+  //           detail: res.message
+  //         })
+  //       }
+  //     } catch (err: any) {
+  //   const backendMessage =
+  //     err?.response?.data?.message || err?.message || 'Failed to delete'
+
+  //   toast.current?.show({
+  //     severity: 'error',
+  //     summary: 'Error',
+  //     detail: backendMessage
+  //   })
+  // }
+  //   }
+
   const handleDelete = async () => {
     if (!selectedCategories.length) return
 
@@ -84,7 +131,6 @@ const SettingsCategories: React.FC = () => {
 
     try {
       const res = await bulkDeleteCategories(idsToDelete)
-      console.log('idsToDelete', idsToDelete)
 
       if (res.status) {
         toast.current?.show({
@@ -94,26 +140,36 @@ const SettingsCategories: React.FC = () => {
         })
         setSelectedCategories([])
         load()
-      } else if (res.confirmationNeeded) {
-        toast.current?.show({
-          severity: 'warn',
-          summary: 'Needs Confirmation',
-          detail: res.message
-        })
-        // Optional: Show list of subcategories from res.subcategoriesMap in a dialog here
+      } else {
+        // If status false but 409, or confirmationNeeded flag is returned
+        const is409 =
+          res?.statusCode === 409 || res?.message?.toLowerCase?.()?.includes('subcategories')
+
+        if (res.confirmationNeeded || is409) {
+          setPendingForceDeleteIds(idsToDelete)
+          setShowForceDialog(true)
+        } else {
+          toast.current?.show({
+            severity: 'error',
+            summary: 'Error',
+            detail: res.message
+          })
+        }
+      }
+    } catch (err: any) {
+      const statusCode = err?.response?.status
+      const backendMessage = err?.response?.data?.message || err?.message || 'Failed to delete'
+
+      if (statusCode === 409) {
+        setPendingForceDeleteIds(idsToDelete)
+        setShowForceDialog(true)
       } else {
         toast.current?.show({
           severity: 'error',
           summary: 'Error',
-          detail: res.message
+          detail: backendMessage
         })
       }
-    } catch (err: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message || 'Failed to delete categories'
-      })
     }
   }
 
@@ -127,6 +183,7 @@ const SettingsCategories: React.FC = () => {
         severity="success"
         tooltip="Add Category"
         tooltipOptions={{ position: 'left' }}
+          disabled={!!selectedCategory} // ✅ disable when a category is selected
         onClick={() => setVisibleRight(true)}
       />
       <Button
@@ -231,6 +288,51 @@ const SettingsCategories: React.FC = () => {
           reloadData={load}
         />
       </Sidebar>
+      <ConfirmDialog
+        visible={showForceDialog}
+        onHide={() => setShowForceDialog(false)}
+        message="This category contains subcategories. Deleting it will make them idle. Do you want to continue?"
+        header="Confirm Deletion"
+        // icon="pi pi-exclamation-triangle"
+        acceptClassName="p-button-danger"
+        className="m-4"
+        accept={async () => {
+          try {
+            const res = await bulkDeleteCategories(pendingForceDeleteIds, true)
+            if (res.status) {
+              toast.current?.show({
+                severity: 'success',
+                summary: 'Deleted',
+                detail: res.message
+              })
+              setSelectedCategories([])
+              load()
+            } else {
+              toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: res.message
+              })
+            }
+          } catch (err: any) {
+            const backendMessage =
+              err?.response?.data?.message || err?.message || 'Forced delete failed'
+
+            toast.current?.show({
+              severity: 'error',
+              summary: 'Error',
+              detail: backendMessage
+            })
+          } finally {
+            setShowForceDialog(false)
+            setPendingForceDeleteIds([])
+          }
+        }}
+        reject={() => {
+          setShowForceDialog(false)
+          setPendingForceDeleteIds([])
+        }}
+      />
     </div>
   )
 }

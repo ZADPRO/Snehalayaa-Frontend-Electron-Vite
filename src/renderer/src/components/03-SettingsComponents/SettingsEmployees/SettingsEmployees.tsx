@@ -78,6 +78,7 @@ const SettingsEmployees: React.FC = () => {
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
         tooltip="Add Category"
+        disabled={!isAnySelected}
         tooltipOptions={{ position: 'left' }}
         onClick={() => setVisibleRight(true)}
       />
