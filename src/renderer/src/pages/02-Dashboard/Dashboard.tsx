@@ -319,162 +319,179 @@ const Dashboard: React.FC = () => {
     //     </div>
     //   </div>
     // </div>
-  
+
     <div>
-  {/* First Row: Small Cards */}
-  <div className="card flex flex-wrap gap-3 m-3 justify-between" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}>
-    <div className="flex-1 min-w-[220px] mr-3">
-      <Card title="Inventory" className="bg-blue-500 text-yellow">
-        <p className="m-0">14</p>
-      </Card>
-    </div>
-    <div className="flex-1 min-w-[220px] mr-3">
-      <Card title="Inventory" className="bg-green-100">
-        <p className="m-0">10</p>
-      </Card>
-    </div>
-    <div className="flex-1 min-w-[220px] mr-3">
-      <Card title="Inventory" className="bg-yellow-100">
-        <p className="m-0">12</p>
-      </Card>
-    </div>
-    <div className="flex-1 min-w-[220px]">
-      <Card title="Inventory" className="bg-pink-100">
-        <p className="m-0">13</p>
-      </Card>
-    </div>
-  </div>
-
-  {/* Second Row: Charts */}
-  <div className="flex flex-wrap gap-3 justify-center w-full">
-    <div className="card ml-3" style={{
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-      width: '750px',
-      height: '450px',
-      margin: '2px',
-      borderRadius: '4px',
-      backgroundColor: '#fff'
-    }}>
-      <Chart
-        type="line"
-        data={chartData}
-        options={{ ...chartOptions, maintainAspectRatio: false }}
-        style={{ width: '100%', height: '100%' }}
-      />
-    </div>
-
-    <div className="card ml-3" style={{
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-      width: '750px',
-      height: '450px',
-      margin: '2px',
-      borderRadius: '4px',
-      padding: '10px',
-      display: 'flex',
-      gap: '10px',
-      flexWrap: 'wrap'
-    }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '300px' }}>
-        <Chart
-          type="pie"
-          data={salesChartData}
-          options={salesChartOptions}
-          style={{
-            width: '100%',
-            height: '100%',
-            flex: 1,
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-            backgroundColor: '#fff'
-          }}
-        />
+      {/* First Row: Small Cards */}
+      <div
+        className="card flex flex-wrap gap-3 m-3 justify-between"
+        style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}
+      >
+        <div className="flex-1 min-w-[220px] mr-3">
+          <Card title="Inventory" className="bg-blue-500 text-yellow">
+            <p className="m-0">14</p>
+          </Card>
+        </div>
+        <div className="flex-1 min-w-[220px] mr-3">
+          <Card title="Inventory" className="bg-green-100">
+            <p className="m-0">10</p>
+          </Card>
+        </div>
+        <div className="flex-1 min-w-[220px] mr-3">
+          <Card title="Inventory" className="bg-yellow-100">
+            <p className="m-0">12</p>
+          </Card>
+        </div>
+        <div className="flex-1 min-w-[220px]">
+          <Card title="Inventory" className="bg-pink-100">
+            <p className="m-0">13</p>
+          </Card>
+        </div>
       </div>
 
-      <Chart
-        type="bar"
-        data={{
-          ...salesChartData,
-          datasets:
-            salesChartData?.datasets?.map((dataset) => ({
-              ...dataset,
-              backgroundColor: '#914c8b',
-              borderColor: '#6f1f5f',
-              borderWidth: 1
-            })) || []
-        }}
-        options={{
-          ...salesChartOptions,
-          plugins: {
-            legend: {
-              labels: {
-                color: '#1A1A1A',
-                font: {
-                  weight: 'bold',
-                  size: 12
-                }
-              }
-            },
-            tooltip: {
-              backgroundColor: '#f3e2d9',
-              titleColor: '#f3e2d9',
-              bodyColor: '#f3e2d9'
-            }
-          },
-          scales: {
-            x: {
-              ticks: {
-                color: '#6f1f5f'
-              },
-              grid: {
-                color: 'rgba(111, 31, 95, 0.1)'
-              }
-            },
-            y: {
-              ticks: {
-                color: '#6f1f5f'
-              },
-              grid: {
-                color: 'rgba(111, 31, 95, 0.1)'
-              }
-            }
-          },
-          responsive: true,
-          maintainAspectRatio: false
-        }}
-        style={{
-          width: '100%',
-          height: '100%',
-          flex: 1,
-          backgroundColor: '#ffffff',
-          borderRadius: '8px',
-          padding: '10px',
-          boxShadow: '0 4px 20px rgba(111, 31, 95, 0.25)'
-        }}
-      />
-    </div>
-  </div>
+      {/* Second Row: Charts */}
+      <div className="card flex gap-3 m-3 justify-between">
+        {/* Line Chart */}
+        <div
+          style={{
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            flex: 1,
+            margin: '2px',
+            borderRadius: '4px',
+            backgroundColor: '#fff'
+          }}
+        >
+          <Chart
+            type="line"
+            data={chartData}
+            options={{ ...chartOptions, maintainAspectRatio: false }}
+            style={{ width: '100%' }}
+          />
+        </div>
 
-  {/* Third Row: Bottom Cards */}
-  <div className="card flex flex-wrap gap-3 m-3 justify-between" 
-  // style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}
-  >
-    <div className="flex-1 min-w-[220px] mr-3">
-      <Card title="Inventory" className="bg-blue-500 text-yellow">
-        <p className="m-0">14</p>
-      </Card>
-    </div>
-    <div className="flex-1 min-w-[220px] mr-3">
-      <Card title="Inventory" className="bg-green-100">
-        <p className="m-0">10</p>
-      </Card>
-    </div>
-    <div className="flex-1 min-w-[220px] mr-3">
-      <Card title="Inventory" className="bg-yellow-100">
-        <p className="m-0">12</p>
-      </Card>
-    </div>
-  </div>
-</div>
+        {/* Pie + Bar Charts */}
+        <div
+          style={{
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            flex: 1,
+            margin: '2px',
+            borderRadius: '4px',
+            padding: '10px',
+            display: 'flex',
+            gap: '10px',
+            flexWrap: 'wrap',
+            backgroundColor: '#fff'
+          }}
+        >
+          {/* Pie Chart */}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              minWidth: '150px' // allow stacking
+            }}
+          >
+            <Chart
+              type="pie"
+              data={salesChartData}
+              options={salesChartOptions}
+              style={{
+                width: '100%',
+                height: '100%',
+                flex: 1,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                backgroundColor: '#fff'
+              }}
+            />
+          </div>
 
+          {/* Bar Chart */}
+          <div
+            style={{
+              flex: 1,
+              minWidth: '150px',
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              padding: '10px',
+              boxShadow: '0 4px 20px rgba(111, 31, 95, 0.25)'
+            }}
+          >
+            <Chart
+              type="bar"
+              data={{
+                ...salesChartData,
+                datasets:
+                  salesChartData?.datasets?.map((dataset) => ({
+                    ...dataset,
+                    backgroundColor: '#914c8b',
+                    borderColor: '#6f1f5f',
+                    borderWidth: 1
+                  })) || []
+              }}
+              options={{
+                ...salesChartOptions,
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: '#1A1A1A',
+                      font: {
+                        weight: 'bold',
+                        size: 12
+                      }
+                    }
+                  },
+                  tooltip: {
+                    backgroundColor: '#f3e2d9',
+                    titleColor: '#f3e2d9',
+                    bodyColor: '#f3e2d9'
+                  }
+                },
+                scales: {
+                  x: {
+                    ticks: { color: '#6f1f5f' },
+                    grid: { color: 'rgba(111, 31, 95, 0.1)' }
+                  },
+                  y: {
+                    ticks: { color: '#6f1f5f' },
+                    grid: { color: 'rgba(111, 31, 95, 0.1)' }
+                  }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+              }}
+              style={{
+                width: '100%',
+                height: '100%',
+                flex: 1
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Third Row: Bottom Cards */}
+      <div
+        className="card flex flex-wrap gap-3 m-3 justify-between"
+        // style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}
+      >
+        <div className="flex-1 min-w-[220px] mr-3">
+          <Card title="Inventory" className="bg-blue-500 text-yellow">
+            <p className="m-0">14</p>
+          </Card>
+        </div>
+        <div className="flex-1 min-w-[220px] mr-3">
+          <Card title="Inventory" className="bg-green-100">
+            <p className="m-0">10</p>
+          </Card>
+        </div>
+        <div className="flex-1 min-w-[220px] mr-3">
+          <Card title="Inventory" className="bg-yellow-100">
+            <p className="m-0">12</p>
+          </Card>
+        </div>
+      </div>
+    </div>
   )
 }
 
