@@ -7,6 +7,7 @@ export interface Product {
   HSNCode: string
   purchaseQuantity: string
   purchasePrice: string
+  dummyproductId: number
   discountAmount: string
   totalAmount: string
   isReceived: boolean
@@ -85,6 +86,7 @@ export interface TableRow extends Product {
   id: number
   status: 'Pending' | 'Accepted' | 'Rejected - Mismatch' | 'Rejected - Missing'
   categoryName: string
+  dummyproductId: number
   subCategoryName: string
 }
 

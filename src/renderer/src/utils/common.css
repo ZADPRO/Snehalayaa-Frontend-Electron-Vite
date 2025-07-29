@@ -168,3 +168,25 @@
 .p-datatable-wrapper {
   scrollbar-width: thin;
 }
+
+.hidden-for-print {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: visible;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+.customized-timeline .p-timeline-event-marker {
+  background-color: #1976d2;
+  color: white;
+}

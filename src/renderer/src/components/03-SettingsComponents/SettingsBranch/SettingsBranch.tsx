@@ -114,6 +114,7 @@ const SettingsBranch: React.FC = () => {
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
         tooltip="Add Branch"
+          disabled={isAnySelected}
         tooltipOptions={{ position: 'left' }}
         onClick={() => setVisibleRight(true)}
       />

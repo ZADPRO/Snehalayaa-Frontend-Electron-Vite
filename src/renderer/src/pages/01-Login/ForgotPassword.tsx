@@ -4,6 +4,8 @@ import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { Password } from 'primereact/password'
+import { useNavigate } from 'react-router-dom'
+
 import { sendOtp, verifyOtp, resetPassword } from './ForgotPassword.function'
 import LoginImage from '../../assets/login/loginImage.png'
 
@@ -16,6 +18,7 @@ const ForgotPassword: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [timer, setTimer] = useState(45)
   const toast = useRef<Toast>(null)
+  const navigate = useNavigate()
 
   // Timer for Resend OTP
   useEffect(() => {
@@ -84,11 +87,18 @@ const ForgotPassword: React.FC = () => {
 
     if (res.success) {
       toast.current?.show({ severity: 'success', summary: 'Success', detail: res.message })
+
+      // Reset state
       setStep(1)
       setEmail('')
       setOtp(['', '', '', ''])
       setNewPassword('')
       setConfirmPassword('')
+
+      // Redirect to login
+      setTimeout(() => {
+        navigate('/login')
+      }, 1000) // Optional small delay for user to see success message
     } else {
       toast.current?.show({ severity: 'error', summary: 'Failed', detail: res.message })
     }
@@ -134,7 +144,7 @@ const ForgotPassword: React.FC = () => {
                 label={isLoading ? 'Sending...' : 'Send OTP'}
                 loading={isLoading}
                 onClick={handleSendOtp}
-                className="w-full"
+                className="w-full forgotPasswordButton"
               />
             </>
           )}
@@ -142,7 +152,7 @@ const ForgotPassword: React.FC = () => {
           {/* STEP 2: OTP */}
           {step === 2 && (
             <>
-              <div className="flex gap-2 justify-center mb-3">
+              <div className="flex gap-2 justify-content-center mb-3">
                 {otp.map((digit, index) => (
                   <InputText
                     key={index}
@@ -160,7 +170,7 @@ const ForgotPassword: React.FC = () => {
                 label={isLoading ? 'Verifying...' : 'Verify OTP'}
                 loading={isLoading}
                 onClick={handleVerifyOtp}
-                className="w-full mb-2"
+                className="w-full mb-2 forgotPasswordButton"
               />
 
               <div className="text-sm text-center">
@@ -169,11 +179,21 @@ const ForgotPassword: React.FC = () => {
                     Resend OTP in <strong>{timer}s</strong>
                   </span>
                 ) : (
-                  <Button label="Resend OTP" link onClick={handleResend} />
+                  <Button
+                    label="Resend OTP"
+                    link
+                    onClick={handleResend}
+                    className="forgotPasswordButton"
+                  />
                 )}
               </div>
 
-              <Button label="Back" className="mt-2" onClick={() => setStep(1)} outlined />
+              <Button
+                label="Back"
+                className="mt-2 forgotPasswordButton"
+                onClick={() => setStep(1)}
+                outlined
+              />
             </>
           )}
 
@@ -200,7 +220,7 @@ const ForgotPassword: React.FC = () => {
                 label={isLoading ? 'Resetting...' : 'Reset Password'}
                 loading={isLoading}
                 onClick={handleResetPassword}
-                className="w-full"
+                className="w-full forgotPasswordButton"
               />
               <Button label="Back" className="mt-2" onClick={() => setStep(2)} outlined />
             </>

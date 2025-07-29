@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Dropdown } from 'primereact/dropdown'
@@ -7,6 +7,7 @@ import { Toast } from 'primereact/toast'
 import { Category, SubCategory, Branch, Supplier } from '../AddNewPurchaseOrder.interface'
 import { Check } from 'lucide-react'
 import { formatINRCurrency } from './AddNewProductsForPurchaseOrder.function'
+import { Message } from 'primereact/message'
 
 interface Props {
   categories: Category[]
@@ -15,6 +16,8 @@ interface Props {
   toAddress: Supplier | null
   onAdd: (data: any) => void
   onClose: () => void
+  editItem?: any // Add this
+  existingProducts: any[]
 }
 
 const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
@@ -23,19 +26,24 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   fromAddress,
   toAddress,
   onAdd,
-  onClose
+  onClose,
+  editItem,
+  existingProducts
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
 
-  const [productName, setProductName] = useState('')
+  const [existingMatch, setExistingMatch] = useState<any | null>(null)
+  const [showInfoMessage, setShowInfoMessage] = useState(false)
+
+  const [_productName, setProductName] = useState('')
   const [quantity, setQuantity] = useState('')
   const [purchasePrice, setPurchasePrice] = useState('')
   const [discount, setDiscount] = useState('')
   const [hsnCode, setHsnCode] = useState('') // Added HSN Code state
   const total =
     Number(quantity) > 0 && Number(purchasePrice) > 0
-      ? Number(quantity) * Number(purchasePrice) - Number(discount || 0)
+      ? Number(quantity) * Number(purchasePrice) * (1 - Number(discount || 0) / 100)
       : 0
 
   const toast = useRef<Toast>(null)
@@ -62,7 +70,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     if (
       !selectedCategory ||
       !selectedSubCategory ||
-      !productName.trim() ||
+      // !productName.trim() ||
       !quantity ||
       !purchasePrice ||
       isNaN(quantityNum) ||
@@ -82,7 +90,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     }
 
     const newItem = {
-      productName,
+      productName: '-',
       quantity: quantityNum,
       purchasePrice: priceNum,
       discount: discountNum,
@@ -107,16 +115,53 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     setSelectedCategory(null)
     setSelectedSubCategory(null)
   }
+  useEffect(() => {
+    if (editItem) {
+      setSelectedCategory(
+        categories.find((cat) => cat.refCategoryId === editItem.refCategoryId) || null
+      )
+      setSelectedSubCategory(
+        subCategories.find((sub) => sub.refSubCategoryId === editItem.refSubCategoryId) || null
+      )
+      // setProductName(editItem.productName || '')
+      setQuantity(editItem.quantity?.toString() || '')
+      setPurchasePrice(editItem.purchasePrice?.toString() || '')
+      setDiscount(editItem.discount?.toString() || '')
+      setHsnCode(editItem.hsnCode || '')
+    }
+  }, [editItem, categories, subCategories])
+
+  useEffect(() => {
+    if (selectedCategory && selectedSubCategory) {
+      const match = existingProducts.find(
+        (item) =>
+          item.refCategoryId === selectedCategory.refCategoryId &&
+          item.refSubCategoryId === selectedSubCategory.refSubCategoryId
+      )
+
+      if (match) {
+        setExistingMatch(match)
+        setQuantity(match.quantity.toString())
+        setPurchasePrice(match.purchasePrice.toString())
+        setDiscount(match.discount.toString())
+        setHsnCode(match.hsnCode || '')
+        setShowInfoMessage(true)
+      } else {
+        setExistingMatch(null)
+        setShowInfoMessage(false)
+      }
+    }
+  }, [selectedCategory, selectedSubCategory, existingProducts])
 
   return (
     <div className="flex flex-column gap-3">
       <Toast ref={toast} />
 
       {/* From and To Details */}
-      <div className="grid mb-2">
+      <div className="grid">
         {/* Branch Details */}
         <div className="col-6 p-3 surface-100">
-          <p className="mb-3">Branch Details</p>
+          <p className="">Branch Details</p>
           <div>
             <strong>Name:</strong> {fromAddress?.refBranchName || 'N/A'}
           </div>
@@ -138,7 +183,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
         {/* Supplier Details */}
         <div className="col-6 p-3 surface-100">
-          <p className="mb-3">Supplier Details</p>
+          <p className="">Supplier Details</p>
           <div>
             <strong>Company Name:</strong> {toAddress?.supplierCompanyName || 'N/A'}
           </div>
@@ -171,6 +216,13 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
       </div>
 
+      {showInfoMessage && existingMatch && (
+        <Message
+          severity="info"
+          text={`Product already exists with quantity ${existingMatch.quantity}.`}
+          className="w-full"
+        />
+      )}
       {/* Category, Subcategory, Product Name */}
       <div className="flex gap-3">
         <div className="flex-1">
@@ -213,7 +265,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
           )}
         </div>
         <div className="flex-1">
-          <FloatLabel className="always-float">
+          {/* <FloatLabel className="always-float">
             <InputText
               id="productName"
               value={productName}
@@ -221,7 +273,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
               className="w-full"
             />
             <label htmlFor="productName">Product Name</label>
-          </FloatLabel>
+          </FloatLabel> */}
         </div>
       </div>
 
@@ -308,6 +360,15 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <InputText id="total" value={formatINRCurrency(total)} disabled className="w-full" />
             <label htmlFor="total">Total</label>
           </FloatLabel>
+          <small className="text-sm text-color-secondary pt-2">
+            <p className="mt-1">
+              Total: ({quantity} × {formatINRCurrency(purchasePrice)}) –{' '}
+              {formatINRCurrency(
+                (Number(purchasePrice) * Number(discount || 0) * Number(quantity || 0)) / 100
+              )}{' '}
+              = <strong>{formatINRCurrency(total)}</strong>
+            </p>
+          </small>
         </div>
       </div>
 

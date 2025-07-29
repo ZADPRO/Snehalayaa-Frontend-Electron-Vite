@@ -113,6 +113,7 @@ const SettingsSuppliers: React.FC = () => {
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
         tooltip="Add Supplier"
+        disabled={isAnySelected}
         tooltipOptions={{ position: 'left' }}
         onClick={() => setVisibleRight(true)}
       />

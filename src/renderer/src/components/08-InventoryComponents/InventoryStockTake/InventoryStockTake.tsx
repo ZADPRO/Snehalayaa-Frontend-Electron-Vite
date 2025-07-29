@@ -1,10 +1,10 @@
 import React from 'react';
-import AddNewPurchaseOrder from './InventoryCreateNewStock/InventoryCreateNewStock';
+import AddNewStockProductOrder from './InventoryCreateNewStock/InventoryCreateNewStock';
 
 const InventoryStockTake: React.FC = () => {
     return (
         <div>
-<AddNewPurchaseOrder/>
+<AddNewStockProductOrder/>
         </div>
     );
 };

@@ -2,12 +2,9 @@ import React, { useState } from 'react'
 import {
   FolderKanban,
   Layers3,
-  Landmark,
-  PackageSearch,
-  UsersRound,
+
   BadgeInfo,
   PanelsTopLeft,
-  SlidersVertical
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
@@ -16,6 +13,7 @@ import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import InventoryOverview from '../../components/08-InventoryComponents/InventoryOverview/InventoryOverview'
 import InventoryStockTake from '../../components/08-InventoryComponents/InventoryStockTake/InventoryStockTake'
 import InventoryTracker from '../../components/08-InventoryComponents/InventoryTracker/InventoryTracker'
+import InventoryStockTransfer from '../../components/08-InventoryComponents/InventoryStockTransfer/InventoryStockTransfer'
 
 
 // Sidebar items config
@@ -28,15 +26,15 @@ const sidebarItems = [
   },
   {
     key: 'stockIntake',
-    label: 'Stock Intake',
+    label: 'Stock Take',
     icon: <FolderKanban size={20} className="sidebar-icon" />,
     component: <InventoryStockTake />
   },
   {
-    key: 'stockReturn',
-    label: 'Stock Return',
+    key: 'stockTransfer',
+    label: 'Stock Transfer',
     icon: <Layers3 size={20} className="sidebar-icon" />,
-    component: <InventoryOverview />
+    component: <InventoryStockTransfer />
   },
   {
     key: 'inventorytracker',
@@ -48,7 +46,7 @@ const sidebarItems = [
 ]
 
 const Settings: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('categories')
+  const [activeKey, setActiveKey] = useState('overview')
 
   return (
     <div className="settingsContainer">

@@ -22,7 +22,7 @@ export const fetchDummyProductsByPOId = async (purchaseOrderId: number) => {
 
 export const updateDummyProductStatus = async (
   dummyProductId: number,
-  status: boolean,
+  status: any,
   reason: 'Mismatch' | 'Missing' | null = null
 ) => {
   try {
@@ -80,5 +80,25 @@ export const bulkUndoDummyProducts = async (dummyProductIds: number[]) => {
   } catch (error) {
     console.error('Failed to bulk undo products:', error)
     return null
+  }
+}
+
+export const fetchCategories = async () => {
+  try {
+    const response = await axios.get(`${baseURL}/admin/settings/categories`, { headers })
+    return response.data?.data || []
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+    return []
+  }
+}
+
+export const fetchSubCategories = async () => {
+  try {
+    const response = await axios.get(`${baseURL}/admin/settings/subcategories`, { headers })
+    return response.data?.data || []
+  } catch (error) {
+    console.error('Failed to fetch subcategories:', error)
+    return []
   }
 }

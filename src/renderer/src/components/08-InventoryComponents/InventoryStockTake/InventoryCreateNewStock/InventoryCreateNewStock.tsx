@@ -17,16 +17,18 @@ import {
   createPurchaseOrder
 } from './InventoryCreateNewStock.function'
 import { Branch, Category, SubCategory } from './InventoryCreateNewStock.interface'
-import { Check, CheckCheck, Download, Eye, Pencil, Plus, Printer, Trash2 } from 'lucide-react'
+import { Box, Check, CheckCheck, Download, Eye, Pencil, Plus, Printer, Trash2 } from 'lucide-react'
 import { Sidebar } from 'primereact/sidebar'
 import { InputText } from 'primereact/inputtext'
 import { Tooltip } from 'primereact/tooltip'
 import { generateInvoicePdf } from '../../../05-PurchaseOrderComponents/PurchaseOrderCreation/PurchaseOrderInvoice/PurchaseOrderInvoice.function'
 import InventoryCreateNewProductForStock from './InventoryCreateNewProductForStock/InventoryCreateNewProductForStock'
+import BoxDialog from '../../BoxDialog/BoxDialog'
 
-const AddNewPurchaseOrder: React.FC = () => {
+const AddNewStockProductOrder: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
   const toast = useRef<Toast>(null)
+  // const [productSelectionTotal, setProductSelectionTotal] = useState<number>(0)
 
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
 
@@ -42,8 +44,8 @@ const AddNewPurchaseOrder: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<any[]>([])
   const [isSaved, setIsSaved] = useState(false)
 
-  const [pendingAmountInput, setPendingAmountInput] = useState('')
-  const [applyTax, setApplyTax] = useState(false)
+  const [pendingAmountInput, _setPendingAmountInput] = useState('')
+  const [applyTax, _setApplyTax] = useState(false)
 
   const [editProduct, setEditProduct] = useState<any | null>(null)
 
@@ -54,7 +56,9 @@ const AddNewPurchaseOrder: React.FC = () => {
   const totalPaid = Number(pendingAmountInput || 0)
   const pendingPayment = finalAmount - totalPaid
 
-  const [creditDate, setCreditDate] = useState<Date | null>(null)
+  const [showBoxDialog, setShowBoxDialog] = useState(false)
+
+  // const [creditDate, setCreditDate] = useState<Date | null>(null)
   // const [isPreviousPaymentDone, setIsPreviousPaymentDone] = useState(false)
 
   useEffect(() => {
@@ -139,7 +143,7 @@ const AddNewPurchaseOrder: React.FC = () => {
       //   supplierId: selectedSupplier?.supplierId,
       branchId: selectedBranch?.refBranchId,
       status: 1,
-      expectedDate: creditDate?.toISOString() || new Date().toISOString(),
+      // expectedDate: creditDate?.toISOString() || new Date().toISOString(),
       modeOfTransport: 'Road',
       subTotal: subTotal.toString(),
       discountOverall: discountAmount.toString(),
@@ -209,10 +213,31 @@ const AddNewPurchaseOrder: React.FC = () => {
       })
     }
   }
-  //   const handleAddProduct = (newItem: any) => {
-  //     const category = categories.find((c) => c.refCategoryId === newItem.refCategoryId)
-  //     const subCategory = subCategories.find((sc) => sc.refSubCategoryId === newItem.refSubCategoryId)
 
+  // const handleAddProduct = (newItem: any) => {
+  //   console.log('newItem', newItem)
+  //   const category = categories.find((c) => c.refCategoryId === newItem.refCategoryId)
+  //   const subCategory = subCategories.find((sc) => sc.refSubCategoryId === newItem.refSubCategoryId)
+
+  //   if (editProduct) {
+  //     // Edit: replace existing
+  //     setTableData((prevData) =>
+  //       prevData.map((item) =>
+  //         item.id === editProduct.id
+  //           ? {
+  //               ...item,
+  //               ...newItem,
+  //               refCategoryId: newItem.refCategoryId,
+  //               refSubCategoryId: newItem.refSubCategoryId,
+  //               category: category?.categoryName || '',
+  //               subCategory: subCategory?.subCategoryName || ''
+  //             }
+  //           : item
+  //       )
+  //     )
+  //     setEditProduct(null)
+  //   } else {
+  //     // Add: as you have already
   //     setTableData((prev) => [
   //       ...prev,
   //       {
@@ -225,43 +250,31 @@ const AddNewPurchaseOrder: React.FC = () => {
   //       }
   //     ])
   //   }
+  // setSelectedRows([])
+  // }
 
-  const handleAddProduct = (newItem: any) => {
-    console.log('%%%%%%%%%%%%%%', newItem)
-    const category = categories.find((c) => c.refCategoryId === newItem.refCategoryId)
-    const subCategory = subCategories.find((sc) => sc.refSubCategoryId === newItem.refSubCategoryId)
+  const handleAddProduct = (newItems: any[]) => {
+    if (!Array.isArray(newItems) || newItems.length === 0) return
 
+    // If you're editing a single product, we shouldn't handle bulk add
     if (editProduct) {
-      // Edit: replace existing
-      setTableData((prevData) =>
-        prevData.map((item) =>
-          item.id === editProduct.id
-            ? {
-                ...item,
-                ...newItem,
-                refCategoryId: newItem.refCategoryId,
-                refSubCategoryId: newItem.refSubCategoryId,
-                category: category?.categoryName || '',
-                subCategory: subCategory?.subCategoryName || ''
-              }
-            : item
-        )
-      )
-      setEditProduct(null)
-    } else {
-      // Add: as you have already
-      setTableData((prev) => [
-        ...prev,
-        {
-          id: prev.length + 1,
-          ...newItem,
-          refCategoryId: newItem.refCategoryId,
-          refSubCategoryId: newItem.refSubCategoryId,
-          category: category?.categoryName || '',
-          subCategory: subCategory?.subCategoryName || ''
-        }
-      ])
+      console.warn('Cannot perform bulk add while editing a product.')
+      return
     }
+
+    const updatedItems = newItems.map((item) => {
+      const category = categories.find((c) => c.refCategoryId === item.refCategoryId)
+      const subCategory = subCategories.find((sc) => sc.refSubCategoryId === item.refSubCategoryId)
+
+      return {
+        id: Date.now() + Math.random(), // generate a unique ID
+        ...item,
+        category: category?.categoryName || '',
+        subCategory: subCategory?.subCategoryName || ''
+      }
+    })
+
+    setTableData((prev) => [...prev, ...updatedItems])
     setSelectedRows([])
   }
 
@@ -298,6 +311,7 @@ const AddNewPurchaseOrder: React.FC = () => {
       detail: 'Selected product(s) deleted.'
     })
   }
+  const totalPurchasePrice = tableData.reduce((sum, item) => sum + (item.purchasePrice || 0), 0)
 
   return (
     <div className="pt-3 flex h-full w-full">
@@ -448,11 +462,11 @@ const AddNewPurchaseOrder: React.FC = () => {
             style={{ minWidth: '400px' }}
           />
           <Column field="hsnCode" header="HSN" />
-          <Column field="quantity" header="Quantity" />
+          {/* <Column field="quantity" header="Quantity" /> */}
           <Column field="purchasePrice" header="Price" />
-          <Column field="discount" header="Disc%" />
+          {/* <Column field="discount" header="Disc%" />
           <Column field="discountPrice" header="Discount" />
-          <Column field="total" header="Total" />
+          <Column field="subTotal" header="Total" /> */}
         </DataTable>
       </div>
       <Divider layout="vertical" />
@@ -475,6 +489,7 @@ const AddNewPurchaseOrder: React.FC = () => {
             icon={<Eye size={20} />}
             className="w-full gap-2 p-button-primary"
           />
+
           <Button
             label="Download"
             icon={<Download size={18} />}
@@ -532,6 +547,12 @@ const AddNewPurchaseOrder: React.FC = () => {
               }
             }}
           />
+          <Button
+            label="Box Count"
+            icon={<Box size={20} />}
+            className="w-full gap-2 p-button-primary"
+            onClick={() => setShowBoxDialog(true)}
+          />
         </div>
         <div className="flex flex-column gap-2 pb-3 surface-100 border-round mt-20">
           <h4 className="mb-2 ">Payment Summary</h4>
@@ -542,11 +563,12 @@ const AddNewPurchaseOrder: React.FC = () => {
           <div className="mt-3 text-sm">
             <div className="flex justify-content-between">
               <span>Sub Total:</span>
-              <span>₹{subTotal.toLocaleString('en-IN')}</span>
+              <span>₹{totalPurchasePrice.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-content-between">
               <span>Discount:</span>
-              <span>₹{discountAmount.toLocaleString('en-IN')}</span>
+              <span>₹</span>
+              {/* <span>₹{discountAmount.toLocaleString('en-IN')}</span> */}
             </div>
             <div className="flex justify-content-between">
               <span>Tax:</span>
@@ -555,7 +577,7 @@ const AddNewPurchaseOrder: React.FC = () => {
             <Divider className="my-2" />
             <div className="flex justify-content-between font-bold text-lg">
               <span>Total Amount:</span>
-              <span>₹{finalAmount.toLocaleString('en-IN')}</span>
+              <span>₹{totalPurchasePrice.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-content-between">
               <span>Paid:</span>
@@ -563,7 +585,7 @@ const AddNewPurchaseOrder: React.FC = () => {
             </div>
             <div className="flex justify-content-between text-red-600">
               <span>Pending:</span>
-              <span>₹{pendingPayment.toLocaleString('en-IN')}</span>
+              <span>₹{totalPurchasePrice.toLocaleString('en-IN')}</span>
             </div>
           </div>
         </div>
@@ -592,8 +614,13 @@ const AddNewPurchaseOrder: React.FC = () => {
           productToEdit={editProduct}
         />
       </Sidebar>
+      <BoxDialog
+        visible={showBoxDialog}
+        onHide={() => setShowBoxDialog(false)}
+        onSave={handleSave}
+      />
     </div>
   )
 }
 
-export default AddNewPurchaseOrder
+export default AddNewStockProductOrder

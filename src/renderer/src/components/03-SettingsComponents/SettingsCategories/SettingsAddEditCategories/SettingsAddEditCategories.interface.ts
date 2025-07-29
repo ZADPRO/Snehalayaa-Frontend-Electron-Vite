@@ -20,7 +20,7 @@ export interface CategoryFormData {
   categoryName: string
   categoryCode: string
   selectedStatus: CategoryStatusOptions | null
-  profitMargin: string
+  profitMargin: any
 }
 
 export interface SettingsAddEditCategoriesProps {
