@@ -36,3 +36,22 @@ export const fetchEmployees = async (): Promise<Employee> => {
     throw new Error(response.data.message || 'Failed to fetch Employee')
   }
 }
+
+export const updateEmployeeProfile = async (updatedData: any) => {
+  try {
+    const response = await axios.put(
+      `${baseURL}/admin/settings/updateEmployeeProfile`,
+      updatedData,
+      {
+        headers: {
+          Authorization: localStorage.getItem('token') || ''
+        }
+      }
+    )
+    console.log('response.data', response.data)
+    return response.data
+  } catch (error: any) {
+    console.error('Error updating employee profile:', error)
+    throw error?.response?.data || { status: false, message: 'Update failed' }
+  }
+}
