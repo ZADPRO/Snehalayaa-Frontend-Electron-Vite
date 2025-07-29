@@ -110,7 +110,7 @@ const SettingsSubCategories: React.FC = () => {
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
         tooltip="Add Category"
-        disabled={!isAnySelected}
+        disabled={isAnySelected}
         tooltipOptions={{ position: 'left' }}
         onClick={() => {
           setEditSubCategory(null)

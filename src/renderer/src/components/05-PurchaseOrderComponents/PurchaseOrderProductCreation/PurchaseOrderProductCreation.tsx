@@ -63,7 +63,7 @@ const PurchaseOrderProductCreation: React.FC = () => {
         severity="success"
         tooltip="Add Category"
         tooltipOptions={{ position: 'left' }}
-        disabled={!isAnySelected}
+        disabled={isAnySelected}
         onClick={() => setVisibleRight(true)}
       />
       <Button
