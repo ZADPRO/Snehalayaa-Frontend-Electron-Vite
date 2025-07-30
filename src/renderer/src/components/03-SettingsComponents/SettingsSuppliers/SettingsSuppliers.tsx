@@ -15,12 +15,14 @@ import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { Tooltip } from 'primereact/tooltip'
 import { Sidebar } from 'primereact/sidebar'
+import { Skeleton } from 'primereact/skeleton'
 import SettingsAddEditSuppliers from './SettingsAddEditSuppliers/SettingsAddEditSuppliers'
 
 const SettingsSuppliers: React.FC = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [selectedSuppliers, setSelectedSuppliers] = useState<Supplier[]>([])
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
 
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<Supplier[]>>(null)
@@ -30,6 +32,7 @@ const SettingsSuppliers: React.FC = () => {
     pdf: false
   })
   const load = async () => {
+    setLoading(true)
     try {
       const data = await fetchSupplier()
       setSuppliers(data)
@@ -40,8 +43,11 @@ const SettingsSuppliers: React.FC = () => {
         detail: err.message || 'Failed to load Suppliers',
         life: 3000
       })
+    } finally {
+      setLoading(false)
     }
   }
+
   useEffect(() => {
     load()
   }, [])
@@ -178,6 +184,7 @@ const SettingsSuppliers: React.FC = () => {
         ref={dt}
         id="Suppliers-table"
         value={suppliers}
+        loading={loading}
         selection={selectedSuppliers}
         onSelectionChange={(e) => setSelectedSuppliers(e.value as Supplier[])}
         dataKey="supplierId"
@@ -192,15 +199,49 @@ const SettingsSuppliers: React.FC = () => {
         <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
 
-        <Column field="supplierCode" header="Code" sortable />
-        <Column field="supplierName" header="Name" sortable />
-        <Column field="supplierCompanyName" header="Company Name" sortable />
-        <Column field="supplierContactNumber" header="Contact Number" />
-        {/* <Column field="supplierIsActive" header="Status" /> */}
+        <Column
+          field="supplierCode"
+          header="Code"
+          sortable
+          body={(rowData) =>
+            loading ? <Skeleton width="100px" height="1rem" /> : rowData.supplierCode
+          }
+        />
+        <Column
+          header="Name"
+          field="supplierName"
+          sortable
+          body={(rowData) =>
+            loading ? <Skeleton width="120px" height="1rem" /> : rowData.supplierName
+          }
+        />
+        <Column
+          header="Company Name"
+          field="supplierCompanyName"
+          sortable
+          body={(rowData) =>
+            loading ? <Skeleton width="150px" height="1rem" /> : rowData.supplierCompanyName
+          }
+        />
+        <Column
+          header="Contact Number"
+          field="supplierContactNumber"
+          body={(rowData) =>
+            loading ? <Skeleton width="100px" height="1rem" /> : rowData.supplierContactNumber
+          }
+        />
         <Column
           field="supplierIsActive"
           header="Status"
-          body={(rowData) => (rowData.supplierIsActive === 'true' ? 'Active' : 'Inactive')}
+          body={(rowData) =>
+            loading ? (
+              <Skeleton width="70px" height="1rem" />
+            ) : rowData.supplierIsActive === 'true' ? (
+              'Active'
+            ) : (
+              'Inactive'
+            )
+          }
         />
       </DataTable>
 
