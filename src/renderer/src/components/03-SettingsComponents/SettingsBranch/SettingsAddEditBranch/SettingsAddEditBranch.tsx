@@ -11,45 +11,39 @@ import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
+import { CirclePlus } from 'lucide-react'
+import { Category, SubCategory } from '../../SettingsCategories/SettingsCategories.interface'
 
-type FloorWithSections = {
+interface Section {
+  sectionName: string
+  sectionCode: string
+  categoryId: any
+  refSubCategoryId: any
+}
+
+interface Floor {
   floorName: string
-  sections: string[]
+  floorCode: string
+  sections: Section[]
 }
 
 const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   selectedBranches,
+  categories,
+  subCategories,
   onClose,
   reloadData
 }) => {
   const toast = useRef<Toast>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [floorCount, setFloorCount] = useState(0)
+  const [floors, setFloors] = useState<Floor[]>([])
 
-  const [floorsWithSections, setFloorsWithSections] = useState<FloorWithSections[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
 
-  // Handle floor count input
-  const handleFloorCountChange = (value: string) => {
-    const count = parseInt(value) || 0
-    setFloorCount(count)
-    const updatedFloors = Array.from({ length: count }, (_, i) => {
-      return floorsWithSections[i] || { floorName: '', sections: [] }
-    })
-    setFloorsWithSections(updatedFloors)
-  }
-
-  // Handle section count input
-  const handleSectionCountChange = (floorIndex: number, countStr: string) => {
-    const count = parseInt(countStr) || 0
-    setFloorsWithSections((prev) => {
-      const updated = [...prev]
-      updated[floorIndex].sections = Array.from(
-        { length: count },
-        (_, i) => updated[floorIndex].sections?.[i] || ''
-      )
-      return updated
-    })
-  }
+  const filteredSubCategories = selectedCategory
+    ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
+    : []
 
   const [formData, setFormData] = useState<BranchFormData>({
     // refBranchId:0,
@@ -59,7 +53,9 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     refMobile: '',
     refEmail: '',
     isMainBranch: false,
-    isOnlineORoffline: false,
+    isOnline: false,
+    isOffline: true,
+    floors: [], // <-- ADD THIS
     selectedStatus: { name: 'Active', isActive: true }
   })
 
@@ -71,17 +67,18 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   useEffect(() => {
     if (selectedBranches) {
       setFormData({
-        // refBranchId:selectedBranches.refBranchId??0,
         refBranchName: selectedBranches.refBranchName,
         refBranchCode: selectedBranches.refBranchCode,
         refLocation: selectedBranches.refLocation,
         refMobile: selectedBranches.refMobile,
         refEmail: selectedBranches.refEmail,
         isMainBranch: selectedBranches.isMainBranch,
-        isOnlineORoffline: selectedBranches.isOnlineORoffline,
+        isOnline: selectedBranches.isOnline,
+        isOffline: selectedBranches.isOffline,
         selectedStatus: selectedBranches.isActive
           ? { name: 'Active', isActive: true }
-          : { name: 'Inactive', isActive: false }
+          : { name: 'Inactive', isActive: false },
+        floors: selectedBranches.floors
       })
     }
   }, [selectedBranches])
@@ -95,6 +92,48 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
       [field]: value
     }))
   }
+  const handleAddFloor = () => {
+    setFloors([
+      ...floors,
+      {
+        floorName: '',
+        floorCode: '',
+        sections: []
+      }
+    ])
+  }
+
+  const handleFloorChange = (index: number, key: 'floorName' | 'floorCode', value: string) => {
+    const updated = [...floors]
+    updated[index][key] = value
+    setFloors(updated)
+  }
+
+  const handleAddSection = (floorIndex: number) => {
+    const updated = [...floors]
+    updated[floorIndex].sections.push({
+      sectionName: '',
+      sectionCode: '',
+      categoryId: selectedCategory ? selectedCategory.refCategoryId : null,
+    refSubCategoryId: selectedSubCategory ? selectedSubCategory.refSubCategoryId : null
+    })
+    setFloors(updated)
+  }
+
+  const handleSectionChange = (
+    floorIndex: number,
+    sectionIndex: number,
+    key: keyof Section,
+    value: string | number | null
+  ) => {
+    const updated = [...floors]
+    updated[floorIndex].sections[sectionIndex][key] = value as any
+    setFloors(updated)
+  }
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, floors }))
+  }, [floors])
 
   const handleSubmit = async () => {
     if (!formData.refBranchName) {
@@ -114,14 +153,16 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
       refMobile: formData.refMobile,
       refEmail: formData.refEmail,
       isMainBranch: formData.isMainBranch,
-      isActive: formData.selectedStatus?.isActive ? true : false
+      isActive: formData.selectedStatus?.isActive ?? false,
+      isOnline: formData.isOnline,
+      isOffline: formData.isOffline,
+      floors: floors
     }
 
     if (selectedBranches) payload.refBranchId = selectedBranches.refBranchId
 
     try {
       setIsSubmitting(true)
-
       const result = selectedBranches ? await updateBranch(payload) : await createBranch(payload)
 
       toast.current?.show({
@@ -144,15 +185,12 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
       setIsSubmitting(false)
     }
   }
+
   const booleanOptions = [
     { label: 'Yes', value: true },
     { label: 'No', value: false }
   ]
 
-  const Options = [
-    { label: 'Online', value: true },
-    { label: 'Offline', value: false }
-  ]
   return (
     <div className="mt-3">
       <Toast ref={toast} />
@@ -238,6 +276,35 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           <div className="flex-1">
             <FloatLabel className="always-float">
               <Dropdown
+                id="isOnline"
+                className="w-full"
+                value={formData.isOnline}
+                options={booleanOptions}
+                onChange={(e) => handleInputChange('isOnline', e.value)}
+                placeholder="Select"
+              />
+              <label htmlFor="isOnline">Is Online</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <Dropdown
+                id="isOffline"
+                className="w-full"
+                value={formData.isOffline}
+                options={booleanOptions}
+                onChange={(e) => handleInputChange('isOffline', e.value)}
+                placeholder="Select"
+              />
+              <label htmlFor="isOffline">Is Offline</label>
+            </FloatLabel>
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <Dropdown
                 id="selectedStatus"
                 className="w-full"
                 value={formData.selectedStatus}
@@ -249,125 +316,108 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
               <label htmlFor="selectedStatus">Status</label>
             </FloatLabel>
           </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <Dropdown
-                id="isOnlineORoffline"
-                className="w-full"
-                value={formData.isOnlineORoffline}
-                options={Options}
-                onChange={(e) => handleInputChange('isOnlineORoffline', e.value)}
-                placeholder="Select"
-              />
-              <label htmlFor="isOnlineORoffline">Online OR Offline</label>
-            </FloatLabel>
-          </div>
-        </div>
-
-        {/* <div className="flex  gap-4 mt-3"> */}
-        {/* Count Inputs Row */}
-        <div className="flex gap-3 mt-3">
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputText
-                id="floorCount"
-                value={floorCount > 0 ? floorCount.toString() : ''}
-                onChange={(e) => handleFloorCountChange(e.target.value)}
-                className="w-full"
-              />
-              <label htmlFor="floorCount">Floor Count</label>
-            </FloatLabel>
-          </div>
           <div className="flex-1"></div>
         </div>
-        <div className="flex gap-3 mt-5">
-          {floorsWithSections.map((floor, floorIndex) => (
-            <div
-              key={`floor-${floorIndex}`}
-              className="mb-4 border p-3 rounded shadow-md bg-gray-50"
-            >
-              <FloatLabel className="always-float mb-2">
-                <InputText
-                  value={floor.floorName}
-                  onChange={(e) => {
-                    const updated = [...floorsWithSections]
-                    updated[floorIndex].floorName = e.target.value
-                    setFloorsWithSections(updated)
-                  }}
-                  className="w-full"
-                />
-                <label>Floor {floorIndex + 1} Name</label>
-              </FloatLabel>
 
-              <FloatLabel className="always-float mb-2">
-                <InputText
-                  value={floor.sections.length.toString()}
-                  onChange={(e) => handleSectionCountChange(floorIndex, e.target.value)}
-                  className="w-full"
+        <div className="flex justify-end mt-3 w-full">
+          <Button label="Add Floor" className="bg-[#8e5ea8] border-none" onClick={handleAddFloor} />
+        </div>
+        <div className="space-y-6">
+          {floors.map((floor, floorIndex) => (
+            <div key={floorIndex} className="border rounded-xl p-4 shadow-md bg-gray-50 space-y-4">
+              <div className="flex gap-4 flex-wrap">
+                <FloatLabel className="always-float">
+                  <InputText
+                    id={`floorName-${floorIndex}`}
+                    value={floor.floorName}
+                    onChange={(e) => handleFloorChange(floorIndex, 'floorName', e.target.value)}
+                  />
+                  <label htmlFor={`floorName-${floorIndex}`}>Floor Name</label>
+                </FloatLabel>
+                <FloatLabel className="always-float">
+                  <InputText
+                    id={`floorCode-${floorIndex}`}
+                    value={floor.floorCode}
+                    onChange={(e) => handleFloorChange(floorIndex, 'floorCode', e.target.value)}
+                  />
+                  <label htmlFor={`floorCode-${floorIndex}`}>Floor Code</label>
+                </FloatLabel>
+                <Button
+                  // label="Add Section"
+                  // className="bg-green-500 border-none"
+                  icon={<CirclePlus className="w-4 h-4" />} // ✅ Use icon as a JSX element
+                  onClick={() => handleAddSection(floorIndex)}
                 />
-                <label>Section Count</label>
-              </FloatLabel>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
-                {floor.sections.map((section, sectionIndex) => (
-                  <FloatLabel
-                    key={`section-${floorIndex}-${sectionIndex}`}
-                    className="always-float"
-                  >
-                    <InputText
-                      value={section}
-                      onChange={(e) => {
-                        const updated = [...floorsWithSections]
-                        updated[floorIndex].sections[sectionIndex] = e.target.value
-                        setFloorsWithSections(updated)
-                      }}
-                      className="w-full"
-                    />
-                    <label>Section {sectionIndex + 1}</label>
-                  </FloatLabel>
-                ))}
               </div>
+
+              {/* Sections */}
+              {floor.sections.map((section, sectionIndex) => (
+                <div
+                  key={sectionIndex}
+                  className="flex gap-4 flex-wrap ml-6 mt-2 bg-white p-3 rounded shadow-sm "
+                >
+                  <FloatLabel className="always-float">
+                    <InputText
+                      id={`sectionName-${floorIndex}-${sectionIndex}`}
+                      value={section.sectionName}
+                      onChange={(e) =>
+                        handleSectionChange(floorIndex, sectionIndex, 'sectionName', e.target.value)
+                      }
+                    />
+                    <label htmlFor={`sectionName-${floorIndex}-${sectionIndex}`}>
+                      Section Name
+                    </label>
+                  </FloatLabel>
+                  <FloatLabel className="always-float">
+                    <InputText
+                      id={`sectionCode-${floorIndex}-${sectionIndex}`}
+                      value={section.sectionCode}
+                      onChange={(e) =>
+                        handleSectionChange(floorIndex, sectionIndex, 'sectionCode', e.target.value)
+                      }
+                    />
+                    <label htmlFor={`sectionCode-${floorIndex}-${sectionIndex}`}>
+                      Section Code
+                    </label>
+                  </FloatLabel>
+
+                  <div className="flex gap-4 ">
+                    <FloatLabel className="always-float">
+                      <Dropdown
+                        id="category"
+                        value={selectedCategory}
+                        onChange={(e) => {
+                          setSelectedCategory(e.value)
+                          setSelectedSubCategory(null)
+                        }}
+                        appendTo="self" // or "body"
+                        options={categories}
+                        optionLabel="categoryName"
+                        placeholder="Select Category"
+                      />
+                      <label htmlFor="category">Category</label>
+                    </FloatLabel>
+                    <FloatLabel className="always-float">
+                      <Dropdown
+                        id="subCategory"
+                        value={selectedSubCategory}
+                        onChange={(e) => setSelectedSubCategory(e.value)}
+                        options={filteredSubCategories}
+                        optionLabel="subCategoryName"
+                        placeholder={
+                          selectedCategory ? 'Select Sub Category' : 'Select Category First'
+                        }
+                        disabled={!selectedCategory}
+                        emptyMessage="No Sub Category Found"
+                      />
+                      <label htmlFor="subCategory">Sub-Category</label>
+                    </FloatLabel>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
-
-        {/* <div className="flex gap-3 mt-3">
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputText
-                id="sectionCount"
-                value={sectionCount > 0 ? sectionCount.toString() : ''}
-                // onChange={(e) => handleSectionCountChange(e.target.value)}
-                className="w-full"
-              />
-              <label htmlFor="sectionCount">Section Count</label>
-            </FloatLabel>
-          </div>
-          <div className="flex-1"></div>
-        </div>
-        <div className="flex gap-3 mt-5">
-          {sections.length > 0 && (
-            <div className="flex gap-2">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {sections.map((value, index) => (
-                  <FloatLabel key={`section-${index}`} className="always-float">
-                    <InputText
-                      id={`section-${index}`}
-                      value={value}
-                      onChange={(e) => {
-                        const updated = [...sections]
-                        updated[index] = e.target.value
-                        setSections(updated)
-                      }}
-                      className="w-full"
-                    />
-                    <label htmlFor={`section-${index}`}>Section {index + 1} Name</label>
-                  </FloatLabel>
-                ))}
-              </div>
-            </div>
-          )}
-        </div> */}
 
         <div className="flex justify-content-end mt-3">
           <Button
@@ -381,18 +431,6 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           />
         </div>
       </div>
-
-      {/* <div className="fixed bottom-0 left-0 w-full shadow-md p-4 text-right z-10">
-          <Button
-            label="Save"
-            // label={selectedCategory ? 'Update' : 'Save'}
-            icon="pi pi-check"
-            className="bg-[#8e5ea8] border-none gap-2"
-            // onClick={handleSubmit}
-            loading={isSubmitting}
-            disabled={isSubmitting}
-          />
-        </div> */}
     </div>
   )
 }

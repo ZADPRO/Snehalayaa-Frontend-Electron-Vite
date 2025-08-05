@@ -1,335 +1,372 @@
+import React, { useEffect, useState } from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
-import React, { useEffect, useState } from 'react'
-import type { ChartData, ChartOptions } from 'chart.js'
+import { Dropdown } from 'primereact/dropdown'
+import { Badge } from 'primereact/badge'
+import 'primereact/resources/themes/lara-light-cyan/theme.css'
+import 'primereact/resources/primereact.min.css'
+import 'primeicons/primeicons.css'
+import ComponentHeader from '../../components/00-Header/ComponentHeader'
+import { BadgeCent, ClockArrowUp, ShoppingCart, Sparkles, User } from 'lucide-react'
+import { fetchProducts } from './Dashboard.function'
+import { Product } from './Dashboard.interface'
 
 const Dashboard: React.FC = () => {
-  const [chartData, setChartData] = useState<ChartData<'line'>>()
-  const [chartOptions, setChartOptions] = useState<ChartOptions<'line'>>()
-  const [salesChartData, setSalesChartData] = useState<ChartData<'bar' | 'pie'>>()
-  const [salesChartOptions, setSalesChartOptions] = useState<ChartOptions<'bar' | 'pie'>>()
+  const [selectedPeriod, setSelectedPeriod] = useState({ name: 'Weekly', code: 'weekly' })
+  const [products, setProducts] = useState<Product[]>([])
 
-  useEffect(() => {
-    const data = {
-      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-      datasets: [
-        {
-          label: 'Sales',
-          data: [540, 325, 702, 620],
-          backgroundColor: [
-            'rgba(255, 159, 64, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(153, 102, 255, 0.2)'
-          ],
-          borderColor: [
-            'rgb(255, 159, 64)',
-            'rgb(75, 192, 192)',
-            'rgb(54, 162, 235)',
-            'rgb(153, 102, 255)'
-          ],
-          borderWidth: 1
-        }
-      ]
-    }
-    const options = {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
+  const periodOptions = [
+    { name: 'Weekly', code: 'weekly' },
+    { name: 'Monthly', code: 'monthly' },
+    { name: 'Yearly', code: 'yearly' }
+  ]
+
+  // Chart data
+  const chartData = {
+    labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    datasets: [
+      {
+        label: 'Sales',
+        data: [2000, 8000, 6000, 7000, 12000, 9000, 11000],
+        fill: true,
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        tension: 0.4
       }
-    }
+    ]
+  }
 
-    setSalesChartData(data)
-    setSalesChartOptions(options)
-  }, [])
-
-  useEffect(() => {
-    const documentStyle = getComputedStyle(document.documentElement)
-    const textColor = documentStyle.getPropertyValue('--text-color')
-    // const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary')
-    // const surfaceBorder = documentStyle.getPropertyValue('--surface-border')
-    const data = {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      datasets: [
-        {
-          label: 'First Dataset',
-          data: [65, 59, 80, 81, 56, 55, 40],
-          fill: false,
-          //   borderColor: documentStyle.getPropertyValue('--blue-500'),
-          borderColor: '#1f6f5f', // ✅ Fixed
-          tension: 0.4
-        },
-        {
-          label: 'Second Dataset',
-          data: [28, 48, 40, 19, 86, 27, 90],
-          fill: false,
-          //   borderColor: documentStyle.getPropertyValue('--pink-500'),
-          borderColor: '#a86fbf', // ✅ Fixed
-          tension: 0.4
-        },
-        {
-          label: 'Third Dataset',
-          data: [45, 35, 60, 30, 50, 70, 20], // ✅ new unique values
-          fill: false,
-          borderColor: documentStyle.getPropertyValue('--blue-500'),
-          //   borderColor: '#bf6fa5', // ✅ Fixed
-          tension: 0.4
-        }
-      ]
-    }
-    const options: ChartOptions<'line'> = {
-      maintainAspectRatio: false,
-      aspectRatio: 0.6,
-      animation: {
-        duration: 0
-      },
-      plugins: {
-        legend: {
-          labels: {
-            color: textColor
-          }
-        },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: function (tooltipItem) {
-              return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`
-            }
-          }
+  const chartOptions = {
+    maintainAspectRatio: false,
+    aspectRatio: 0.6,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false
         }
       },
-      scales: {
-        x: {
-          ticks: { color: '#6f1f5f' },
-          grid: { color: 'rgba(111, 31, 95, 0.1)' }
-        },
-        y: {
-          ticks: { color: '#6f1f5f' },
-          grid: { color: 'rgba(111, 31, 95, 0.1)' }
+      y: {
+        ticks: {
+          callback: function (value) {
+            return value / 1000 + 'k'
+          }
         }
       }
     }
+  }
 
-    setChartData(data)
-    setChartOptions(options)
-  }, [])
+  const topProducts = [
+    { id: '01', name: 'Karthikeyan Soft Silk Sarees', quantity: 50 },
+    { id: '02', name: 'Tussar Silk Sarees', quantity: 32 },
+    { id: '03', name: 'Designer Sarees', quantity: 28 },
+    { id: '04', name: 'Silk Cotton Sarees', quantity: 18 },
+    { id: '05', name: 'Pure Silk Dhotis', quantity: '06' }
+  ]
+
+  const getQuantityBadge = (quantity) => {
+    if (quantity >= 40) return 'success'
+    if (quantity >= 25) return 'info'
+    if (quantity >= 15) return 'warning'
+    return 'danger'
+  }
 
   useEffect(() => {
-    const data = {
-      labels: ['Cotton', 'Shiffon', 'Designer', 'Soft silk'],
-      datasets: [
-        {
-          data: [30, 50, 100, 80],
-          backgroundColor: [
-            '#FF6384', // red-ish
-            '#36A2EB', // blue-ish
-            '#FFCE56', // yellow-ish
-            '#4BC0C0' // teal-ish
-          ],
-          hoverBackgroundColor: ['#FF6384CC', '#36A2EBCC', '#FFCE56CC', '#4BC0C0CC']
-        }
-      ]
+    const loadData = async () => {
+      const data = await fetchProducts()
+      setProducts(data)
     }
-
-    const options: ChartOptions<'pie'> = {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: '#333',
-            font: { size: 14, weight: 'bold' }
-          }
-        },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: function (context: any) {
-              const label = context.label || ''
-              const value = context.parsed || 0
-              return `${label}: ${value}`
-            }
-          }
-        }
-      }
-    }
-
-    setSalesChartData(data)
-    setSalesChartOptions(options)
+    loadData()
   }, [])
 
   return (
     <div>
-      {/* First Row: Small Cards */}
-      <div
-        className="card flex flex-wrap gap-2 m-3 justify-between"
-        style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}
-      >
-        <div className="flex-1 min-w-[220px] mr-3">
-          <Card title="Inventory" className="bg-blue-500 text-yellow">
-            <p className="m-0">14</p>
-          </Card>
-        </div>
-        <div className="flex-1 min-w-[220px] mr-3">
-          <Card title="Inventory" className="bg-green-100">
-            <p className="m-0">10</p>
-          </Card>
-        </div>
-        <div className="flex-1 min-w-[220px] mr-3">
-          <Card title="Inventory" className="bg-yellow-100">
-            <p className="m-0">12</p>
-          </Card>
-        </div>
-        <div className="flex-1 min-w-[220px]">
-          <Card title="Inventory" className="bg-pink-100">
-            <p className="m-0">13</p>
-          </Card>
-        </div>
-      </div>
+      <ComponentHeader
+        title="Dashboard"
+        subtitle={new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })}
+      />
 
-      {/* Second Row: Charts */}
-      <div className="card flex gap-3 m-3">
-        {/* Line Chart - matches width of first 2 cards */}
+      <div style={{ padding: '20px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
         <div
           style={{
-            flexBasis: '50%',
-            flexGrow: 1,
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-            borderRadius: '4px',
-            backgroundColor: '#fff',
-            padding: '10px'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '20px',
+            marginBottom: '30px'
           }}
         >
-          <Chart
-            type="line"
-            data={chartData}
-            options={{ ...chartOptions, maintainAspectRatio: false }}
-            style={{ width: '100%', height: '100%' }}
-          />
+          <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#e0e7ff',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <i style={{ color: '#6366f1', fontSize: '20px' }} />
+                <ShoppingCart />
+              </div>
+              <div>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Total Sales</p>
+                <h3
+                  style={{
+                    margin: '5px 0 0 0',
+                    color: '#1e293b',
+                    fontSize: '24px',
+                    fontWeight: '600'
+                  }}
+                >
+                  ₹26,12,000
+                </h3>
+                <p style={{ margin: '5px 0 0 0', color: '#10b981', fontSize: '12px' }}>
+                  <i className="pi pi-arrow-up" style={{ fontSize: '10px' }} />
+                  2.86% from last month
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#ddd6fe',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <i style={{ color: '#8b5cf6', fontSize: '20px' }} /> <ClockArrowUp />
+              </div>
+              <div>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Total Orders</p>
+                <h3
+                  style={{
+                    margin: '5px 0 0 0',
+                    color: '#1e293b',
+                    fontSize: '24px',
+                    fontWeight: '600'
+                  }}
+                >
+                  1,000
+                </h3>
+                <p style={{ margin: '5px 0 0 0', color: '#ef4444', fontSize: '12px' }}>
+                  <i className="pi pi-arrow-down" style={{ fontSize: '10px' }} />
+                  1.03% from last month
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#fecaca',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <i style={{ color: '#ef4444', fontSize: '20px' }} /> <BadgeCent />
+              </div>
+              <div>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Total Sold Products</p>
+                <h3
+                  style={{
+                    margin: '5px 0 0 0',
+                    color: '#1e293b',
+                    fontSize: '24px',
+                    fontWeight: '600'
+                  }}
+                >
+                  800
+                </h3>
+                <p style={{ margin: '5px 0 0 0', color: '#10b981', fontSize: '12px' }}>
+                  <i className="pi pi-arrow-up" style={{ fontSize: '10px' }} /> 3.10% from last
+                  month
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#bfdbfe',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <i style={{ color: '#3b82f6', fontSize: '20px' }} /> <User />
+              </div>
+              <div>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>New User</p>
+                <h3
+                  style={{
+                    margin: '5px 0 0 0',
+                    color: '#1e293b',
+                    fontSize: '24px',
+                    fontWeight: '600'
+                  }}
+                >
+                  10
+                </h3>
+                <p style={{ margin: '5px 0 0 0', color: '#10b981', fontSize: '12px' }}>
+                  <i className="pi pi-arrow-up" style={{ fontSize: '10px' }} /> 1.84% from last
+                  month
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
 
-        {/* Pie + Bar Charts - side by side on the right 50% */}
+        {/* Chart and Top Products */}
         <div
           style={{
-            flexBasis: '50%',
-            flexGrow: 1,
-            display: 'flex',
-            flexDirection: 'row',
-            gap: '10px',
-            padding: '10px',
-            backgroundColor: '#fff',
-            borderRadius: '4px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+            display: 'grid',
+            gridTemplateColumns: '2fr 1fr',
+            gap: '20px',
+            marginBottom: '30px'
           }}
         >
-          {/* Pie Chart - Left */}
-          <div
-            style={{
-              flex: 1,
-              backgroundColor: '#fff',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-              padding: '10px',
-              borderRadius: '8px'
-            }}
-          >
-            <Chart
-              type="pie"
-              data={salesChartData}
-              options={salesChartOptions}
+          <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div
               style={{
-                width: '100%',
-                height: '100%'
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px'
               }}
-            />
-          </div>
-
-          {/* Bar Chart - Right */}
-          <div
-            style={{
-              flex: 1,
-              backgroundColor: '#fff',
-              boxShadow: '0 4px 20px rgba(111, 31, 95, 0.25)',
-              padding: '10px',
-              borderRadius: '8px'
-            }}
-          >
-            <Chart
-              type="bar"
-              data={{
-                ...salesChartData,
-                datasets:
-                  salesChartData?.datasets?.map((dataset) => ({
-                    ...dataset,
-                    backgroundColor: '#914c8b',
-                    borderColor: '#6f1f5f',
-                    borderWidth: 1
-                  })) || []
-              }}
-              options={{
-                ...salesChartOptions,
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: '#1A1A1A',
-                      font: {
-                        weight: 'bold',
-                        size: 12
-                      }
-                    }
-                  },
-                  tooltip: {
-                    backgroundColor: '#f3e2d9',
-                    titleColor: '#f3e2d9',
-                    bodyColor: '#f3e2d9'
-                  }
-                },
-                scales: {
-                  x: {
-                    ticks: { color: '#6f1f5f' },
-                    grid: { color: 'rgba(111, 31, 95, 0.1)' }
-                  },
-                  y: {
-                    ticks: { color: '#6f1f5f' },
-                    grid: { color: 'rgba(111, 31, 95, 0.1)' }
-                  }
-                },
-                responsive: true,
-                maintainAspectRatio: false
-              }}
-              style={{
-                width: '100%',
-                height: '100%'
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Third Row: Bottom Cards */}
-      <div
-        className="card flex flex-wrap gap-3 m-3 justify-between"
-        // style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)' }}
-      >
-        <div className="flex-1 min-w-[220px] mr-3">
-          <Card title="Inventory" className="bg-blue-500 text-yellow">
-            <p className="m-0">14</p>
+            >
+              <div>
+                <h4 style={{ margin: 0, color: '#1e293b', fontSize: '16px', fontWeight: '600' }}>
+                  Total Sales
+                </h4>
+                <p
+                  style={{
+                    margin: '5px 0 0 0',
+                    color: '#1e293b',
+                    fontSize: '20px',
+                    fontWeight: '600'
+                  }}
+                >
+                  ₹1,28,000
+                </p>
+              </div>
+              <Dropdown
+                value={selectedPeriod}
+                options={periodOptions}
+                onChange={(e) => setSelectedPeriod(e.value)}
+                optionLabel="name"
+                style={{ width: '120px' }}
+              />
+            </div>
+            <div style={{ height: '300px' }}>
+              <Chart
+                type="line"
+                data={chartData}
+                options={chartOptions}
+                style={{ height: '100%' }}
+              />
+            </div>
           </Card>
-        </div>
-        <div className="flex-1 min-w-[220px] mr-3">
-          <Card title="Inventory" className="bg-green-100">
-            <p className="m-0">10</p>
-          </Card>
-        </div>
-        <div className="flex-1 min-w-[220px] mr-3">
-          <Card title="Inventory" className="bg-yellow-100">
-            <p className="m-0">12</p>
+
+          {/* <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}
+            >
+              <i style={{ color: '#f59e0b', fontSize: '16px' }} /> <Sparkles />
+              <h4 style={{ margin: 0, color: '#1e293b', fontSize: '16px', fontWeight: '600' }}>
+                Top Products
+              </h4>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {topProducts.map((product) => (
+                <div
+                  key={product.id}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ color: '#64748b', fontSize: '14px', fontWeight: '500' }}>
+                      {product.id}.
+                    </span>
+                    <span style={{ color: '#1e293b', fontSize: '14px' }}>{product.name}</span>
+                  </div>
+                  <Badge
+                    value={product.quantity}
+                    severity={getQuantityBadge(product.quantity)}
+                    // style={{ minWidth: '35px' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </Card> */}
+          <Card>
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}
+            >
+              <Sparkles color="#f59e0b" />
+              <h4 style={titleStyle}>Top Products</h4>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {products
+                .sort((a, b) => parseInt(b.poQuantity) - parseInt(a.poQuantity))
+                .slice(0, 5)
+                .map((product, index) => (
+                  <div
+                    key={product.poId}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ color: '#64748b', fontSize: '14px', fontWeight: '500' }}>
+                        {index + 1}.
+                      </span>
+                      <span style={{ color: '#1e293b', fontSize: '14px' }}>{product.poName}</span>
+                    </div>
+                    <Badge
+                      value={product.poQuantity}
+                      severity={getQuantityBadge(product.poQuantity)}
+                    />
+                  </div>
+                ))}
+            </div>
           </Card>
         </div>
       </div>
     </div>
-    
   )
 }
+
+const titleStyle = { margin: 0, color: '#1e293b', fontSize: '16px', fontWeight: '600' }
 
 export default Dashboard

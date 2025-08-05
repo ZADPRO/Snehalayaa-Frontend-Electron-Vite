@@ -8,7 +8,9 @@ export interface Branch {
   isActive: boolean
   refBTId: number
   refBranchId?: number
-  isOnlineORoffline: boolean
+  isOnline: boolean
+  isOffline: boolean
+  floors: Floor[]
 }
 
 export interface BranchStatusOptions {
@@ -26,13 +28,41 @@ export interface BranchFormData {
   isMainBranch: boolean
   //   refBTId: number
   selectedStatus: BranchStatusOptions | null
-  isOnlineORoffline: boolean
+  isOnline: boolean
+  isOffline: boolean
+  floors: Floor[]
+}
+
+export interface Section {
+  sectionName: string
+  sectionCode: string
+  categoryId: any
+  refSubCategoryId: any
+}
+
+export interface Floor {
+  floorName: string
+  floorCode: string
+  sections: Section[]
+}
+export interface Category {
+  refCategoryId: number
+  categoryName: string
+}
+
+export interface SubCategory {
+  refSubCategoryId: number
+  subCategoryName: string
+  refCategoryId: number
+  isDelete: boolean
 }
 
 export interface SettingsAddEditBranchProps {
   selectedBranches: Branch | null
   onClose: () => void
   reloadData: () => void
+  categories: Category[]
+  subCategories: SubCategory[]
 }
 
 export interface FloorForm {

@@ -9,6 +9,7 @@ import Header from '../components/00-Header/Header'
 import PurchaseOrder from '../pages/05-PurchaseOrder/PurchaseOrder'
 import Inventory from '../pages/06-Inventory/Inventory'
 import Profile from '../pages/04-Profile/Profile'
+import POSmanagement from '../pages/07-POSmanagement/POSmanagement'
 
 const MainAppRoutes: React.FC = () => {
   return (
@@ -28,6 +29,7 @@ const MainAppRoutes: React.FC = () => {
                 <Route path="/pomgmt" element={<PurchaseOrder />} />
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/pos" element={<POSmanagement />} />
               </Routes>
             </Header>
           }

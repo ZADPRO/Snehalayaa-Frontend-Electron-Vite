@@ -28,4 +28,5 @@ export interface SubCategory {
   updatedAt: string
   updatedBy: string
   isDelete: boolean
+  refCategoryId: number
 }

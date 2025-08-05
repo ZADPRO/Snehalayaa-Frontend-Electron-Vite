@@ -16,11 +16,16 @@ import { Column } from 'primereact/column'
 import { Toolbar } from 'primereact/toolbar'
 import { Tooltip } from 'primereact/tooltip'
 import SettingsAddEditBranch from './SettingsAddEditBranch/SettingsAddEditBranch'
+import { Category, SubCategory } from '../SettingsCategories/SettingsCategories.interface'
+import { fetchCategories } from '../SettingsCategories/SettingsCategories.function'
+import { fetchSubCategories } from '../SettingsSubCategories/SettingsSubCategories.function'
 
 const SettingsBranch: React.FC = () => {
   const [branch, setBranch] = useState<Branch[]>([])
   const [selectedBranch, setSelectedBranch] = useState<Branch[]>([])
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
 
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<Branch[]>>(null)
@@ -29,18 +34,33 @@ const SettingsBranch: React.FC = () => {
     excel: false,
     pdf: false
   })
+
+  // const load = async () => {
+  //   try {
+  //     const data = await fetchBranch()
+  //     setBranch(data)
+  //   } catch (err: any) {
+  //     toast.current?.show({
+  //       severity: 'error',
+  //       summary: 'Error',
+  //       detail: err.message || 'Failed to load branch',
+  //       life: 3000
+  //     })
+  //   }
+  // }
+  // useEffect(() => {
+  //   load()
+  // }, [])
+
   const load = async () => {
-    try {
-      const data = await fetchBranch()
-      setBranch(data)
-    } catch (err: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message || 'Failed to load branch',
-        life: 3000
-      })
-    }
+    const [branchData, categoryData, subCategoryData] = await Promise.all([
+      fetchBranch(),
+      fetchCategories(),
+      fetchSubCategories()
+    ])
+    setBranch(branchData)
+    setCategories(categoryData)
+    setSubCategories(subCategoryData)
   }
   useEffect(() => {
     load()
@@ -114,7 +134,7 @@ const SettingsBranch: React.FC = () => {
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
         tooltip="Add Branch"
-          disabled={isAnySelected}
+        disabled={isAnySelected}
         tooltipOptions={{ position: 'left' }}
         onClick={() => setVisibleRight(true)}
       />
@@ -217,6 +237,8 @@ const SettingsBranch: React.FC = () => {
       >
         <SettingsAddEditBranch
           selectedBranches={selectedBranches}
+          categories={categories}
+          subCategories={subCategories}
           onClose={() => setVisibleRight(false)}
           reloadData={load}
         />
