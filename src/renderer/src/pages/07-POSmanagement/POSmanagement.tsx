@@ -1,4 +1,4 @@
-import { Barcode, Blocks, PackageCheck, PackagePlus, PackageX, ShoppingBag } from 'lucide-react'
+import { Blocks, ShoppingBag } from 'lucide-react'
 import React, { useState } from 'react'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import { Divider } from 'primereact/divider'
@@ -20,8 +20,7 @@ const sidebarItems = [
     label: 'Sales Order',
     icon: <ShoppingBag size={20} className="sidebar-icon" />,
     component: <POSsalesOrder />
-  },
- 
+  }
 ]
 
 const POSmanagement: React.FC = () => {

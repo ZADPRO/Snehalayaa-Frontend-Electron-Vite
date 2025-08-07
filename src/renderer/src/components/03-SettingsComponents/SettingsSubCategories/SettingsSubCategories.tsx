@@ -8,7 +8,8 @@ import { Toast } from 'primereact/toast'
 
 import {
   fetchSubCategories,
-  deleteSubCategory,
+  // deleteSubCategory,
+  bulkDeleteSubCategories,
   exportCSV,
   exportPdf,
   exportExcel
@@ -18,6 +19,7 @@ import { FileSignature, FileSpreadsheet, FileText, Pencil, Plus, Trash2 } from '
 import { Tooltip } from 'primereact/tooltip'
 import { Sidebar } from 'primereact/sidebar'
 import SettingsAddEditSubCategories from './SettingsAddEditSubCategories/SettingsAddEditSubCategories'
+// import { Dropdown } from 'primereact/dropdown'
 
 const SettingsSubCategories: React.FC = () => {
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
@@ -75,10 +77,10 @@ const SettingsSubCategories: React.FC = () => {
   const handleDelete = async () => {
     if (!selectedSubCategories.length) return
 
-    const subCat = selectedSubCategories[0]
+    const ids = selectedSubCategories.map((s) => s.refSubCategoryId)
 
     try {
-      const res = await deleteSubCategory(subCat.refSubCategoryId)
+      const res = await bulkDeleteSubCategories(ids)
       if (res.status) {
         toast.current?.show({
           severity: 'success',
@@ -87,12 +89,18 @@ const SettingsSubCategories: React.FC = () => {
         })
         setSelectedSubCategories([])
         load()
+      } else {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: res.message || 'Some issue occurred'
+        })
       }
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Delete failed'
+        detail: err.message || 'Bulk delete failed'
       })
     }
   }
@@ -105,7 +113,7 @@ const SettingsSubCategories: React.FC = () => {
   const isAnySelected = selectedSubCategories.length > 0
 
   const leftToolbarTemplate = () => (
-    <div className="flex gap-2">
+    <div className="flex gap-2 align-items-center">
       <Button
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
@@ -136,6 +144,8 @@ const SettingsSubCategories: React.FC = () => {
         disabled={!isAnySelected}
         onClick={handleDelete}
       />
+
+      {/* <Dropdown placeholder="Select Category" /> */}
     </div>
   )
 
@@ -183,6 +193,7 @@ const SettingsSubCategories: React.FC = () => {
         onSelectionChange={(e) => setSelectedSubCategories(e.value as SubCategory[])}
         dataKey="refSubCategoryId"
         selectionMode="multiple"
+        showGridlines
         paginator
         rows={10}
         stripedRows
@@ -192,7 +203,7 @@ const SettingsSubCategories: React.FC = () => {
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
         <Column field="subCategoryCode" header="Code" sortable />
         <Column field="subCategoryName" header="Name" sortable />
-        <Column field="refCategoryId" header="Category ID" />
+        <Column field="categoryName" header="Category" />
         <Column field="createdBy" header="Created By" />
         <Column field="createdAt" header="Created At" />
         <Column

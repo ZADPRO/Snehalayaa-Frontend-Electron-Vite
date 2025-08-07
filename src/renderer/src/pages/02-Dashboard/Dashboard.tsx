@@ -60,14 +60,6 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  const topProducts = [
-    { id: '01', name: 'Karthikeyan Soft Silk Sarees', quantity: 50 },
-    { id: '02', name: 'Tussar Silk Sarees', quantity: 32 },
-    { id: '03', name: 'Designer Sarees', quantity: 28 },
-    { id: '04', name: 'Silk Cotton Sarees', quantity: 18 },
-    { id: '05', name: 'Pure Silk Dhotis', quantity: '06' }
-  ]
-
   const getQuantityBadge = (quantity) => {
     if (quantity >= 40) return 'success'
     if (quantity >= 25) return 'info'
