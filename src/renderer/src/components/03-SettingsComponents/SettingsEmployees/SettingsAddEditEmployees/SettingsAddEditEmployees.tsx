@@ -10,6 +10,8 @@ import {
 } from './SettingsAddEditEmployees.interface'
 import {
   createEmployee,
+  fetchBranch,
+  fetchRoleType,
   // fetchBranch,
   // fetchRoleType,
   updateEmployee
@@ -26,21 +28,20 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
 }) => {
   const toast = useRef<Toast>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [roleTypes, _setRoleTypes] = useState<EmployeeRoleType[]>([])
-  console.log('roleTypes', roleTypes)
-  const [branches, _setBranches] = useState<EmployeeBranch[]>([])
-  console.log('branches', branches)
+  const [roleTypes, setRoleTypes] = useState<EmployeeRoleType[]>([])
+  const [branches, setBranches] = useState<EmployeeBranch[]>([])
 
   const [formData, setFormData] = useState<EmployeeFormData>({
-    RefUserBranchId: 0,
-    refRTId: 0,
+    branchId: 0,
+    roleTypeId: 0,
     RefUserCustId: '',
-    RefUserRefUserDesignation: '',
-    RefUserFName: '',
-    RefUserLName: '',
-    selectedStatus: { name: 'Active', RefUserStatus: 'Active' },
+    designation: '',
+    firstName: '',
+    lastName: '',
+    selectedStatus: { name: 'Active', refUserStatus: 'Active' },
     city: '',
     doorNumber: '',
+    refRTId: 0,
     streetName: '',
     state: '',
     username: '',
@@ -51,17 +52,51 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
   })
 
   const statusOptions: EmployeeStatusOptions[] = [
-    { name: 'Active', RefUserStatus: 'Active' },
-    { name: 'Inactive', RefUserStatus: 'Inactive' }
+    { name: 'Active', refUserStatus: 'Active' },
+    { name: 'Inactive', refUserStatus: 'Inactive' }
   ]
+
+  // useEffect(() => {
+  //   const loadDropdownData = async () => {
+  //     try {
+  //       const [roleTypeData, branchData] = await Promise.all([fetchRoleType(), fetchBranch()])
+
+  //       setRoleTypes(roleTypeData)
+  //       setBranches(branchData)
+  //     } catch (error) {
+  //       toast.current?.show({
+  //         severity: 'error',
+  //         summary: 'Error',
+  //         detail: 'Failed to fetch dropdown data',
+  //         life: 3000
+  //       })
+  //     }
+  //   }
+
+  //   loadDropdownData()
+  // }, [])
 
   useEffect(() => {
     const loadDropdownData = async () => {
       try {
-        // const [roleTypeData, branchData] = await Promise.all([fetchRoleType(), fetchBranch()])
+        const [roleTypeDataRaw, branchDataRaw] = await Promise.all([fetchRoleType(), fetchBranch()])
 
-        // setRoleTypes(roleTypeData)
-        // setBranches(branchData)
+        // Map raw role type data to EmployeeRoleType[]
+        const roleTypeData: EmployeeRoleType[] = roleTypeDataRaw.map((item: any) => ({
+          refRTId: item.refRTId ?? item.roleTypeId ?? 0, // adapt based on actual fields
+          refRTName: item.refRTName ?? item.roleTypeName ?? ''
+        }))
+        console.log('roleTypeData', roleTypeData)
+
+        // Map raw branch data to EmployeeBranch[]
+        const branchData: EmployeeBranch[] = branchDataRaw.map((item: any) => ({
+          refBranchId: item.refBranchId ?? item.branchId ?? 0, // adapt if needed
+          refBranchName: item.refBranchName ?? item.branchName ?? ''
+        }))
+        console.log('branchData', branchData)
+
+        setRoleTypes(roleTypeData)
+        setBranches(branchData)
       } catch (error) {
         toast.current?.show({
           severity: 'error',
@@ -75,6 +110,42 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
     loadDropdownData()
   }, [])
 
+  // useEffect(() => {
+  //   if (selectedEmployees && roleTypes.length > 0 && branches.length > 0) {
+  //     const emp = selectedEmployees
+
+  //     const selectedRole = roleTypes.find((rt) => rt.refRTId === emp.roleTypeId) || null
+  //     const selectedBr = branches.find((br) => br.refBranchId === emp.branchId) || null
+
+  //     setFormData({
+  //       RefUserBranchId: emp.branchId,
+  //       refRTId: emp.roleTypeId,
+  //       RefUserCustId: emp.RefUserCustId,
+  //       RefUserRefUserDesignation: emp.RefUserDesignation,
+  //       RefUserFName: emp.RefUserFName,
+  //       RefUserLName: emp.RefUserLName,
+  //       city: emp.city,
+  //       doorNumber: emp.doorNumber,
+  //       streetName: emp.streetName,
+  //       state: emp.state,
+  //       username: emp.username,
+  //       email: emp.email,
+  //       mobile: emp.mobile,
+  //       selectedStatus:
+  //         emp.refUserStatus === 'Active'
+  //           ? { name: 'Active', RefUserStatus: 'Active' }
+  //           : { name: 'Inactive', RefUserStatus: 'Inactive' },
+  //       selectedRoleType: selectedRole,
+  //       selectedBranch: selectedBr
+  //     })
+  //   }
+  // }, [selectedEmployees, roleTypes, branches])
+
+  // const isDropdownLoading = branches.length === 0 || roleTypes.length === 0
+  // if (isDropdownLoading) {
+  //   return <div className="p-4"></div>
+  // }
+
   useEffect(() => {
     if (selectedEmployees && roleTypes.length > 0 && branches.length > 0) {
       const emp = selectedEmployees
@@ -83,33 +154,29 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
       const selectedBr = branches.find((br) => br.refBranchId === emp.branchId) || null
 
       setFormData({
-        RefUserBranchId: emp.branchId,
-        refRTId: emp.roleTypeId,
-        RefUserCustId: emp.RefUserCustId,
-        RefUserRefUserDesignation: emp.RefUserDesignation,
-        RefUserFName: emp.RefUserFName,
-        RefUserLName: emp.RefUserLName,
-        city: emp.city,
-        doorNumber: emp.doorNumber,
-        streetName: emp.streetName,
-        state: emp.state,
-        username: emp.username,
-        email: emp.email,
-        mobile: emp.mobile,
+        ...formData,
+        branchId: emp.branchId || 0,
+        roleTypeId: emp.roleTypeId || 0,
+        RefUserCustId: emp.RefUserCustId || '',
+        designation: emp.designation || '',
+        firstName: emp.firstName || '',
+        lastName: emp.lastName || '',
+        city: emp.city || '',
+        doorNumber: emp.doorNumber || '',
+        streetName: emp.streetName || '',
+        state: emp.state || '',
+        username: emp.username || '',
+        email: emp.email || '',
+        mobile: emp.mobile || '',
         selectedStatus:
           emp.refUserStatus === 'Active'
-            ? { name: 'Active', RefUserStatus: 'Active' }
-            : { name: 'Inactive', RefUserStatus: 'Inactive' },
+            ? { name: 'Active', refUserStatus: 'Active' }
+            : { name: 'Inactive', refUserStatus: 'Inactive' },
         selectedRoleType: selectedRole,
         selectedBranch: selectedBr
       })
     }
   }, [selectedEmployees, roleTypes, branches])
-
-  // const isDropdownLoading = branches.length === 0 || roleTypes.length === 0
-  // if (isDropdownLoading) {
-  //   return <div className="p-4"></div>
-  // }
 
   const handleInputChange = (
     field: keyof EmployeeFormData,
@@ -121,6 +188,8 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
     }))
   }
   const handleSubmit = async () => {
+    console.log('Submitting formData:', formData)
+
     if (!formData.username || !formData.mobile || !formData.selectedStatus) {
       toast.current?.show({
         severity: 'warn',
@@ -132,19 +201,20 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
     }
 
     const payload: Partial<Employee> = {
-      RefUserDesignation: formData.RefUserRefUserDesignation,
-      RefUserFName: formData.RefUserFName,
-      RefUserLName: formData.RefUserLName,
+      designation: formData.designation,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
       doorNumber: formData.doorNumber,
       streetName: formData.streetName,
       state: formData.state,
       username: formData.username,
       email: formData.email,
       mobile: formData.mobile,
-      refUserStatus: formData.selectedStatus?.RefUserStatus || 'Inactive', // keep string value
-      roleTypeId: formData.refRTId,
-      branchId: formData.RefUserBranchId
+      refUserStatus: formData.selectedStatus?.refUserStatus === 'Active' ? true : false,
+      roleTypeId: formData?.refRTId,
+      branchId: formData.selectedBranch?.refBranchId ?? 0
     }
+    console.log('formData', formData)
     try {
       setIsSubmitting(true)
       let result
@@ -184,23 +254,23 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
         <div className="flex-1">
           <FloatLabel className="always-float">
             <InputText
-              id="RefUserFName"
-              value={formData.RefUserFName}
+              id="firstName"
+              value={formData.firstName}
               className="w-full"
-              onChange={(e) => handleInputChange('RefUserFName', e.target.value)}
+              onChange={(e) => handleInputChange('firstName', e.target.value)}
             />
-            <label htmlFor="RefUserFName">First Name</label>
+            <label htmlFor="firstName">First Name</label>
           </FloatLabel>
         </div>
         <div className="flex-1">
           <FloatLabel className="always-float">
             <InputText
-              id="RefUserLName"
-              value={formData.RefUserLName}
+              id="lastName"
+              value={formData.lastName}
               className="w-full"
-              onChange={(e) => handleInputChange('RefUserLName', e.target.value)}
+              onChange={(e) => handleInputChange('lastName', e.target.value)}
             />
-            <label htmlFor="RefUserLName">Last Name</label>
+            <label htmlFor="lastName">Last Name</label>
           </FloatLabel>
         </div>
       </div>
@@ -220,13 +290,12 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
         <div className="flex-1">
           <FloatLabel className="always-float">
             <InputText
-              id="RefUserRefUserDesignation"
-              keyfilter="pint"
-              value={formData.RefUserRefUserDesignation}
+              id="designation"
+              value={formData.designation}
               className="w-full"
-              onChange={(e) => handleInputChange('RefUserRefUserDesignation', e.target.value)}
+              onChange={(e) => handleInputChange('designation', e.target.value)}
             />
-            <label htmlFor="RefUserRefUserDesignation"> Designation</label>
+            <label htmlFor="designation"> Designation</label>
           </FloatLabel>
         </div>
       </div>
@@ -247,7 +316,7 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
           <FloatLabel className="always-float">
             <InputText
               id="mobile"
-              keyfilter="pint"
+              keyfilter="int"
               value={formData.mobile}
               className="w-full"
               onChange={(e) => handleInputChange('mobile', e.target.value)}
@@ -316,10 +385,12 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
               id="selectedRoleType"
               value={formData.selectedRoleType}
               onChange={(e) => {
-                handleInputChange('selectedRoleType', e.value)
+                console.log('e', e)
+                const selected = e.value
                 setFormData((prev) => ({
                   ...prev,
-                  refRTId: e.value?.refRTId
+                  selectedRoleType: selected,
+                  refRTId: selected?.refRTId ?? 0 // update roleTypeId consistently
                 }))
               }}
               options={roleTypes}
@@ -344,7 +415,6 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
           </FloatLabel>
         </div>
       </div>
-
       <div className="flex gap-3 mt-3">
         <div className="flex-1">
           <FloatLabel className="always-float">
@@ -352,10 +422,11 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
               id="selectedBranch"
               value={formData.selectedBranch}
               onChange={(e) => {
-                handleInputChange('selectedBranch', e.value)
+                const selected = e.value
                 setFormData((prev) => ({
                   ...prev,
-                  RefUserBranchId: e.value?.RefUserBranchId
+                  selectedBranch: selected,
+                  RefUserBranchId: selected?.refBranchId || 0
                 }))
               }}
               options={branches}
@@ -363,6 +434,7 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
               placeholder="Select Branch"
               className="w-full"
             />
+
             <label htmlFor="selectedBranch">Branch</label>
           </FloatLabel>
         </div>
