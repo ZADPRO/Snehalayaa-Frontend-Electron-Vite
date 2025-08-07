@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Plus, Search, Upload } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import {  Plus, Search, Upload } from 'lucide-react'
 import { Button } from 'primereact/button'
 import { Sidebar } from 'primereact/sidebar'
 import { InputText } from 'primereact/inputtext'
@@ -8,28 +8,36 @@ import { DataTable, DataTableRowEditCompleteEvent } from 'primereact/datatable'
 import { Divider } from 'primereact/divider'
 import POScustomers from '../POScustomers/POScustomers'
 import { InputNumber } from 'primereact/inputnumber'
-import { Product } from './POSsalesOrder.interface'
-import { fetchProductBySKU } from './POSsalesOrder.function'
+import { Employee, Product } from './POSsalesOrder.interface'
+import { fetchEmployees, fetchProductBySKU } from './POSsalesOrder.function'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
+import { MultiSelect } from 'primereact/multiselect'
+import { Toast } from 'primereact/toast'
 
 const POSsalesOrder: React.FC = () => {
   const [visibleRight, setVisibleRight] = useState(false)
   const [sku, setSku] = useState('')
+  const [products, setProducts] = useState<Product[]>([])
+  const [showCustomDialog, setShowCustomDialog] = useState(false)
 
-  const [products, setProducts] = useState<Product[]>([
-    // {
-    //   id: 1,
-    //   productName: 'Apple',
-    //   Price: 100,
-    //   quantity: 2,
-    //   Discount: 10,
-    //   totalPrice: 180
-    // }
-  ])
+  const [employeeList, setEmployeeList] = useState<Employee[]>([])
+  const [selectedEmployees, setSelectedEmployees] = useState<any[]>([])
+  const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null)
+
+  console.log('Selected employees:----------------line 27', selectedEmployees)
+
+  const toast = useRef<Toast>(null)
 
   const onRowEditComplete = (e: DataTableRowEditCompleteEvent) => {
+    const updatedProduct = e.newData as Product
+    const { Price, quantity, Discount } = updatedProduct
+    const discountAmount = (Price * Discount) / 100
+    const total = Price * quantity - discountAmount
+    updatedProduct.DiscountPrice = Math.round(discountAmount)
+    updatedProduct.totalPrice = Math.round(total)
+
     const updatedProducts = [...products]
-    updatedProducts[e.index] = e.newData as Product
+    updatedProducts[e.index] = updatedProduct
     setProducts(updatedProducts)
   }
 
@@ -45,23 +53,93 @@ const POSsalesOrder: React.FC = () => {
       minFractionDigits={0}
     />
   )
+  // 🔁 Load employees when dialog is triggered
+  useEffect(() => {
+    if (showCustomDialog) {
+      fetchEmployees().then((data) => setEmployeeList(data))
+    }
+  }, [showCustomDialog])
+
+  // const handleSKUFetch = async () => {
+  //   try {
+  //     const product = await fetchProductBySKU(sku)
+  //     setProducts((prev) => [...prev, product])
+  //     setSku('')
+  //     setShowCustomDialog(true) // show custom dialog with input box
+  //   } catch (error) {
+  //     confirmDialog({
+  //       message: 'No product found for this SKU. Do you want to try again?',
+  //       header: 'Product Not Found',
+  //       // icon: 'pi pi-exclamation-triangle',
+  //       acceptLabel: 'Yes',
+  //       rejectLabel: 'No',
+  //       accept: () => setSku(''),
+  //       reject: () => console.log('User cancelled')
+  //     })
+  //   }
+  // }
 
   const handleSKUFetch = async () => {
     try {
       const product = await fetchProductBySKU(sku)
       setProducts((prev) => [...prev, product])
       setSku('')
+      setCurrentProductIndex(products.length) // Index of the product just added
+      setShowCustomDialog(true)
     } catch (error) {
       confirmDialog({
         message: 'No product found for this SKU. Do you want to try again?',
         header: 'Product Not Found',
-        icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'Yes',
         rejectLabel: 'No',
         accept: () => setSku(''),
         reject: () => console.log('User cancelled')
       })
     }
+  }
+
+  // const handleCustomDialogAccept = () => {
+  //   const selectedEmployeeIds = selectedEmployees.map((emp) => emp.RefUserId)
+  //   console.log('Selected employee IDs:', selectedEmployeeIds)
+  //   setShowCustomDialog(false)
+  //   setSelectedEmployees([])
+
+  //   // Return or pass the selectedEmployeeIds as needed
+  //   return selectedEmployeeIds
+  // }
+
+  const handleCustomDialogAccept = () => {
+    if (selectedEmployees.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'No employee selected',
+        detail: 'Please select at least one employee',
+        life: 3000
+      })
+      return
+    }
+
+    if (currentProductIndex !== null) {
+      // Make a copy of the employee list (or reduce it to necessary fields)
+      const assignedEmployeeData = selectedEmployees.map((emp) => ({
+        RefUserId: emp.RefUserId,
+        RefUserFName: emp.RefUserFName,
+        RefUserCustId: emp.RefUserCustId
+      }))
+
+      console.log('assignedEmployeeData', assignedEmployeeData)
+      const updatedProducts = [...products]
+      updatedProducts[currentProductIndex] = {
+        ...updatedProducts[currentProductIndex],
+        assignedEmployees: assignedEmployeeData
+      }
+
+      setProducts(updatedProducts)
+    }
+
+    setShowCustomDialog(false)
+    setSelectedEmployees([])
+    setCurrentProductIndex(null)
   }
 
   return (
@@ -88,6 +166,66 @@ const POSsalesOrder: React.FC = () => {
             onChange={(e) => setSku((e.target as HTMLInputElement).value)}
             disabled={!sku}
           />
+          {/* Custom Dialog */}
+          <ConfirmDialog
+            visible={showCustomDialog}
+            onHide={() => setShowCustomDialog(false)}
+            header="Enter Employee Details"
+            message={
+              <div className="flex gap-4 w-full">
+                {/* Left: Employee Selector */}
+                <div className=" gap-3 w-1/2">
+                  <div className="flex mb-3">
+                    <label>Select Employees</label>
+                  </div>
+                  <div className="flex w-full">
+                    <MultiSelect
+                      value={selectedEmployees}
+                      onChange={(e) => setSelectedEmployees(e.value || [])}
+                      options={employeeList}
+                      optionLabel="RefUserFName"
+                      placeholder="Search and select employees"
+                      filter
+                      className="w-full custom-multiselect"
+                      display="comma"
+                      selectedItemTemplate={() => null}
+                      itemTemplate={(option) =>
+                        option ? (
+                          <div>
+                            {option.RefUserFName} ({option.RefUserCustId})
+                          </div>
+                        ) : null
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Right: Selected Preview */}
+                <div className=" gap-2 w-1/2 border-left-1 pl-3">
+                  <div className="flex">
+                    <label className="font-semibold">Selected Employees</label>
+                  </div>
+                  <div className="flex">
+                    {selectedEmployees?.length > 0 ? (
+                      <ul className="list-none p-0 m-0">
+                        {selectedEmployees.map((emp, index) => (
+                          <li key={emp.RefUserId || index} className="mb-1">
+                            ✅ {emp.RefUserFName} ({emp.RefUserCustId})
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-sm text-gray-500">No employees selected</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            }
+            acceptLabel="Confirm"
+            rejectLabel="Cancel"
+            accept={handleCustomDialogAccept}
+            reject={() => setShowCustomDialog(false)}
+          />
         </div>
 
         <DataTable
@@ -98,13 +236,28 @@ const POSsalesOrder: React.FC = () => {
           editMode="row"
           onRowEditComplete={onRowEditComplete}
         >
-          <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} style={{ maxWidth: '50px' }} />
+          <Column header="S.No" body={(_, opts) => opts.rowIndex + 1} style={{ maxWidth: '50px' }} />
           <Column
             field="productName"
             header="Product Name"
             editor={textEditor}
-            style={{ maxWidth: '120px' }}
+            style={{ maxWidth: '250px' }}
+            body={(rowData) => (
+              <div className=" gap-1">
+                <div className="flex">
+                  <div className="font-semibold">{rowData.productName}</div>
+                </div>
+                <div className="flex">
+                  {rowData.assignedEmployees?.length > 0 && (
+                    <div className="text-sm text-gray-600">
+                      👤 {rowData.assignedEmployees.map((emp) => emp.RefUserFName).join(', ')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           />
+
           <Column
             field="Price"
             header="Price"
@@ -119,12 +272,12 @@ const POSsalesOrder: React.FC = () => {
           />
           <Column
             field="Discount"
-            header="Discount in %"
+            header="Discount %"
             editor={numberEditor}
-            style={{ maxWidth: '120px' }}
+            style={{ maxWidth: '100px' }}
           />
           <Column
-            field="Discount"
+            field="DiscountPrice"
             header="Discount in ₹"
             editor={numberEditor}
             style={{ maxWidth: '120px' }}
@@ -137,17 +290,13 @@ const POSsalesOrder: React.FC = () => {
           />
           <Column
             rowEditor
+            header="Edit Price"
             headerStyle={{ width: '10%', maxWidth: '100px' }}
             bodyStyle={{ textAlign: 'center' }}
           />
         </DataTable>
         <div className="mt-3">
-          {/* <Button
-            icon={<Plus size={16} strokeWidth={2} />}
-            severity="success"
-            label="Add Customer"
-            onClick={() => setVisibleRight(true)}
-          /> */}
+       
         </div>
       </div>
 

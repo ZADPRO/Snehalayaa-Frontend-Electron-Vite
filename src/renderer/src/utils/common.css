@@ -190,3 +190,19 @@
   background-color: #1976d2;
   color: white;
 }
+
+.custom-confirm-dialog .p-dialog {
+  width: 800px !important;  /* Adjust as needed */
+  max-width: 90vw;
+}
+
+.custom-multiselect .p-multiselect-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.5rem; /* Ensures consistent height */
+}
+
+.custom-multiselect .p-multiselect {
+  min-height: 2.5rem;
+}

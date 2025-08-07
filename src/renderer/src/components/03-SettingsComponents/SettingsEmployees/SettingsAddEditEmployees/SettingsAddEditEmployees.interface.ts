@@ -1,38 +1,37 @@
 export interface Employee {
-    RefUserId:number
-  RefUserDesignation: string
+  RefUserId: number
+  designation: string
   doorNumber: string
   email: string
-  RefUserFName: string
-  RefUserLName: string
+  firstName: string
+  lastName: string
   mobile: string
-  refUserStatus: string // e.g., "Active" or "Inactive"
+  refUserStatus: any // keep this as string, e.g. "Active" or "Inactive"
   roleTypeId: number
   state: string
   streetName: string
   username: string
-  branchId: number // Include if you're using it in your form or state
+  branchId: number
   city: string
-  RefUserCustId:string
+  RefUserCustId: string
 }
 
 export interface EmployeeStatusOptions {
   name: string
-  RefUserStatus: string
+  refUserStatus: string
 }
 
 export interface EmployeeFormData {
-  RefUserBranchId: number
-  refRTId: number
-
+  branchId: number
+  roleTypeId: number
   RefUserCustId: string
-  RefUserRefUserDesignation: string
-  RefUserFName: string
-  //   RefUserId: number
-  RefUserLName: string
+  designation: string
+  firstName: string
+  lastName: string
   selectedStatus: EmployeeStatusOptions | null
   city: string
   doorNumber: string
+  refRTId: number
   email: string
   mobile: string
   state: string
