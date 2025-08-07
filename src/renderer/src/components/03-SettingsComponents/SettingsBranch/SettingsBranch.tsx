@@ -1,16 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Branch } from './SettingsBranch.interface'
-import {
-  deleteBranch,
-  exportCSV,
-  exportExcel,
-  exportPdf,
-  fetchBranch
-} from './SettingsBranch.function'
+import { exportCSV, exportExcel, exportPdf, fetchBranch } from './SettingsBranch.function'
 import { DataTable } from 'primereact/datatable'
 import { Toast } from 'primereact/toast'
 import { Button } from 'primereact/button'
-import { FileSignature, FileSpreadsheet, FileText, Pencil, Plus, Trash2 } from 'lucide-react'
+import { FileSignature, FileSpreadsheet, FileText, Pencil, Plus } from 'lucide-react'
 import { Sidebar } from 'primereact/sidebar'
 import { Column } from 'primereact/column'
 import { Toolbar } from 'primereact/toolbar'
@@ -93,37 +87,37 @@ const SettingsBranch: React.FC = () => {
     }, 300)
   }
 
-  const handleDelete = async () => {
-    if (!setSelectedBranch.length) return
+  // const handleDelete = async () => {
+  //   if (!setSelectedBranch.length) return
 
-    const categoryToDelete = selectedBranch[0]
-    console.log('categoryToDelete', selectedBranch)
-    try {
-      const res = await deleteBranch(categoryToDelete.refBranchId)
-      if (res.status) {
-        toast.current?.show({
-          severity: 'success',
-          summary: 'Success',
-          detail: res.message
-        })
-        setSelectedBranch([])
-        load()
-      } else if (res.confirmationNeeded) {
-        toast.current?.show({
-          severity: 'warn',
-          summary: 'Needs Confirmation',
-          detail: res.message
-        })
-        // You can implement subcategory confirmation UI here if needed
-      }
-    } catch (err: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message || 'Failed to delete'
-      })
-    }
-  }
+  //   const categoryToDelete = selectedBranch[0]
+  //   console.log('categoryToDelete', selectedBranch)
+  //   try {
+  //     const res = await deleteBranch(categoryToDelete.refBranchId)
+  //     if (res.status) {
+  //       toast.current?.show({
+  //         severity: 'success',
+  //         summary: 'Success',
+  //         detail: res.message
+  //       })
+  //       setSelectedBranch([])
+  //       load()
+  //     } else if (res.confirmationNeeded) {
+  //       toast.current?.show({
+  //         severity: 'warn',
+  //         summary: 'Needs Confirmation',
+  //         detail: res.message
+  //       })
+  //       // You can implement subcategory confirmation UI here if needed
+  //     }
+  //   } catch (err: any) {
+  //     toast.current?.show({
+  //       severity: 'error',
+  //       summary: 'Error',
+  //       detail: err.message || 'Failed to delete'
+  //     })
+  //   }
+  // }
 
   const isSingleSelected = selectedBranch.length === 1
   const isAnySelected = selectedBranch.length > 0
@@ -146,14 +140,14 @@ const SettingsBranch: React.FC = () => {
         disabled={!isSingleSelected}
         onClick={() => setVisibleRight(true)}
       />
-      <Button
+      {/* <Button
         icon={<Trash2 size={16} strokeWidth={2} />}
         severity="danger"
         tooltip="Delete Branch"
         tooltipOptions={{ position: 'left' }}
         disabled={!isAnySelected}
         onClick={handleDelete}
-      />
+      /> */}
     </div>
   )
 

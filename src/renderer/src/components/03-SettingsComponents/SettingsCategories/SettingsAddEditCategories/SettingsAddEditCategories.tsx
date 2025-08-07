@@ -12,6 +12,7 @@ import {
   CategoryStatusOptions,
   SettingsAddEditCategoriesProps
 } from './SettingsAddEditCategories.interface'
+import { Check } from 'lucide-react'
 
 const SettingsAddEditCategories: React.FC<SettingsAddEditCategoriesProps> = ({
   selectedCategory,
@@ -72,7 +73,7 @@ const SettingsAddEditCategories: React.FC<SettingsAddEditCategoriesProps> = ({
       categoryCode: formData.categoryCode,
       isActive: formData.selectedStatus.isActive,
       // profitMargin: parseFloat(formData.profitMargin || '0')
-      profitMargin: (formData.profitMargin || '0')
+      profitMargin: formData.profitMargin || '0'
     }
 
     if (selectedCategory) payload.refCategoryId = selectedCategory.refCategoryId
@@ -162,7 +163,7 @@ const SettingsAddEditCategories: React.FC<SettingsAddEditCategoriesProps> = ({
       <div className="fixed bottom-0 left-0 w-full shadow-md p-4 text-right z-10">
         <Button
           label={selectedCategory ? 'Update' : 'Save'}
-          icon="pi pi-check"
+          icon={<Check />}
           className="bg-[#8e5ea8] border-none gap-2"
           onClick={handleSubmit}
           loading={isSubmitting}

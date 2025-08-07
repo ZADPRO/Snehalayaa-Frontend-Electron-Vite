@@ -1,16 +1,4 @@
-// import React from 'react';
-
-// const SettingsOverview: React.FC = () => {
-//     return (
-//         <div>
-
-//         </div>
-//     );
-// };
-
-// export default SettingsOverview;
-
-import React, { useState } from 'react'
+import React from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
 import { ProgressBar } from 'primereact/progressbar'
@@ -21,7 +9,6 @@ import 'primeicons/primeicons.css'
 
 const SettingsOverview: React.FC = () => {
   // Area chart data for Average Weekly Sales
- 
 
   // Bar chart data for Sales & Views
   const salesViewsData = {
@@ -142,7 +129,7 @@ const SettingsOverview: React.FC = () => {
   ]
 
   return (
-    <div style={{ padding: '10px', backgroundColor: '#f8fafc' }}>
+    <div style={{ backgroundColor: '#f8fafc' }}>
       {/* Top Row - Main Metrics */}
       <div
         style={{
@@ -159,7 +146,7 @@ const SettingsOverview: React.FC = () => {
             boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
             padding: '20px',
             textAlign: 'center',
-            backgroundColor:'beige'
+            backgroundColor: 'beige'
           }}
         >
           <div
@@ -275,7 +262,6 @@ const SettingsOverview: React.FC = () => {
           gridTemplateColumns: '1fr 1fr 2fr',
           gap: '20px',
           marginBottom: '20px'
-
         }}
       >
         {/* Total Users */}
