@@ -1,4 +1,4 @@
-import { Barcode, Blocks, PackageCheck, PackagePlus, PackageX, ShoppingBag } from 'lucide-react'
+import { Blocks, CornerDownLeft,  ShoppingBag } from 'lucide-react'
 import React, { useState } from 'react'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import { Divider } from 'primereact/divider'
@@ -6,6 +6,7 @@ import { Divider } from 'primereact/divider'
 import './POSmanagement.css'
 import POSmanagementOverview from '../../components/09-POSmanagement/POSmanagementOverview/POSmanagementOverview'
 import POSsalesOrder from '../../components/09-POSmanagement/POSmanagement/POSsalesOrder/POSsalesOrder'
+import POSsalesReturn from '../../components/09-POSmanagement/POSmanagement/POSsalesReturn/POSsalesReturn'
 
 // Sidebar items config
 const sidebarItems = [
@@ -20,6 +21,12 @@ const sidebarItems = [
     label: 'Sales Order',
     icon: <ShoppingBag size={20} className="sidebar-icon" />,
     component: <POSsalesOrder />
+  },
+  {
+    key: 'salesReturn',
+    label: 'Sales Return',
+    icon: <CornerDownLeft size={20} className="sidebar-icon" />,
+    component: <POSsalesReturn />
   },
  
 ]

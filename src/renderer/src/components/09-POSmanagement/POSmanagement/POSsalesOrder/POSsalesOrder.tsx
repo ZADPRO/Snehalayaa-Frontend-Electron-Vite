@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Plus, Save, Search, X } from 'lucide-react'
+import { Coins, Plus, Save, Search, X } from 'lucide-react'
 import { Button } from 'primereact/button'
 import { Sidebar } from 'primereact/sidebar'
 import { InputText } from 'primereact/inputtext'
 import { Column } from 'primereact/column'
 import { DataTable, DataTableRowEditCompleteEvent } from 'primereact/datatable'
-import { Divider } from 'primereact/divider'
 import POScustomers from '../POScustomers/POScustomers'
 import { InputNumber } from 'primereact/inputnumber'
 import { Employee, Product } from './POSsalesOrder.interface'
@@ -32,23 +31,29 @@ const POSsalesOrder: React.FC = () => {
   const [onlineAmount, setOnlineAmount] = useState<number>(0)
   const [amountGiven, setAmountGiven] = useState<number>(0)
   const [changeReturned, setChangeReturned] = useState<number>(0)
-  // const [_finalPaymentPayload, setFinalPaymentPayload] = useState<any | null>(null)
   const [previewVisible, setPreviewVisible] = useState(false)
   const [paymentPayload, setPaymentPayload] = useState<any | null>(null)
-  console.log('paymentPayload', paymentPayload)
+  const [paymentDialogVisible, setPaymentDialogVisible] = useState(false)
+  const [invoiceNumber, setInvoiceNumber] = useState('')
 
   const totalAmount = products.reduce((acc, cur) => acc + (cur.totalPrice || 0), 0)
-  const totalPaid = cashAmount + onlineAmount
-  const balance = totalAmount - totalPaid
+  const totalPaid = (cashAmount || 0) + (onlineAmount || 0)
+  const balance = Math.max(0, totalAmount - totalPaid)
+  const changeReturn = Math.max(0, (amountGiven || 0) - (cashAmount || 0))
 
   const paymentOptions = ['Cash', 'GPay', 'Card', 'PhonePe']
 
+  useEffect(() => {
+    const newInvNum = `INV-${Date.now()}`
+    setInvoiceNumber(newInvNum)
+  }, [])
+
   const handlePaymentSubmit = () => {
-    if (totalPaid !== totalAmount) {
+    if (totalPaid + 0.9 < totalAmount) {
       toast.current?.show({
         severity: 'error',
         summary: 'Payment mismatch',
-        detail: 'Paid amount must match total bill',
+        detail: 'Paid amount is less than total bill',
         life: 3000
       })
       return
@@ -68,7 +73,7 @@ const POSsalesOrder: React.FC = () => {
       refPaymentMode: paymentModes,
       amountGiven: paymentModes.includes('Cash') ? amountGiven : 0,
       changeReturned: paymentModes.includes('Cash') ? changeReturned : 0,
-      refInvoiceNumber: `INV-${Date.now()}`,
+      refInvoiceNumber: invoiceNumber, // use state here
       totalPaidAmount: totalPaid,
       paymentBreakdown: {
         cash: cashAmount,
@@ -82,12 +87,15 @@ const POSsalesOrder: React.FC = () => {
 
   const handleSave = async () => {
     const saleCode = `SALE-${Date.now()}`
-    const invoiceNumber = `INV-${Date.now()}`
+    // const invoiceNumber = `INV-${Date.now()}`
     const customerId = 'CUST001' // Replace with real logic
     const hasCustomer = !!customerId
+    const newInvoiceNumber = `INV-${Date.now()}`
+    setInvoiceNumber(newInvoiceNumber) // Save it here so it's shared
 
     const payload = {
       refSaleCode: saleCode,
+
       refProductDetails: products.map((product) => ({
         refProductId: Number(product.productId),
         refProductQty: product.quantity,
@@ -105,7 +113,7 @@ const POSsalesOrder: React.FC = () => {
       ...(hasCustomer && { refCustomerId: customerId }),
       refSaleDate: new Date().toISOString(),
       refPaymentMode: paymentModes,
-      refInvoiceNumber: invoiceNumber
+      refInvoiceNumber: newInvoiceNumber
     }
 
     try {
@@ -223,7 +231,7 @@ const POSsalesOrder: React.FC = () => {
 
       <ConfirmDialog />
       {/* Left Section */}
-      <div className="" style={{ width: '76%' }}>
+      <div className="" style={{ width: '100%' }}>
         {/* Search Field */}
         <div className="custom-icon-field mb-3 flex justify-content-between w-full gap-2">
           {/* <Search className="lucide-search-icon" size={18} /> */}
@@ -259,8 +267,15 @@ const POSsalesOrder: React.FC = () => {
               tooltip="Save"
               tooltipOptions={{ position: 'right' }}
               icon={<Save size={20} />}
-              className="p-button-primary gap-2"
+              className="p-button-primary "
               onClick={handleSave}
+            />
+            <Button
+              label="Payment"
+              // icon="pi pi-credit-card"
+              icon={<Coins size={20} />}
+              onClick={() => setPaymentDialogVisible(true)}
+              severity="secondary"
             />
           </div>
 
@@ -367,31 +382,31 @@ const POSsalesOrder: React.FC = () => {
             field="quantity"
             header="Quantity"
             editor={numberEditor}
-            style={{ minWidth: '6rem' }}
+            style={{ minWidth: '7rem' }}
           />
           <Column
             field="Discount"
             header="Discount %"
             editor={numberEditor}
-            style={{ minWidth: '5rem' }}
+            style={{ minWidth: '6rem' }}
           />
           <Column
             field="DiscountPrice"
             header="Discount in ₹"
             editor={numberEditor}
-            style={{ minWidth: '5rem' }}
+            style={{ minWidth: '6rem' }}
           />
           <Column
             field="totalPrice"
             header="Total Price"
             editor={numberEditor}
-            style={{ minWidth: '5rem' }}
+            style={{ minWidth: '6rem' }}
           />
           <Column
             rowEditor
             header="Edit Price"
             bodyStyle={{ textAlign: 'center' }}
-            style={{ minWidth: '5rem' }}
+            style={{ minWidth: '6rem' }}
           />
           <Column
             header="Cancel"
@@ -411,104 +426,106 @@ const POSsalesOrder: React.FC = () => {
             )}
           />
         </DataTable>
-        {/* <div className="mt-3"></div> */}
       </div>
-
-      {/* Vertical Divider */}
-      <Divider layout="vertical" className="verticalDivider" />
-
-      {/* Right Panel (Actions) */}
-      <div
-        style={{ width: '23%' }}
-        className="flex flex-column justify-content-between align-items-center mr-2"
+      <Dialog
+        header="💰 Payment Summary"
+        visible={paymentDialogVisible}
+        style={{ width: '30vw' }}
+        modal
+        onHide={() => setPaymentDialogVisible(false)}
+        breakpoints={{ '78rem': '90vw', '640px': '100vw' }}
+        resizable={true}
+        draggable={true}
       >
-        <div className="flex gap-2 pb-3">
-          <div className="flex flex-column gap-2">
-            <h4 className="text-lg font-bold m-0 ">💰 Payment Summary</h4>
+        <div className="flex flex-column gap-2">
+          <div className="flex flex-column gap-2 mt-3 w-full">
+            <FloatLabel className="always-float">
+              <MultiSelect
+                value={paymentModes}
+                options={paymentOptions}
+                className="w-full"
+                onChange={(e) => {
+                  setPaymentModes(e.value)
+                  if (!e.value.includes('Cash')) {
+                    setCashAmount(0)
+                    setAmountGiven(0)
+                    setChangeReturned(0)
+                  }
+                  if (!e.value.some((mode) => mode !== 'Cash')) {
+                    setOnlineAmount(0)
+                  }
+                }}
+                placeholder="Choose one or more"
+              />
+              <label>Select Payment Mode(s)</label>
+            </FloatLabel>
+          </div>
 
-            <div className="flex flex-column gap-2 mt-3 ">
+          {paymentModes.includes('Cash') && (
+            <div className="flex flex-column gap-4 mt-3">
               <FloatLabel className="always-float">
-                <MultiSelect
-                  value={paymentModes}
-                  options={paymentOptions}
+                <label>Cash Amount Paid</label>
+                <InputNumber
+                  value={cashAmount}
                   className="w-full"
-                  onChange={(e) => {
-                    setPaymentModes(e.value)
-                    if (!e.value.includes('Cash')) {
-                      setCashAmount(0)
-                      setAmountGiven(0)
-                      setChangeReturned(0)
-                    }
-                    if (!e.value.some((mode) => mode !== 'Cash')) {
-                      setOnlineAmount(0)
-                    }
-                  }}
-                  placeholder="Choose one or more"
+                  onValueChange={(e) => setCashAmount(e.value || 0)}
                 />
-                <label>Select Payment Mode(s)</label>
+              </FloatLabel>
+              <FloatLabel className="always-float">
+                <label>Amount Given by Customer</label>
+                <InputNumber
+                  value={amountGiven}
+                  className="w-full"
+                  onValueChange={(e) => {
+                    const given = e.value || 0
+                    setAmountGiven(given)
+                    setChangeReturned(given - cashAmount)
+                  }}
+                />
+              </FloatLabel>
+              <FloatLabel className="always-float">
+                <label>Change Returned</label>
+                <InputNumber value={changeReturn} className="w-full mb-3" disabled />
               </FloatLabel>
             </div>
+          )}
 
-            {paymentModes.includes('Cash') && (
-              <div className="flex flex-column gap-4 mt-3">
-                <FloatLabel className="always-float">
-                  <label>Cash Amount Paid</label>
-                  <InputNumber
-                    value={cashAmount}
-                    onValueChange={(e) => setCashAmount(e.value || 0)}
-                  />
-                </FloatLabel>
-                <FloatLabel className="always-float">
-                  <label>Amount Given by Customer</label>
-                  <InputNumber
-                    value={amountGiven}
-                    onValueChange={(e) => {
-                      const given = e.value || 0
-                      setAmountGiven(given)
-                      setChangeReturned(given - cashAmount)
-                    }}
-                  />
-                </FloatLabel>
-
-                <label>Change Returned</label>
-                <InputNumber value={changeReturned} disabled />
-              </div>
-            )}
-
-            {paymentModes.some((mode) => mode !== 'Cash') && (
-              <div className="flex flex-column gap-2">
+          {paymentModes.some((mode) => mode !== 'Cash') && (
+            <div className="flex flex-column gap-2">
+              <FloatLabel className="always-float">
                 <label>Online Amount Paid</label>
                 <InputNumber
                   value={onlineAmount}
+                  className="w-full"
                   onValueChange={(e) => setOnlineAmount(e.value || 0)}
                 />
-              </div>
-            )}
-
-            <div className="mt-2">
-              <div className="flex justify-content-between">
-                <span>Total Bill:</span>
-                <span>₹{totalAmount}</span>
-              </div>
-              <div className="flex justify-content-between">
-                <span>Total Paid:</span>
-                <span>₹{totalPaid}</span>
-              </div>
-              <div className="flex justify-content-between">
-                <span>Balance:</span>
-                <span>₹{balance}</span>
-              </div>
+              </FloatLabel>
             </div>
+          )}
 
-            <Button
-              label="Preview Invoice"
-              severity="success"
-              className="customizedBtn"
-              onClick={handlePaymentSubmit}
-            />
+          <div className="mt-2">
+            <div className="flex justify-content-between">
+              <span>Total Bill:</span>
+              <span>₹{totalAmount}</span>
+            </div>
+            <div className="flex justify-content-between">
+              <span>Total Paid:</span>
+              <span>₹{totalPaid}</span>
+            </div>
+            <div className="flex justify-content-between">
+              <span>Balance:</span>
+              <span>₹{balance}</span>
+            </div>
           </div>
+
+          <Button
+            label="Preview Invoice"
+            severity="success"
+            className="customizedBtn"
+            onClick={handlePaymentSubmit}
+          />
         </div>
-      </div>
+      </Dialog>
 
       {/* Sidebar for Adding Customers */}
       <Sidebar
