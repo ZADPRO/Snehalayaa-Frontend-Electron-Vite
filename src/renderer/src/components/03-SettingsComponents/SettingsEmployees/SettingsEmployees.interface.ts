@@ -19,4 +19,13 @@ export interface Employee {
   state: string
   streetName: string
   username: string
+   designation: string
+  firstName: string
+  lastName: string
+}
+
+export interface SettingsAddEditEmployeeProps {
+  selectedEmployees: Employee | null
+  onClose: () => void
+  reloadData: () => void
 }

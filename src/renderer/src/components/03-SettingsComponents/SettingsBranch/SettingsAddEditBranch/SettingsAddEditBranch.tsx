@@ -11,8 +11,8 @@ import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
-import { CirclePlus } from 'lucide-react'
-import { Category, SubCategory } from '../../SettingsCategories/SettingsCategories.interface'
+import { Plus } from 'lucide-react'
+// import { Category, SubCategory } from '../../SettingsCategories/SettingsCategories.interface'
 
 interface Section {
   sectionName: string
@@ -38,12 +38,12 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [floors, setFloors] = useState<Floor[]>([])
 
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
-  const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
+  // const [selectedCategory, _setSelectedCategory] = useState<Category | null>(null)
+  // const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
 
-  const filteredSubCategories = selectedCategory
-    ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
-    : []
+  // const filteredSubCategories = selectedCategory
+  //   ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
+  //   : []
 
   const [formData, setFormData] = useState<BranchFormData>({
     // refBranchId:0,
@@ -64,6 +64,27 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     { name: 'Inactive', isActive: false }
   ]
 
+  // useEffect(() => {
+  //   if (selectedBranches) {
+  //     setFormData({
+  //       refBranchName: selectedBranches.refBranchName,
+  //       refBranchCode: selectedBranches.refBranchCode,
+  //       refLocation: selectedBranches.refLocation,
+  //       refMobile: selectedBranches.refMobile,
+  //       refEmail: selectedBranches.refEmail,
+  //       isMainBranch: selectedBranches.isMainBranch,
+  //       isOnline: selectedBranches.isOnline,
+  //       isOffline: selectedBranches.isOffline,
+  //       selectedStatus: selectedBranches.isActive
+  //         ? { name: 'Active', isActive: true }
+  //         : { name: 'Inactive', isActive: false },
+  //       floors: selectedBranches.floors
+  //     })
+  //         setFloors(selectedBranches.floors || [])
+
+  //   }
+  // }, [selectedBranches])
+  
   useEffect(() => {
     if (selectedBranches) {
       setFormData({
@@ -79,6 +100,21 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           ? { name: 'Active', isActive: true }
           : { name: 'Inactive', isActive: false },
         floors: selectedBranches.floors
+      })
+      setFloors(selectedBranches.floors || [])
+    } else {
+      setFloors([])
+      setFormData({
+        refBranchName: '',
+        refBranchCode: '',
+        refLocation: '',
+        refMobile: '',
+        refEmail: '',
+        isMainBranch: false,
+        isOnline: false,
+        isOffline: true,
+        selectedStatus: { name: 'Active', isActive: true },
+        floors: []
       })
     }
   }, [selectedBranches])
@@ -114,8 +150,8 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     updated[floorIndex].sections.push({
       sectionName: '',
       sectionCode: '',
-      categoryId: selectedCategory ? selectedCategory.refCategoryId : null,
-    refSubCategoryId: selectedSubCategory ? selectedSubCategory.refSubCategoryId : null
+      categoryId: null,
+      refSubCategoryId: null
     })
     setFloors(updated)
   }
@@ -319,13 +355,18 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           <div className="flex-1"></div>
         </div>
 
-        <div className="flex justify-end mt-3 w-full">
+        <div className="flex justify-content-end mt-3 mb-3 w-full">
           <Button label="Add Floor" className="bg-[#8e5ea8] border-none" onClick={handleAddFloor} />
         </div>
-        <div className="space-y-6">
+        <div className="w-full justify-content-start ml-0 ">
           {floors.map((floor, floorIndex) => (
-            <div key={floorIndex} className="border rounded-xl p-4 shadow-md bg-gray-50 space-y-4">
-              <div className="flex gap-4 flex-wrap">
+            <div key={floorIndex} className="border rounded-xl p-2 shadow-md bg-gray-50 space-y-2 ">
+              {/* Floor Label */}
+              <div className="font-semibold text-lg text-purple-700 mb-3">
+                Floor <span>{floorIndex + 1}</span>
+              </div>
+
+              <div className="flex gap-3 flex-wrap">
                 <FloatLabel className="always-float">
                   <InputText
                     id={`floorName-${floorIndex}`}
@@ -343,78 +384,128 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                   <label htmlFor={`floorCode-${floorIndex}`}>Floor Code</label>
                 </FloatLabel>
                 <Button
-                  // label="Add Section"
-                  // className="bg-green-500 border-none"
-                  icon={<CirclePlus className="w-4 h-4" />} // ✅ Use icon as a JSX element
+                  icon={<Plus className="w-8 h-8" />}
                   onClick={() => handleAddSection(floorIndex)}
                 />
               </div>
 
-              {/* Sections */}
-              {floor.sections.map((section, sectionIndex) => (
-                <div
-                  key={sectionIndex}
-                  className="flex gap-4 flex-wrap ml-6 mt-2 bg-white p-3 rounded shadow-sm "
-                >
-                  <FloatLabel className="always-float">
-                    <InputText
-                      id={`sectionName-${floorIndex}-${sectionIndex}`}
-                      value={section.sectionName}
-                      onChange={(e) =>
-                        handleSectionChange(floorIndex, sectionIndex, 'sectionName', e.target.value)
-                      }
-                    />
-                    <label htmlFor={`sectionName-${floorIndex}-${sectionIndex}`}>
-                      Section Name
-                    </label>
-                  </FloatLabel>
-                  <FloatLabel className="always-float">
-                    <InputText
-                      id={`sectionCode-${floorIndex}-${sectionIndex}`}
-                      value={section.sectionCode}
-                      onChange={(e) =>
-                        handleSectionChange(floorIndex, sectionIndex, 'sectionCode', e.target.value)
-                      }
-                    />
-                    <label htmlFor={`sectionCode-${floorIndex}-${sectionIndex}`}>
-                      Section Code
-                    </label>
-                  </FloatLabel>
+              {floor.sections.map((section, sectionIndex) => {
+                // Filter sub-categories based on current section's categoryId
+                const sectionFilteredSubCategories = subCategories.filter(
+                  (sub) => sub.refCategoryId === section.categoryId
+                )
 
-                  <div className="flex gap-4 ">
-                    <FloatLabel className="always-float">
-                      <Dropdown
-                        id="category"
-                        value={selectedCategory}
-                        onChange={(e) => {
-                          setSelectedCategory(e.value)
-                          setSelectedSubCategory(null)
-                        }}
-                        appendTo="self" // or "body"
-                        options={categories}
-                        optionLabel="categoryName"
-                        placeholder="Select Category"
-                      />
-                      <label htmlFor="category">Category</label>
-                    </FloatLabel>
-                    <FloatLabel className="always-float">
-                      <Dropdown
-                        id="subCategory"
-                        value={selectedSubCategory}
-                        onChange={(e) => setSelectedSubCategory(e.value)}
-                        options={filteredSubCategories}
-                        optionLabel="subCategoryName"
-                        placeholder={
-                          selectedCategory ? 'Select Sub Category' : 'Select Category First'
-                        }
-                        disabled={!selectedCategory}
-                        emptyMessage="No Sub Category Found"
-                      />
-                      <label htmlFor="subCategory">Sub-Category</label>
-                    </FloatLabel>
+                return (
+                  <div key={sectionIndex} className="flex flex-column  w-full">
+                    <p className="w-full font-medium text-gray-900">
+                      Section {`${floorIndex + 1}.${String.fromCharCode(97 + sectionIndex)}`}
+                    </p>
+                    <div className="flex flex-column gap-3 mt-3">
+                      <div className="flex gap-3">
+                        <div className="flex-1">
+                          <FloatLabel className="always-float">
+                            <InputText
+                              id={`sectionName-${floorIndex}-${sectionIndex}`}
+                              value={section.sectionName}
+                              className="w-full"
+                              onChange={(e) =>
+                                handleSectionChange(
+                                  floorIndex,
+                                  sectionIndex,
+                                  'sectionName',
+                                  e.target.value
+                                )
+                              }
+                            />
+                            <label htmlFor={`sectionName-${floorIndex}-${sectionIndex}`}>
+                              Section Name
+                            </label>
+                          </FloatLabel>
+                        </div>
+                        <div className="flex-1">
+                          <FloatLabel className="always-float">
+                            <InputText
+                              id={`sectionCode-${floorIndex}-${sectionIndex}`}
+                              value={section.sectionCode}
+                              className="w-full"
+                              onChange={(e) =>
+                                handleSectionChange(
+                                  floorIndex,
+                                  sectionIndex,
+                                  'sectionCode',
+                                  e.target.value
+                                )
+                              }
+                            />
+                            <label htmlFor={`sectionCode-${floorIndex}-${sectionIndex}`}>
+                              Section Code
+                            </label>
+                          </FloatLabel>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 bg-white rounded shadow-sm w-full">
+                        <div className="flex-1">
+                          <FloatLabel className="always-float ">
+                            <Dropdown
+                              id={`category-${floorIndex}-${sectionIndex}`}
+                              value={section.categoryId}
+                              onChange={(e) => {
+                                handleSectionChange(floorIndex, sectionIndex, 'categoryId', e.value)
+                                // Optionally, also clear subcategory if category changes:
+                                handleSectionChange(
+                                  floorIndex,
+                                  sectionIndex,
+                                  'refSubCategoryId',
+                                  null
+                                )
+                              }}
+                              appendTo="self"
+                              className="w-full"
+                              options={categories}
+                              optionLabel="categoryName"
+                              optionValue="refCategoryId"
+                              placeholder="Select Category"
+                            />
+                            <label htmlFor={`category-${floorIndex}-${sectionIndex}`}>
+                              Category
+                            </label>
+                          </FloatLabel>
+                        </div>
+                        <div className="flex-1">
+                          <FloatLabel className="always-float">
+                            <Dropdown
+                              id={`subCategory-${floorIndex}-${sectionIndex}`}
+                              value={section.refSubCategoryId}
+                              onChange={(e) =>
+                                handleSectionChange(
+                                  floorIndex,
+                                  sectionIndex,
+                                  'refSubCategoryId',
+                                  e.value
+                                )
+                              }
+                              options={sectionFilteredSubCategories}
+                              optionLabel="subCategoryName"
+                              optionValue="refSubCategoryId"
+                              appendTo="self"
+                              className="w-full"
+                              placeholder={
+                                section.categoryId ? 'Select Sub Category' : 'Select Category First'
+                              }
+                              disabled={!section.categoryId}
+                              emptyMessage="No Sub Category Found"
+                            />
+                            <label htmlFor={`subCategory-${floorIndex}-${sectionIndex}`}>
+                              Sub-Category
+                            </label>
+                          </FloatLabel>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ))}
         </div>

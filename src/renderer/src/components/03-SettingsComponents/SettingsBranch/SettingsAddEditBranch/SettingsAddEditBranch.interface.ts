@@ -40,6 +40,7 @@ export interface Section {
   refSubCategoryId: any
 }
 
+
 export interface Floor {
   floorName: string
   floorCode: string

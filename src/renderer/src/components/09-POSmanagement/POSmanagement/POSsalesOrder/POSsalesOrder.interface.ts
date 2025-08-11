@@ -1,5 +1,5 @@
 export interface Product {
-  id: number
+  productId: number
   productName: string
   Price: number
   quantity: number
@@ -10,6 +10,25 @@ export interface Product {
 
 }
 
+export interface ProductDetail {
+  refProductId: number
+  refProductQty: number
+  refProductPrice: number
+  refDiscount: number
+  refTotalPrice: number
+}
+
+export interface SaveSalePayload {
+  refSaleCode: string
+  refProductDetails: ProductDetail[]
+  amountGiven?: number
+  changeReturned?: number
+  refEmployeeId: string[]
+  refCustomerId?: string
+  refSaleDate: string
+  refPaymentMode: string[]
+  refInvoiceNumber: string
+}
 export interface AssignedEmployee {
   RefUserId: string
   RefUserFName: string
