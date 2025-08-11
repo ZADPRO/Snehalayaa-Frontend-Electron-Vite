@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {  Plus, Search, Upload } from 'lucide-react'
+import { Plus, Save, Search, X } from 'lucide-react'
 import { Button } from 'primereact/button'
 import { Sidebar } from 'primereact/sidebar'
 import { InputText } from 'primereact/inputtext'
@@ -9,10 +9,13 @@ import { Divider } from 'primereact/divider'
 import POScustomers from '../POScustomers/POScustomers'
 import { InputNumber } from 'primereact/inputnumber'
 import { Employee, Product } from './POSsalesOrder.interface'
-import { fetchEmployees, fetchProductBySKU } from './POSsalesOrder.function'
+import { fetchEmployees, fetchProductBySKU, saveSale } from './POSsalesOrder.function'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { MultiSelect } from 'primereact/multiselect'
 import { Toast } from 'primereact/toast'
+import InvoicePreview from '../POSbilling/POSbilling'
+import { Dialog } from 'primereact/dialog'
+import { FloatLabel } from 'primereact/floatlabel'
 
 const POSsalesOrder: React.FC = () => {
   const [visibleRight, setVisibleRight] = useState(false)
@@ -24,7 +27,108 @@ const POSsalesOrder: React.FC = () => {
   const [selectedEmployees, setSelectedEmployees] = useState<any[]>([])
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null)
 
-  console.log('Selected employees:----------------line 27', selectedEmployees)
+  const [paymentModes, setPaymentModes] = useState<string[]>([])
+  const [cashAmount, setCashAmount] = useState<number>(0)
+  const [onlineAmount, setOnlineAmount] = useState<number>(0)
+  const [amountGiven, setAmountGiven] = useState<number>(0)
+  const [changeReturned, setChangeReturned] = useState<number>(0)
+  // const [_finalPaymentPayload, setFinalPaymentPayload] = useState<any | null>(null)
+  const [previewVisible, setPreviewVisible] = useState(false)
+  const [paymentPayload, setPaymentPayload] = useState<any | null>(null)
+  console.log('paymentPayload', paymentPayload)
+
+  const totalAmount = products.reduce((acc, cur) => acc + (cur.totalPrice || 0), 0)
+  const totalPaid = cashAmount + onlineAmount
+  const balance = totalAmount - totalPaid
+
+  const paymentOptions = ['Cash', 'GPay', 'Card', 'PhonePe']
+
+  const handlePaymentSubmit = () => {
+    if (totalPaid !== totalAmount) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Payment mismatch',
+        detail: 'Paid amount must match total bill',
+        life: 3000
+      })
+      return
+    }
+
+    const payload = {
+      refProductDetails: products.map((p) => ({
+        refProductId: Number(p.productId),
+        refProductQty: p.quantity,
+        refProductPrice: p.Price,
+        refDiscount: p.Discount,
+        refTotalPrice: p.totalPrice
+      })),
+      refEmployeeId: products.flatMap((p) => p.assignedEmployees?.map((e) => e.RefUserId) || []),
+      refCustomerId: 'CUST001',
+      refSaleDate: new Date().toISOString(),
+      refPaymentMode: paymentModes,
+      amountGiven: paymentModes.includes('Cash') ? amountGiven : 0,
+      changeReturned: paymentModes.includes('Cash') ? changeReturned : 0,
+      refInvoiceNumber: `INV-${Date.now()}`,
+      totalPaidAmount: totalPaid,
+      paymentBreakdown: {
+        cash: cashAmount,
+        online: onlineAmount
+      }
+    }
+
+    setPaymentPayload(payload)
+    setPreviewVisible(true)
+  }
+
+  const handleSave = async () => {
+    const saleCode = `SALE-${Date.now()}`
+    const invoiceNumber = `INV-${Date.now()}`
+    const customerId = 'CUST001' // Replace with real logic
+    const hasCustomer = !!customerId
+
+    const payload = {
+      refSaleCode: saleCode,
+      refProductDetails: products.map((product) => ({
+        refProductId: Number(product.productId),
+        refProductQty: product.quantity,
+        refProductPrice: product.Price,
+        refDiscount: product.Discount,
+        refTotalPrice: product.totalPrice
+      })),
+      ...(paymentModes.includes('Cash') && {
+        amountGiven: amountGiven,
+        changeReturned: changeReturned
+      }),
+      refEmployeeId: products.flatMap(
+        (product) => product.assignedEmployees?.map((emp) => emp.RefUserId) || []
+      ),
+      ...(hasCustomer && { refCustomerId: customerId }),
+      refSaleDate: new Date().toISOString(),
+      refPaymentMode: paymentModes,
+      refInvoiceNumber: invoiceNumber
+    }
+
+    try {
+      const result = await saveSale(payload)
+      console.log('✅ Sale saved:', result)
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Sale Saved',
+        detail: 'The order has been saved successfully!',
+        life: 3000
+      })
+
+      // Optionally reset form here
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to save the sale!',
+        life: 3000
+      })
+    }
+  }
 
   const toast = useRef<Toast>(null)
 
@@ -60,25 +164,6 @@ const POSsalesOrder: React.FC = () => {
     }
   }, [showCustomDialog])
 
-  // const handleSKUFetch = async () => {
-  //   try {
-  //     const product = await fetchProductBySKU(sku)
-  //     setProducts((prev) => [...prev, product])
-  //     setSku('')
-  //     setShowCustomDialog(true) // show custom dialog with input box
-  //   } catch (error) {
-  //     confirmDialog({
-  //       message: 'No product found for this SKU. Do you want to try again?',
-  //       header: 'Product Not Found',
-  //       // icon: 'pi pi-exclamation-triangle',
-  //       acceptLabel: 'Yes',
-  //       rejectLabel: 'No',
-  //       accept: () => setSku(''),
-  //       reject: () => console.log('User cancelled')
-  //     })
-  //   }
-  // }
-
   const handleSKUFetch = async () => {
     try {
       const product = await fetchProductBySKU(sku)
@@ -97,16 +182,6 @@ const POSsalesOrder: React.FC = () => {
       })
     }
   }
-
-  // const handleCustomDialogAccept = () => {
-  //   const selectedEmployeeIds = selectedEmployees.map((emp) => emp.RefUserId)
-  //   console.log('Selected employee IDs:', selectedEmployeeIds)
-  //   setShowCustomDialog(false)
-  //   setSelectedEmployees([])
-
-  //   // Return or pass the selectedEmployeeIds as needed
-  //   return selectedEmployeeIds
-  // }
 
   const handleCustomDialogAccept = () => {
     if (selectedEmployees.length === 0) {
@@ -143,29 +218,52 @@ const POSsalesOrder: React.FC = () => {
   }
 
   return (
-    <div className="pt-3 flex h-full w-full gap-3">
+    <div className="p-0 flex h-full justify-content-between">
+      <Toast ref={toast} />
+
       <ConfirmDialog />
       {/* Left Section */}
-      <div className="flex-1">
+      <div className="" style={{ width: '76%' }}>
         {/* Search Field */}
-        <div className="custom-icon-field mb-3 flex gap-2">
+        <div className="custom-icon-field mb-3 flex justify-content-between w-full gap-2">
           {/* <Search className="lucide-search-icon" size={18} /> */}
-          <InputText
-            placeholder="Enter SKU"
-            className="search-input"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-          />
-          <Button
-            icon={<Search size={16} strokeWidth={2} />}
-            severity="success"
-            tooltip="Search"
-            tooltipOptions={{ position: 'left' }}
-            value={sku}
-            onClick={handleSKUFetch}
-            onChange={(e) => setSku((e.target as HTMLInputElement).value)}
-            disabled={!sku}
-          />
+          <div className="flex gap-2">
+            <InputText
+              placeholder="Enter SKU"
+              className="search-input"
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+            />
+
+            <Button
+              icon={<Search size={16} strokeWidth={2} />}
+              severity="success"
+              tooltip="Search"
+              tooltipOptions={{ position: 'left' }}
+              value={sku}
+              onClick={handleSKUFetch}
+              onChange={(e) => setSku((e.target as HTMLInputElement).value)}
+              disabled={!sku}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              tooltip="Add Customer"
+              tooltipOptions={{ position: 'right' }}
+              icon={<Plus size={20} />}
+              className="p-button-primary"
+              onClick={() => setVisibleRight(true)}
+            />
+            <Button
+              tooltip="Save"
+              tooltipOptions={{ position: 'right' }}
+              icon={<Save size={20} />}
+              className="p-button-primary gap-2"
+              onClick={handleSave}
+            />
+          </div>
+
           {/* Custom Dialog */}
           <ConfirmDialog
             visible={showCustomDialog}
@@ -232,16 +330,22 @@ const POSsalesOrder: React.FC = () => {
           value={products}
           dataKey="id"
           showGridlines
+          scrollable
           stripedRows
           editMode="row"
           onRowEditComplete={onRowEditComplete}
+          className="flex gap-3 p-datatable-sm"
         >
-          <Column header="S.No" body={(_, opts) => opts.rowIndex + 1} style={{ maxWidth: '50px' }} />
+          <Column
+            header="S.No"
+            body={(_, opts) => opts.rowIndex + 1}
+            style={{ minWidth: '2rem' }}
+          />
           <Column
             field="productName"
             header="Product Name"
             editor={textEditor}
-            style={{ maxWidth: '250px' }}
+            style={{ minWidth: '12rem' }}
             body={(rowData) => (
               <div className=" gap-1">
                 <div className="flex">
@@ -258,66 +362,151 @@ const POSsalesOrder: React.FC = () => {
             )}
           />
 
-          <Column
-            field="Price"
-            header="Price"
-            editor={numberEditor}
-            style={{ maxWidth: '120px' }}
-          />
+          <Column field="Price" header="Price" editor={numberEditor} style={{ minWidth: '5rem' }} />
           <Column
             field="quantity"
             header="Quantity"
             editor={numberEditor}
-            style={{ maxWidth: '120px' }}
+            style={{ minWidth: '6rem' }}
           />
           <Column
             field="Discount"
             header="Discount %"
             editor={numberEditor}
-            style={{ maxWidth: '100px' }}
+            style={{ minWidth: '5rem' }}
           />
           <Column
             field="DiscountPrice"
             header="Discount in ₹"
             editor={numberEditor}
-            style={{ maxWidth: '120px' }}
+            style={{ minWidth: '5rem' }}
           />
           <Column
             field="totalPrice"
             header="Total Price"
             editor={numberEditor}
-            style={{ maxWidth: '120px' }}
+            style={{ minWidth: '5rem' }}
           />
           <Column
             rowEditor
             header="Edit Price"
-            headerStyle={{ width: '10%', maxWidth: '100px' }}
             bodyStyle={{ textAlign: 'center' }}
+            style={{ minWidth: '5rem' }}
+          />
+          <Column
+            header="Cancel"
+            style={{ minWidth: '5rem' }}
+            body={(rowData) => (
+              <Button
+                // icon="pi pi-times"
+                icon={<X size={20} />}
+                className="p-button-danger p-button-2xl"
+                tooltip="Remove this product"
+                style={{ backgroundColor: 'white', borderColor: 'white', color: 'gray' }}
+                onClick={() => {
+                  console.log('Removing productId:', rowData.productId)
+                  setProducts((prev) => prev.filter((p) => p.productId !== rowData.productId))
+                }}
+              />
+            )}
           />
         </DataTable>
-        <div className="mt-3">
-       
-        </div>
+        {/* <div className="mt-3"></div> */}
       </div>
 
       {/* Vertical Divider */}
-      <Divider layout="vertical" />
+      <Divider layout="vertical" className="verticalDivider" />
 
       {/* Right Panel (Actions) */}
-      <div style={{ width: '17%' }} className="flex flex-column justify-content-between">
-        <div className="flex flex-column gap-2">
-          <Button
-            label="Add Customer"
-            className="w-full p-button-primary gap-2"
-            icon={<Plus size={20} />}
-            onClick={() => setVisibleRight(true)}
-          />
+      <div
+        style={{ width: '23%' }}
+        className="flex flex-column justify-content-between align-items-center mr-2"
+      >
+        <div className="flex gap-2 pb-3">
+          <div className="flex flex-column gap-2">
+            <h4 className="text-lg font-bold m-0 ">💰 Payment Summary</h4>
 
-          <Button
-            label="Upload Invoice"
-            icon={<Upload size={20} />}
-            className="w-full p-button-primary gap-2"
-          />
+            <div className="flex flex-column gap-2 mt-3 ">
+              <FloatLabel className="always-float">
+                <MultiSelect
+                  value={paymentModes}
+                  options={paymentOptions}
+                  className="w-full"
+                  onChange={(e) => {
+                    setPaymentModes(e.value)
+                    if (!e.value.includes('Cash')) {
+                      setCashAmount(0)
+                      setAmountGiven(0)
+                      setChangeReturned(0)
+                    }
+                    if (!e.value.some((mode) => mode !== 'Cash')) {
+                      setOnlineAmount(0)
+                    }
+                  }}
+                  placeholder="Choose one or more"
+                />
+                <label>Select Payment Mode(s)</label>
+              </FloatLabel>
+            </div>
+
+            {paymentModes.includes('Cash') && (
+              <div className="flex flex-column gap-4 mt-3">
+                <FloatLabel className="always-float">
+                  <label>Cash Amount Paid</label>
+                  <InputNumber
+                    value={cashAmount}
+                    onValueChange={(e) => setCashAmount(e.value || 0)}
+                  />
+                </FloatLabel>
+                <FloatLabel className="always-float">
+                  <label>Amount Given by Customer</label>
+                  <InputNumber
+                    value={amountGiven}
+                    onValueChange={(e) => {
+                      const given = e.value || 0
+                      setAmountGiven(given)
+                      setChangeReturned(given - cashAmount)
+                    }}
+                  />
+                </FloatLabel>
+
+                <label>Change Returned</label>
+                <InputNumber value={changeReturned} disabled />
+              </div>
+            )}
+
+            {paymentModes.some((mode) => mode !== 'Cash') && (
+              <div className="flex flex-column gap-2">
+                <label>Online Amount Paid</label>
+                <InputNumber
+                  value={onlineAmount}
+                  onValueChange={(e) => setOnlineAmount(e.value || 0)}
+                />
+              </div>
+            )}
+
+            <div className="mt-2">
+              <div className="flex justify-content-between">
+                <span>Total Bill:</span>
+                <span>₹{totalAmount}</span>
+              </div>
+              <div className="flex justify-content-between">
+                <span>Total Paid:</span>
+                <span>₹{totalPaid}</span>
+              </div>
+              <div className="flex justify-content-between">
+                <span>Balance:</span>
+                <span>₹{balance}</span>
+              </div>
+            </div>
+
+            <Button
+              label="Preview Invoice"
+              severity="success"
+              className="customizedBtn"
+              onClick={handlePaymentSubmit}
+            />
+          </div>
         </div>
       </div>
 
@@ -335,6 +524,42 @@ const POSsalesOrder: React.FC = () => {
       >
         <POScustomers />
       </Sidebar>
+      <Dialog
+        header="Invoice Preview"
+        visible={previewVisible}
+        style={{ width: '600px', maxWidth: '95vw' }}
+        modal
+        onHide={() => setPreviewVisible(false)}
+        breakpoints={{ '960px': '90vw', '640px': '100vw' }}
+        resizable={false}
+        draggable={false}
+      >
+        <InvoicePreview
+          invoiceNumber={paymentPayload?.refInvoiceNumber || ''}
+          date={paymentPayload ? new Date(paymentPayload.refSaleDate).toLocaleDateString() : ''}
+          customerName={paymentPayload?.customerName || 'Customer Name'}
+          items={products.map((p) => ({
+            name: p.productName,
+            quantity: p.quantity,
+            price: p.Price,
+            discount: p.Discount,
+            total: p.totalPrice
+          }))}
+          totalAmount={totalAmount}
+          paidAmount={paymentPayload?.totalPaidAmount || 0}
+          changeReturned={paymentPayload?.changeReturned || 0}
+          payments={
+            paymentPayload?.paymentBreakdown
+              ? Object.entries(paymentPayload.paymentBreakdown)
+                  .filter(([_, amount]) => Number(amount) > 0)
+                  .map(([mode, amount]) => ({
+                    mode: mode.charAt(0).toUpperCase() + mode.slice(1),
+                    amount: Number(amount) // convert unknown to number explicitly
+                  }))
+              : []
+          }
+        />
+      </Dialog>
     </div>
   )
 }

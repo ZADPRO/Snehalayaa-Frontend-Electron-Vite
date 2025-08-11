@@ -260,39 +260,7 @@ const InventoryOverview: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([])
   const toast = useRef(null)
 
-  const stockIntake = 30
-  const stockReturn = 50
-
-  // Donut chart data
-  const donutData = {
-    labels: ['Used', 'Free'],
-    datasets: [
-      {
-        data: [stockIntake, stockReturn],
-        backgroundColor: ['#8b5cf6', '#f3e8ff'],
-        borderWidth: 0
-      }
-    ]
-  }
-
-  const donutOptions = {
-    cutout: '75%',
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: {
-      animateScale: false,
-      animateRotate: false
-    },
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        enabled: false
-      }
-    }
-  }
-
+ 
   // Area chart data for product sales
   const areaData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
@@ -336,48 +304,6 @@ const InventoryOverview: React.FC = () => {
     }
   }
 
-  // Bar chart data for category summary
-  const barData = {
-    labels: ['Electronics', 'Clothing', 'Books', 'Home', 'Sports', 'Beauty', 'Toys', 'Auto'],
-    datasets: [
-      {
-        label: 'Current Stock',
-        data: [45, 38, 25, 42, 35, 28, 32, 40],
-        backgroundColor: '#8b5cf6',
-        borderRadius: 4
-      },
-      {
-        label: 'Required Stock',
-        data: [38, 45, 30, 35, 40, 32, 28, 35],
-        backgroundColor: '#ec4899',
-        borderRadius: 4
-      }
-    ]
-  }
-
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false
-      }
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        grid: {
-          display: false
-        },
-        beginAtZero: true
-      }
-    }
-  }
-
   const load = async () => {
     try {
       const data = await fetchCategories()
@@ -403,7 +329,7 @@ const InventoryOverview: React.FC = () => {
   }, [])
 
   return (
-    <div className="inventory-dashboard">
+    <div className="inventory-dashboard ">
       <Toast ref={toast} />
       
       {/* Top Stats Cards */}
@@ -481,11 +407,11 @@ const InventoryOverview: React.FC = () => {
           <div className="chart-legend">
             <div className="legend-item">
               <span className="legend-color purple"></span>
-              <span>iPad 2</span>
+              <span>Silk</span>
             </div>
             <div className="legend-item">
               <span className="legend-color pink"></span>
-              <span>iPhone X</span>
+              <span>Cotton</span>
             </div>
           </div>
         </Card>
@@ -493,7 +419,7 @@ const InventoryOverview: React.FC = () => {
         {/* Right Side Cards */}
         <div className="right-side">
           {/* Stock Overview Donut */}
-          <Card className="chart-card donut-card">
+          {/* <Card className="chart-card donut-card">
             <div className="chart-header">
               <h3>Stock Overview</h3>
             </div>
@@ -504,49 +430,45 @@ const InventoryOverview: React.FC = () => {
                 <div className="donut-value">{stockIntake + stockReturn}</div>
               </div>
             </div>
-          </Card>
+          </Card> */}
+             <div className="category-cards">
+          {categories.length > 0 ? (
+            categories.slice(0, 6).map((cat) => (
+              <Card key={cat.refCategoryId} className="category-card">
+                <div className="category-content">
+                  <div className="category-icon">
+                    <FolderKanban size={20} />
+                  </div>
+                  <div className="category-info">
+                    <div className="category-name">{cat.categoryName}</div>
+                    <div className="category-count">{cat.count ?? 0}</div>
+                  </div>
+                </div>
+              </Card>
+            ))
+          ) : (
+            ''
+          )}
+        </div>
 
-          {/* To Do List */}
-          <Card className="todo-card">
-            <div className="todo-header">
-              <h3>ToDo</h3>
-            </div>
-            <div className="todo-list">
-              <div className="todo-item">
-                <span className="todo-bullet"></span>
-                <span>Set up</span>
-              </div>
-              <div className="todo-item completed">
-                <span className="todo-bullet checked"></span>
-                <span>Stand-up</span>
-              </div>
-              <div className="todo-item">
-                <span className="todo-bullet"></span>
-                <span>Start give me the fights</span>
-              </div>
-              <div className="todo-item">
-                <span className="todo-bullet"></span>
-                <span>Programming work</span>
-              </div>
-            </div>
-          </Card>
+         
         </div>
       </div>
 
       {/* Bottom Section */}
       <div className="bottom-section">
         {/* Category Summary */}
-        <Card className="chart-card category-summary-card">
+        {/* <Card className="chart-card category-summary-card">
           <div className="chart-header">
             <h3>Category Summary</h3>
           </div>
           <div className="chart-container">
             <Chart type="bar" data={barData} options={barOptions} />
           </div>
-        </Card>
+        </Card> */}
 
         {/* Category Overview */}
-        <Card className="category-overview-card">
+        {/* <Card className="category-overview-card">
           <div className="chart-header">
             <h3>Category Overview</h3>
             <div className="category-stats">
@@ -570,28 +492,9 @@ const InventoryOverview: React.FC = () => {
               </div>
             </div>
           </div>
-        </Card>
+        </Card> */}
 
-        {/* Category Cards */}
-        <div className="category-cards">
-          {categories.length > 0 ? (
-            categories.slice(0, 6).map((cat) => (
-              <Card key={cat.refCategoryId} className="category-card">
-                <div className="category-content">
-                  <div className="category-icon">
-                    <FolderKanban size={20} />
-                  </div>
-                  <div className="category-info">
-                    <div className="category-name">{cat.categoryName}</div>
-                    <div className="category-count">{cat.count ?? 0}</div>
-                  </div>
-                </div>
-              </Card>
-            ))
-          ) : (
-            ''
-          )}
-        </div>
+       
       </div>
     </div>
   )

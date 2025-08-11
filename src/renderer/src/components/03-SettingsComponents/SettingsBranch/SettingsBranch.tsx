@@ -228,7 +228,7 @@ const SettingsBranch: React.FC = () => {
       <Sidebar
         visible={visibleRight}
         position="right"
-        // header={editMode ? 'Edit Branch' : 'Add Branch'}
+        header={editMode ? 'Edit Branch' : 'Add Branch'}
         onHide={() => {
           setVisibleRight(false)
           setSelectedBranch([])
