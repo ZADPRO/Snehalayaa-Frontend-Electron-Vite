@@ -1,16 +1,4 @@
-// import React from 'react';
-
-// const SettingsOverview: React.FC = () => {
-//     return (
-//         <div>
-
-//         </div>
-//     );
-// };
-
-// export default SettingsOverview;
-
-import React, { useState } from 'react'
+import React from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
 import { ProgressBar } from 'primereact/progressbar'
@@ -122,6 +110,7 @@ const SettingsOverview: React.FC = () => {
 
   return (
     <div style={{ padding: '2px', backgroundColor: '#f8fafc' }}>
+
       {/* Top Row - Main Metrics */}
       <div
         style={{

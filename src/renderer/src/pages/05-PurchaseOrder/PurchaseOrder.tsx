@@ -64,7 +64,15 @@ const PurchaseOrder: React.FC = () => {
 
   return (
     <div className="settingsContainer">
-      <ComponentHeader title="Purchase Order" subtitle="Overall Management" />
+      <ComponentHeader
+        title="Purchase Order"
+        subtitle={new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })}
+      />
 
       <div className="settingsMain">
         {/* Sidebar */}

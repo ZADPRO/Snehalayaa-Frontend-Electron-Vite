@@ -5,10 +5,9 @@ import {
   Landmark,
   PackageSearch,
   // UsersRound,
-  // BadgeInfo,
-  PanelsTopLeft,
-  IdCard
-  // SlidersVertical
+  IdCard,
+  // SlidersVertical,
+  LayoutDashboard
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
@@ -26,7 +25,7 @@ const sidebarItems = [
   {
     key: 'overview',
     label: 'Overview',
-    icon: <PanelsTopLeft size={20} className="sidebar-icon" />,
+    icon: <LayoutDashboard size={20} className="sidebar-icon" />,
     component: <SettingsOverview />
   },
   {
@@ -78,7 +77,15 @@ const Settings: React.FC = () => {
 
   return (
     <div className="settingsContainer">
-      <ComponentHeader title="Settings" subtitle="Monday, Jun 15, 2025" />
+      <ComponentHeader
+        title="Settings"
+        subtitle={new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })}
+      />
 
       <div className="settingsMain">
         {/* Sidebar */}

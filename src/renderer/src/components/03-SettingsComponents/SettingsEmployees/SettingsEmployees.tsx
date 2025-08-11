@@ -77,7 +77,7 @@ const SettingsEmployees: React.FC = () => {
       <Button
         icon={<Plus size={16} strokeWidth={2} />}
         severity="success"
-        tooltip="Add Category"
+        tooltip="Add Employee"
         disabled={isAnySelected}
         tooltipOptions={{ position: 'left' }}
         onClick={() => setVisibleRight(true)}
@@ -85,7 +85,7 @@ const SettingsEmployees: React.FC = () => {
       <Button
         icon={<Pencil size={16} strokeWidth={2} />}
         severity="info"
-        tooltip="Edit Category"
+        tooltip="Edit Employee"
         tooltipOptions={{ position: 'left' }}
         disabled={!isSingleSelected}
         onClick={() => setVisibleRight(true)}
@@ -93,7 +93,7 @@ const SettingsEmployees: React.FC = () => {
       <Button
         icon={<Trash2 size={16} strokeWidth={2} />}
         severity="danger"
-        tooltip="Delete Categories"
+        tooltip="Delete Employee(s)"
         tooltipOptions={{ position: 'left' }}
         disabled={!isAnySelected}
         onClick={handleDelete}
@@ -132,7 +132,7 @@ const SettingsEmployees: React.FC = () => {
         <Column
           field="RefUserStatus"
           header="Status"
-          //   body={(rowData) => (rowData.isActive ? 'Active' : 'Inactive')}
+          // body={(rowData) => (rowData.isActive ? 'Active' : 'Inactive')}
         />
       </DataTable>
 

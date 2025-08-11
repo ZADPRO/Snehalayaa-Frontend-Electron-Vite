@@ -11,7 +11,11 @@ import {
   SubCategoryStatusOptions
 } from './SettingsAddEditSubCategories.interface'
 import { SubCategory } from '../SettingsSubCategories.interface'
-import { createSubCategory, updateSubCategory, fetchCategories } from './SettingsAddEditSubCategories.function'
+import {
+  createSubCategory,
+  updateSubCategory,
+  fetchCategories
+} from './SettingsAddEditSubCategories.function'
 import { Check } from 'lucide-react'
 
 const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = ({
@@ -21,7 +25,7 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
 }) => {
   const toast = useRef<Toast>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
 
   const isEditMode = !!selectedSubCategory
 
@@ -62,31 +66,28 @@ const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
   }
 
   useEffect(() => {
-  const loadCategories = async () => {
-    try {
-      const categories = await fetchCategories()
-      
-      const mappedCategories = categories.map((cat: any) => ({
-        refCategoryId: cat.refCategoryId,
-        categoryName: cat.categoryName || cat.subCategoryName || 'Unnamed'
-      }))
+    const loadCategories = async () => {
+      try {
+        const categories = await fetchCategories()
 
-      setCategoryOptions(mappedCategories)
-    } catch (err: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message || 'Failed to load categories',
-        life: 3000
-      })
+        const mappedCategories = categories.map((cat: any) => ({
+          refCategoryId: cat.refCategoryId,
+          categoryName: cat.categoryName || cat.subCategoryName || 'Unnamed'
+        }))
+
+        setCategoryOptions(mappedCategories)
+      } catch (err: any) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.message || 'Failed to load categories',
+          life: 3000
+        })
+      }
     }
-  }
 
-  loadCategories()
-}, [])
-
-
-
+    loadCategories()
+  }, [])
 
   const handleSubmit = async () => {
     if (!formData.subCategoryName) {
@@ -114,9 +115,9 @@ const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
       setIsSubmitting(true)
 
       const result = isEditMode
-      ? await updateSubCategory(payload)
-      : await createSubCategory(payload)
-      
+        ? await updateSubCategory(payload)
+        : await createSubCategory(payload)
+
       console.log('result', result)
       toast.current?.show({
         severity: 'success',
@@ -141,10 +142,6 @@ const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
     }
   }
 
-
-
-
-
   return (
     <div className="mt-3">
       <Toast ref={toast} />
@@ -153,18 +150,18 @@ const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([])
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
-               <Dropdown
-  id="refCategoryId"
-  className="w-full"
-  value={formData.refCategoryId}
-  options={categoryOptions}
-  onChange={(e) => handleInputChange('refCategoryId', e.value)}
-  optionLabel="categoryName"
-  optionValue="refCategoryId"
-  placeholder="Select Category"
-/>
+              <Dropdown
+                id="refCategoryId"
+                className="w-full"
+                value={formData.refCategoryId}
+                options={categoryOptions}
+                onChange={(e) => handleInputChange('refCategoryId', e.value)}
+                optionLabel="categoryName"
+                optionValue="refCategoryId"
+                placeholder="Select Category"
+              />
 
-    <label htmlFor="refCategoryId">Category</label>
+              <label htmlFor="refCategoryId">Category</label>
             </FloatLabel>
           </div>
           <div className="flex-1">
