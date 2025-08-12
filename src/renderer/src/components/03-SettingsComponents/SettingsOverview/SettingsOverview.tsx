@@ -111,138 +111,13 @@ const SettingsOverview: React.FC = () => {
   return (
     <div style={{ padding: '2px', backgroundColor: '#f8fafc' }}>
 
-      {/* Top Row - Main Metrics */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-          gap: '10px',
-          marginBottom: '20px'
-        }}
-      >
-        {/* Orders */}
-        <Card
-          style={{
-            border: 'none',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '20px',
-            textAlign: 'center',
-            backgroundColor: 'beige'
-          }}
-        >
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              backgroundColor: '#dbeafe',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 15px'
-            }}
-          >
-            <i className="pi pi-shopping-cart" style={{ color: '#3b82f6', fontSize: '20px' }} />
-          </div>
-          <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>
-            85,246
-          </h3>
-          <p style={{ margin: '5px 0 0 0', color: '#64748b', fontSize: '14px' }}>Suppliers</p>
-        </Card>
-
-        {/* Income */}
-        <Card
-          style={{
-            border: 'none',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '20px',
-            textAlign: 'center'
-          }}
-        >
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              backgroundColor: '#d1fae5',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 15px'
-            }}
-          >
-            <i className="pi pi-dollar" style={{ color: '#10b981', fontSize: '20px' }} />
-          </div>
-          <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>
-            $96,147
-          </h3>
-          <p style={{ margin: '0 0 0 0', color: '#64748b', fontSize: '14px' }}>Branches</p>
-        </Card>
-
-        {/* Notifications */}
-        <Card
-          style={{
-            border: 'none',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '20px',
-            textAlign: 'center'
-          }}
-        >
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              backgroundColor: '#fef3c7',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 15px'
-            }}
-          >
-            <i className="pi pi-bell" style={{ color: '#f59e0b', fontSize: '20px' }} />
-          </div>
-          <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>846</h3>
-          <p style={{ margin: '5px 0 0 0', color: '#64748b', fontSize: '14px' }}>Categories</p>
-        </Card>
-
-        {/* Payment */}
-        <Card
-          style={{
-            border: 'none',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '20px',
-            textAlign: 'center'
-          }}
-        >
-          <div
-            style={{
-              width: '48px',
-              height: '48px',
-              backgroundColor: '#e0f2fe',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 15px'
-            }}
-          >
-            <i className="pi pi-credit-card" style={{ color: '#0ea5e9', fontSize: '20px' }} />
-          </div>
-          <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>
-            84,472
-          </h3>
-          <p style={{ margin: '5px 0 0 0', color: '#64748b', fontSize: '14px' }}>sub Categories</p>
-        </Card>
-      </div>
-
       {/* Second Row */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 2fr',
           gap: '20px',
-          marginBottom: '20px'
+          marginBottom: '15px'
         }}
       >
         {/* Total Users */}
@@ -259,7 +134,7 @@ const SettingsOverview: React.FC = () => {
                 <div
                   key={i}
                   style={{
-                    width: '8px',
+                    width: '10px',
                     height: `${height}%`,
                     backgroundColor: '#6f1f5f',
                     borderRadius: '2px'
@@ -272,7 +147,7 @@ const SettingsOverview: React.FC = () => {
         </Card>
 
         {/* Active Users */}
-        <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '20px' }}>
+        <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '10px' }}>
           <h4
             style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: '600', color: '#1e293b' }}
           >
@@ -327,7 +202,7 @@ const SettingsOverview: React.FC = () => {
               type="bar"
               data={salesViewsData}
               options={salesViewsOptions}
-              style={{ height: '100%' }}
+              style={{ height: '100%', width:"100%" }}
             />
           </div>
         </Card>
@@ -360,7 +235,7 @@ const SettingsOverview: React.FC = () => {
               <span style={{ fontSize: '12px', color: '#64748b' }}>285 left to Goal</span>
               <span style={{ fontSize: '12px', color: '#64748b' }}>78%</span>
             </div>
-            <ProgressBar value={78} style={{ height: '6px' }} />
+            <ProgressBar  style={{ height: '10px' }} />
           </div>
         </Card>
 
