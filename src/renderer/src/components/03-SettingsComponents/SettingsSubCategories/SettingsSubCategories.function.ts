@@ -36,6 +36,18 @@ export const deleteSubCategory = async (
   return response.data
 }
 
+export const bulkDeleteSubCategories = async (subCategoriesId: number[]): Promise<any> => {
+  const token = localStorage.getItem('token') || ''
+  const response = await axios.delete(`${baseURL}/admin/settings/subcategories`, {
+    headers: { Authorization: token },
+    data: {
+      subCategoriesId
+    }
+  })
+  console.log('response', response)
+  return response.data
+}
+
 export const exportCSV = (dtRef: React.RefObject<any>) => {
   dtRef.current?.exportCSV()
 }

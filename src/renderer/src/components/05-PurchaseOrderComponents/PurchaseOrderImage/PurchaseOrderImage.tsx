@@ -13,9 +13,9 @@ import { Toast } from 'primereact/toast'
 // }
 
 const PurchaseOrderImage: React.FC = () => {
-  const [fileNames, setFileNames] = useState<string[]>([])
+  const [fileNames, _setFileNames] = useState<string[]>([])
   // const [compressedImages, setCompressedImages] = useState<CompressedImage[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, _setLoading] = useState(false)
   const toast = useRef<Toast>(null)
 
   // const showToast = (message: ToastMessage) => {
@@ -36,7 +36,7 @@ const PurchaseOrderImage: React.FC = () => {
     return await imageCompression(file, options)
   }
 
- 
+
   const handleZipUpload = async (event: FileUploadSelectEvent) => {
     const file = event.files?.[0]
     console.log('file', file)
