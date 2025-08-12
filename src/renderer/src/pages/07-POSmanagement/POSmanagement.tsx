@@ -1,4 +1,4 @@
-import { Barcode, Blocks, PackageCheck, PackagePlus, PackageX, ShoppingBag } from 'lucide-react'
+import {  Blocks,  ShoppingBag, Undo2 } from 'lucide-react'
 import React, { useState } from 'react'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import { Divider } from 'primereact/divider'
@@ -21,6 +21,12 @@ const sidebarItems = [
     label: 'Sales Order',
     icon: <ShoppingBag size={20} className="sidebar-icon" />,
     component: <POSsalesOrder />
+  },
+  {
+    key: 'salesReturn',
+    label: 'Sales Return',
+    icon: <Undo2 size={20} className="sidebar-icon" />,
+    component: <POSsalesReturn />
   },
  
 ]
