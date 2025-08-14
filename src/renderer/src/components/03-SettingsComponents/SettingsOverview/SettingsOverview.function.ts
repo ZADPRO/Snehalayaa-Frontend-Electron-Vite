@@ -11,6 +11,9 @@ export const fetchDashboardData = async (): Promise<SettingsOverview> => {
 
   console.log('response', response)
   const employeeData = response?.data?.data
+console.log('SettingsOverview.function.ts / employeeData / 13 -------------------  ', employeeData);
+
+console.log('SettingsOverview.function.ts / 15 -------------------  ');
   console.log('employeeData', employeeData)
 
   return {

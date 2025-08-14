@@ -15,6 +15,7 @@ import { Toast } from 'primereact/toast'
 import InvoicePreview from '../POSbilling/POSbilling'
 import { Dialog } from 'primereact/dialog'
 import { FloatLabel } from 'primereact/floatlabel'
+import { Dropdown } from 'primereact/dropdown'
 
 const POSsalesOrder: React.FC = () => {
   const [visibleRight, setVisibleRight] = useState(false)
@@ -23,7 +24,7 @@ const POSsalesOrder: React.FC = () => {
   const [showCustomDialog, setShowCustomDialog] = useState(false)
 
   const [employeeList, setEmployeeList] = useState<Employee[]>([])
-  const [selectedEmployees, setSelectedEmployees] = useState<any[]>([])
+  const [selectedEmployees, setSelectedEmployees] = useState<Employee | null>(null)
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null)
 
   const [paymentModes, setPaymentModes] = useState<string[]>([])
@@ -192,36 +193,34 @@ const POSsalesOrder: React.FC = () => {
   }
 
   const handleCustomDialogAccept = () => {
-    if (selectedEmployees.length === 0) {
+    if (!selectedEmployees) {
       toast.current?.show({
         severity: 'warn',
         summary: 'No employee selected',
-        detail: 'Please select at least one employee',
+        detail: 'Please select an employee',
         life: 3000
       })
       return
     }
 
     if (currentProductIndex !== null) {
-      // Make a copy of the employee list (or reduce it to necessary fields)
-      const assignedEmployeeData = selectedEmployees.map((emp) => ({
-        RefUserId: emp.RefUserId,
-        RefUserFName: emp.RefUserFName,
-        RefUserCustId: emp.RefUserCustId
-      }))
+      const assignedEmployeeData = {
+        RefUserId: String(selectedEmployees.RefUserId),
+        RefUserFName: selectedEmployees.RefUserFName,
+        RefUserCustId: selectedEmployees.RefUserCustId
+      }
 
-      console.log('assignedEmployeeData', assignedEmployeeData)
       const updatedProducts = [...products]
       updatedProducts[currentProductIndex] = {
         ...updatedProducts[currentProductIndex],
-        assignedEmployees: assignedEmployeeData
+        assignedEmployees: [assignedEmployeeData] // store as array with one employee
       }
 
       setProducts(updatedProducts)
     }
 
     setShowCustomDialog(false)
-    setSelectedEmployees([])
+    setSelectedEmployees(null)
     setCurrentProductIndex(null)
   }
 
@@ -292,16 +291,14 @@ const POSsalesOrder: React.FC = () => {
                     <label>Select Employees</label>
                   </div>
                   <div className="flex w-full">
-                    <MultiSelect
+                    <Dropdown
                       value={selectedEmployees}
-                      onChange={(e) => setSelectedEmployees(e.value || [])}
+                      onChange={(e) => setSelectedEmployees(e.value)}
                       options={employeeList}
                       optionLabel="RefUserFName"
-                      placeholder="Search and select employees"
+                      placeholder="Search and select employee"
                       filter
-                      className="w-full custom-multiselect"
-                      display="comma"
-                      selectedItemTemplate={() => null}
+                      className="w-full custom-dropdown"
                       itemTemplate={(option) =>
                         option ? (
                           <div>
@@ -314,21 +311,17 @@ const POSsalesOrder: React.FC = () => {
                 </div>
 
                 {/* Right: Selected Preview */}
-                <div className=" gap-2 w-1/2 border-left-1 pl-3">
+                <div className="gap-2 w-1/2 border-left-1 pl-3">
                   <div className="flex">
-                    <label className="font-semibold">Selected Employees</label>
+                    <label className="font-semibold">Selected Employee</label>
                   </div>
                   <div className="flex">
-                    {selectedEmployees?.length > 0 ? (
-                      <ul className="list-none p-0 m-0">
-                        {selectedEmployees.map((emp, index) => (
-                          <li key={emp.RefUserId || index} className="mb-1">
-                            ✅ {emp.RefUserFName} ({emp.RefUserCustId})
-                          </li>
-                        ))}
-                      </ul>
+                    {selectedEmployees ? (
+                      <div>
+                        ✅ {selectedEmployees.RefUserFName} ({selectedEmployees.RefUserCustId})
+                      </div>
                     ) : (
-                      <span className="text-sm text-gray-500">No employees selected</span>
+                      <span className="text-sm text-gray-500">No employee selected</span>
                     )}
                   </div>
                 </div>

@@ -4,9 +4,9 @@ import { Divider } from 'primereact/divider'
 import { FloatLabel } from 'primereact/floatlabel'
 import { InputText } from 'primereact/inputtext'
 import React, { useRef, useState } from 'react'
-import { addNewCustomer, fetchCustomerByMobile } from './POScustomers.function'
+import { addCustomer, fetchCustomerByMobile } from './POScustomers.function'
 import { Toast } from 'primereact/toast'
-import { CustomerPayload } from './POScustomers.interface'
+import { AddCustomerPayload } from './POScustomers.interface'
 
 const POScustomers: React.FC = () => {
   const [mobileNumber, setMobileNumber] = useState('')
@@ -70,7 +70,7 @@ const POScustomers: React.FC = () => {
     }
 
     // Prepare payload
-    const payload: CustomerPayload = {
+    const payload: AddCustomerPayload = {
       refMobileNo: mobileNumber,
       refCustomerName: customerData.refCustomerName,
       refAddress: customerData.refAddress,
@@ -83,7 +83,7 @@ const POScustomers: React.FC = () => {
     }
 
     try {
-      const result = await addNewCustomer(payload)
+      const result = await addCustomer(payload)
       console.log('result', result)
       toast.current?.show({
         severity: 'success',

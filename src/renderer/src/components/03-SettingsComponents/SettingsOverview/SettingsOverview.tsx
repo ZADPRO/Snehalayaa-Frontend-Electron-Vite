@@ -1,13 +1,19 @@
 import React from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
-import { ProgressBar } from 'primereact/progressbar'
 import 'primereact/resources/themes/lara-light-cyan/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
+import {
+  BriefcaseBusiness,
+  FolderCheck,
+  GitBranchPlus,
+  SparklesIcon,
+  UserCheck,
+  UserRoundCog
+} from 'lucide-react'
 
 const SettingsOverview: React.FC = () => {
-  // Area chart data for Average Weekly Sales
 
   // Bar chart data for Sales & Views
   const salesViewsData = {
@@ -55,268 +61,112 @@ const SettingsOverview: React.FC = () => {
     }
   }
 
-  // Doughnut chart for Active Users
-  const activeUsersData = {
-    datasets: [
-      {
-        data: [78, 22],
-        backgroundColor: ['#3b82f6', '#e5e7eb'],
-        borderWidth: 0,
-        cutout: '80%'
-      }
-    ]
-  }
-
-  const activeUsersOptions = {
-    maintainAspectRatio: false,
-    aspectRatio: 1,
-    plugins: {
-      legend: { display: false }
-    }
-  }
-
-  // Circular progress charts
-  const monthlyProgressData = {
-    datasets: [
-      {
-        data: [65, 35],
-        backgroundColor: ['#3b82f6', '#e5e7eb'],
-        borderWidth: 0,
-        cutout: '85%'
-      }
-    ]
-  }
-
-  const yearlyProgressData = {
-    datasets: [
-      {
-        data: [75, 25],
-        backgroundColor: ['#8b5cf6', '#e5e7eb'],
-        borderWidth: 0,
-        cutout: '85%'
-      }
-    ]
-  }
-
-  const progressOptions = {
-    maintainAspectRatio: false,
-    aspectRatio: 1,
-    plugins: {
-      legend: { display: false }
-    }
-  }
-
-
 
   return (
     <div style={{ padding: '2px', backgroundColor: '#f8fafc' }}>
+      <div className="stats-grid gap-3">
+        <Card className="stat-card purple-card">
+          <div className="stat-content">
+            <div className="stat-icon purple-icon">
+              <FolderCheck size={24} />
+            </div>
+            <div className="stat-info">
+              <div className="stat-title">Category</div>
+              <div className="stat-value">4565</div>
+              <div className="stat-period">
+                {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
+        </Card>
 
+        <Card className="stat-card pink-card">
+          <div className="stat-content">
+            <div className="stat-icon pink-icon">
+              <GitBranchPlus size={24} />
+            </div>
+            <div className="stat-info">
+              <div className="stat-title">Branches</div>
+              <div className="stat-value">$ 3541</div>
+              <div className="stat-period">
+                {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="stat-card orange-card">
+          <div className="stat-content">
+            <div className="stat-icon orange-icon">
+              <UserRoundCog size={24} />
+            </div>
+            <div className="stat-info">
+              <div className="stat-title">Suppliers</div>
+              <div className="stat-value">4565</div>
+              <div className="stat-period">
+                {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="stat-card blue-card">
+          <div className="stat-content">
+            <div className="stat-icon blue-icon">
+              <BriefcaseBusiness size={24} />
+            </div>
+            <div className="stat-info">
+              <div className="stat-title">Attributes</div>
+              <div className="stat-value">99%</div>
+              <div className="stat-period">
+                {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
       {/* Second Row */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 2fr',
+          gridTemplateColumns: '2fr 1fr 2fr',
           gap: '20px',
           marginBottom: '15px'
         }}
       >
-        {/* Total Users */}
-        <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '20px' }}>
-          <h4
-            style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '600', color: '#1e293b' }}
-          >
-            97.4K
-          </h4>
-          <p style={{ margin: '0 0 15px 0', color: '#64748b', fontSize: '14px' }}>Total Users</p>
-          <div style={{ height: '60px', marginBottom: '15px' }}>
-            <div style={{ display: 'flex', gap: '2px', height: '100%', alignItems: 'end' }}>
-              {[30, 45, 25, 60, 80, 40, 70, 35, 55, 90, 20, 65].map((height, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: '10px',
-                    height: `${height}%`,
-                    backgroundColor: '#6f1f5f',
-                    borderRadius: '2px'
-                  }}
-                />
-              ))}
-            </div>
+        <Card>
+          <div className="flex gap-2">
+            <UserCheck className="mt-0" color="#f59e0b" />
+            <h4 className="mt-0">Recent Suppliers</h4>
           </div>
-          <p style={{ margin: 0, color: '#10b981', fontSize: '12px' }}>12.5% from last month</p>
         </Card>
-
-        {/* Active Users */}
-        <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '10px' }}>
-          <h4
-            style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: '600', color: '#1e293b' }}
-          >
-            42.5K
-          </h4>
-          <p style={{ margin: '0 0 15px 0', color: '#64748b', fontSize: '14px' }}>Active Users</p>
-          <div
-            style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto 15px' }}
-          >
-            <Chart
-              type="doughnut"
-              data={activeUsersData}
-              options={activeUsersOptions}
-              style={{ height: '100%' , width:'100%' }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                fontSize: '18px',
-                fontWeight: '700',
-                color: '#1e293b'
-              }}
-            >
-              78%
-            </div>
-          </div>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '12px', textAlign: 'center' }}>
-            24K users increased from last month
-          </p>
-        </Card>
-
         {/* Sales & Views Chart */}
-        <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '20px' }}>
+        <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
+              alignItems: 'center'
               // marginBottom: '20px'
             }}
           >
-            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1e293b' }}>
-              Sales & Views
-            </h4>
-            <i className="pi pi-ellipsis-h" style={{ color: '#64748b', cursor: 'pointer' }} />
+            <h4 className="mt-0">Category & Sub Category</h4>
           </div>
           <div style={{ height: '180px' }}>
             <Chart
               type="bar"
               data={salesViewsData}
               options={salesViewsOptions}
-              style={{ height: '100%', width:"100%" }}
+              style={{ height: '100%', width: '100%' }}
             />
           </div>
         </Card>
-      </div>
 
-      {/* Third Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '20px',
-          marginBottom: '20px'
-        }}
-      >
-        {/* Sales This Year */}
-        <Card style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '20px' }}>
-          <div style={{ marginBottom: '15px' }}>
-            <h3 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e293b' }}>
-              $65,129
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}>
-              <span style={{ color: '#10b981', fontSize: '12px', fontWeight: '600' }}>↗ 8.6%</span>
-            </div>
-            <p style={{ margin: '5px 0 15px 0', color: '#64748b', fontSize: '14px' }}>
-              Sales This Year
-            </p>
+        <Card>
+          <div className="flex gap-2">
+            <SparklesIcon className="mt-0" color="#f59e0b" />
+            <h4 className="mt-0">Recent Categories</h4>
           </div>
-          <div style={{ marginBottom: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>285 left to Goal</span>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>78%</span>
-            </div>
-            <ProgressBar  style={{ height: '10px' }} />
-          </div>
-        </Card>
-
-        {/* Monthly */}
-        <Card
-          style={{
-            border: 'none',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '20px',
-            textAlign: 'center'
-          }}
-        >
-          <h4
-            style={{ margin: '0 0 15px 0', fontSize: '14px', fontWeight: '600', color: '#64748b' }}
-          >
-            Monthly
-          </h4>
-          <div
-            style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto 15px' }}
-          >
-            <Chart
-              type="doughnut"
-              data={monthlyProgressData}
-              options={progressOptions}
-              style={{ height: '100%' }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                fontSize: '18px',
-                fontWeight: '700',
-                color: '#1e293b'
-              }}
-            >
-              65,127
-            </div>
-          </div>
-          <p style={{ margin: 0, color: '#10b981', fontSize: '12px' }}>16.5% $5.21 USD</p>
-        </Card>
-
-        {/* Yearly */}
-        <Card
-          style={{
-            border: 'none',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            padding: '20px',
-            textAlign: 'center'
-          }}
-        >
-          <h4
-            style={{ margin: '0 0 15px 0', fontSize: '14px', fontWeight: '600', color: '#64748b' }}
-          >
-            Yearly
-          </h4>
-          <div
-            style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto 15px' }}
-          >
-            <Chart
-              type="doughnut"
-              data={yearlyProgressData}
-              options={progressOptions}
-              style={{ height: '100%' }}
-            />
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                fontSize: '18px',
-                fontWeight: '700',
-                color: '#1e293b'
-              }}
-            >
-              984,246
-            </div>
-          </div>
-          <p style={{ margin: 0, color: '#8b5cf6', fontSize: '12px' }}>24.9% 267.35 USD</p>
         </Card>
       </div>
     </div>

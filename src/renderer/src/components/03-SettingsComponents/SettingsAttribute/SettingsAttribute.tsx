@@ -326,6 +326,7 @@ const SettingsAttribute: React.FC = () => {
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
                   className="w-full"
+                  placeholder="Enter Attribute Name"
                 />
                 <label htmlFor="name"> Name</label>
               </FloatLabel>

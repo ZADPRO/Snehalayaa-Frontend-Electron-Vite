@@ -1,11 +1,12 @@
-export interface CustomerPayload {
-  refMobileNo: string
-  refCustomerName: string
+
+export interface AddCustomerPayload {
   refAddress: string
   refCity: string
-  refPincode: string
-  refState: string
   refCountry: string
-  refMembershipNumber: string
-  refTaxNumber: string
+  refCustomerName: string
+  refMembershipNumber?: string
+  refMobileNo: string
+  refPincode?: string
+  refState?: string
+  refTaxNumber?: string
 }

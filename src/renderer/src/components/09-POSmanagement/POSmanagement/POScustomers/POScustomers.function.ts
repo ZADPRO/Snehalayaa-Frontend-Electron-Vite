@@ -1,5 +1,5 @@
 import axios from "axios"
-import { CustomerPayload } from "./POScustomers.interface"
+import { AddCustomerPayload } from "./POScustomers.interface"
 import { baseURL } from "../../../../utils/helper"
 
 export const fetchCustomerByMobile = async (mobile: string) => {
@@ -22,18 +22,22 @@ export const fetchCustomerByMobile = async (mobile: string) => {
 }
 
 
-export const addNewCustomer = async (payload: CustomerPayload): Promise<any> => {
-  try {
-    const res = await axios.post(`${baseURL}/customers/`, payload, {
-      headers: {
-        Authorization: localStorage.getItem('token') || ''
-      }
-    })
 
-    console.log('Response:', res)
-    return res.data
+export const addCustomer = async (payload: AddCustomerPayload): Promise<any> => {
+  try {
+    const response = await axios.post(
+      `${baseURL}/admin/pos/customer`,
+      payload,
+      {
+        headers: {
+          Authorization: localStorage.getItem('token') || ''
+        }
+      }
+    )
+    console.log('response', response)
+    return response.data
   } catch (error) {
-    console.error('Add customer error:', error)
+    console.error('❌ Error adding customer:', error)
     throw error
   }
 }

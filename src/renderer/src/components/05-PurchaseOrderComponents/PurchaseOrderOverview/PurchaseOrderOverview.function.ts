@@ -11,7 +11,7 @@ export type PurchaseOverviewSummary = {
 }
 
 export type PurchaseOverviewResponse = {
-  data: PurchaseOverviewItem[]
+  data:any
   summary: PurchaseOverviewSummary
 }
 
