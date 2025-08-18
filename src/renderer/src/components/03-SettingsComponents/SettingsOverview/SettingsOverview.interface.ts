@@ -45,7 +45,7 @@ interface MonthlyCount {
   SubCategories: number
 }
 
-interface DashboardData {
+export interface DashboardData {
   cards: CardMetrics
   latestCategories: LatestCategory[]
   latestSuppliers: LatestSupplier[]

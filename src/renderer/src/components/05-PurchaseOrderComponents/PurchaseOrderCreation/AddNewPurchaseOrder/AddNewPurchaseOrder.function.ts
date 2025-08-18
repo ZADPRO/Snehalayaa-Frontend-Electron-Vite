@@ -54,3 +54,34 @@ export const createPurchaseOrder = async (payload: any): Promise<any> => {
     throw new Error(response.data.message || 'Failed to create purchase order')
   }
 }
+
+export const getSignedUploadUrl = async (file: File) => {
+  const token = localStorage.getItem('token') || ''
+
+  const extension = file.name.split('.').pop() || ''
+  console.log('extension', extension)
+
+  const res = await axios.post(
+    `${baseURL}/imageUpload/productImages`,
+    { fileName: extension },
+    {
+      headers: {
+        Authorization: token,
+        'Content-Type': 'application/json'
+      }
+    }
+  )
+  console.log('res', res)
+
+  return res.data
+}
+
+export const uploadFileToS3 = async (uploadUrl: string, file: File) => {
+  const res = await axios.put(uploadUrl, file, {
+    headers: {
+      'Content-Type': file.type
+    }
+  })
+
+  return res.status
+}

@@ -9,11 +9,16 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="
-        default-src 'self' http://192.168.29.236:8080;
+        default-src 'self';
+        connect-src 'self'
+        https://snehalayaa.brightoncloudtech.com/api/v1
+        https://test-zad.brightoncloudtech.com;
+        img-src 'self' data: blob:
+        https://test-zad.brightoncloudtech.com;
         script-src 'self';
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-        img-src 'self' data:;
-        connect-src 'self' http://192.168.29.236:8080;
+        img-src 'self' data: blob:;
+        connect-src 'self' https://snehalayaa.brightoncloudtech.com/api/v1;
         font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
         frame-src 'self' blob: data:;
       "

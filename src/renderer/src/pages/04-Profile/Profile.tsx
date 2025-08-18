@@ -10,6 +10,7 @@ import { InputText } from 'primereact/inputtext'
 import { fetchEmployees, updateEmployeeProfile } from './Profile.function'
 import { Employee } from './Profile.interface'
 import { Toast } from 'primereact/toast'
+import { Button } from 'primereact/button'
 
 const Profile: React.FC = () => {
   const [employee, setEmployee] = useState<Employee | null>(null)
@@ -150,26 +151,28 @@ const Profile: React.FC = () => {
 
         {/* Editable Section */}
         <div className="flex flex-column profileEditSection p-3 w-full">
-          <div className="flex justify-content-between w-full">
+          <div className="flex justify-content-between">
             <p className="font-bold">Basic Details</p>
             {!isEditing ? (
-              <button
+              <Button
                 type="button"
                 onClick={handleEditClick}
-                className="text-blue-500 hover:text-blue-700 transition"
+                className=""
+                outlined
                 title="Edit Profile"
               >
                 <PencilLine size={20} />
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
                 onClick={handleProfileUpdate}
-                className="text-green-600 hover:text-green-800 transition"
+                className=""
+                outlined
                 title="Save Changes"
               >
                 Save
-              </button>
+              </Button>
             )}
           </div>
 
