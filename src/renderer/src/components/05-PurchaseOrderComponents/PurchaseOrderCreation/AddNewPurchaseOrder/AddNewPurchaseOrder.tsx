@@ -15,7 +15,9 @@ import {
   fetchSuppliers,
   fetchCategories,
   fetchSubCategories,
-  createPurchaseOrder
+  createPurchaseOrder,
+  getSignedUploadUrl,
+  uploadFileToS3
 } from './AddNewPurchaseOrder.function'
 import { Branch, Supplier, Category, SubCategory } from './AddNewPurchaseOrder.interface'
 import {
@@ -36,7 +38,8 @@ import { InputText } from 'primereact/inputtext'
 import { InputSwitch } from 'primereact/inputswitch'
 import { Tooltip } from 'primereact/tooltip'
 import SupplierPaymentDialog from './SupplierPaymentDialog/SupplierPaymentDialog'
-import PurchaseOrderImage from '../../PurchaseOrderImage/PurchaseOrderImage'
+import { Dialog } from 'primereact/dialog'
+// import PurchaseOrderImage from '../../PurchaseOrderImage/PurchaseOrderImage'
 
 const AddNewPurchaseOrder: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
@@ -73,6 +76,74 @@ const AddNewPurchaseOrder: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false)
   const [isPrinting, setIsPrinting] = useState(false)
   // const [isPreviousPaymentDone, setIsPreviousPaymentDone] = useState(false)
+
+  const [visible, setVisible] = useState(false)
+  const [file, setFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+
+    if (selectedFile) {
+      if (selectedFile.type === 'application/pdf' || selectedFile.type.startsWith('image/')) {
+        setFile(selectedFile)
+        setPreviewUrl(URL.createObjectURL(selectedFile))
+      } else {
+        alert('Please upload a PDF or an image file.')
+        setFile(null)
+        setPreviewUrl(null)
+      }
+    }
+  }
+
+  const handleDelete = () => {
+    setFile(null)
+    setPreviewUrl(null)
+  }
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'No file selected',
+        detail: 'Please select a file before uploading.'
+      })
+      return
+    }
+
+    try {
+      // Step 1: Get signed URL from backend
+      const { fileUrl, uploadUrl } = await getSignedUploadUrl(file)
+      console.log('uploadUrl', uploadUrl)
+      console.log('fileUrl', fileUrl)
+
+      // Step 2: Upload file to S3
+      const status = await uploadFileToS3(uploadUrl, file)
+      console.log('status', status)
+
+      if (status === 200) {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Upload Successful',
+          detail: 'Your file has been uploaded successfully.'
+        })
+
+        console.log('Uploaded file path:', fileUrl) // This is the document path
+      } else {
+        throw new Error(`Upload failed with status ${status}`)
+      }
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Upload Failed',
+        detail: err.message || 'Something went wrong while uploading.'
+      })
+    }
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -372,9 +443,9 @@ const AddNewPurchaseOrder: React.FC = () => {
             />
           </div>
         </div>
-<div className='flex'>
+        {/* <div className='flex'>
 <PurchaseOrderImage/>
-</div>
+</div> */}
         <Divider />
 
         <DataTable
@@ -429,7 +500,9 @@ const AddNewPurchaseOrder: React.FC = () => {
           <Column field="total" header="Total" />
         </DataTable>
       </div>
-      <Divider layout="vertical" />
+
+      <Divider layout="vertical" className="verticalDivider" />
+
       <div style={{ width: '17%' }} className="flex flex-column justify-content-between">
         <div className="flex flex-column gap-1">
           <Button
@@ -530,6 +603,7 @@ const AddNewPurchaseOrder: React.FC = () => {
             label="Upload Invoice"
             icon={<Upload size={20} />}
             className="w-full gap-2 p-button-primary"
+            onClick={() => setVisible(true)}
           />
         </div>
         <div className="flex flex-column gap-2 pb-3 surface-100 border-round">
@@ -605,6 +679,70 @@ const AddNewPurchaseOrder: React.FC = () => {
           existingProducts={tableData}
         />
       </Sidebar>
+
+      <Dialog
+        header="Upload Invoice (PDF or Image)"
+        visible={visible}
+        position="center"
+        style={{ width: '60vw' }}
+        onHide={() => setVisible(false)}
+        footer={
+          <div>
+            <Button label="Cancel" className="p-button-text" onClick={() => setVisible(false)} />
+            <Button label="Upload" className="p-button-primary" onClick={handleUpload} />
+          </div>
+        }
+      >
+        {!file ? (
+          <input
+            type="file"
+            accept="application/pdf,image/*"
+            onChange={(e) => {
+              handleFileChange(e)
+              e.target.value = ''
+            }}
+            style={{ width: '100%' }}
+          />
+        ) : (
+          <div>
+            <div className="flex align-items-center gap-2 mb-2">
+              <p className="text-sm flex-1">Selected: {file.name}</p>
+              <Button
+                icon={<Trash2 size={16} />}
+                className="p-button-text p-button-danger"
+                onClick={handleDelete}
+              />
+            </div>
+
+            {previewUrl && (
+              <>
+                {file.type === 'application/pdf' ? (
+                  <iframe
+                    src={previewUrl}
+                    style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}
+                    title="PDF Preview"
+                  ></iframe>
+                ) : file.type.startsWith('image/') ? (
+                  <>
+                    <div className="flex align-items-center justify-content-center">
+                      <img
+                        src={previewUrl}
+                        alt="Image Preview"
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '400px',
+                          border: '1px solid #ccc',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : null}
+              </>
+            )}
+          </div>
+        )}
+      </Dialog>
 
       <SupplierPaymentDialog
         visible={showSupplierDialog}
