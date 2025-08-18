@@ -279,6 +279,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
               <InputText
                 id="supplierContactNumber"
                 value={formData.supplierContactNumber}
+                keyfilter="int"
                 className="w-full"
                 onChange={(e) => handleInputChange('supplierContactNumber', e.target.value)}
               />

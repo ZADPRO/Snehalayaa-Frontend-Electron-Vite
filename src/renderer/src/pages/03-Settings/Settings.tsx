@@ -5,10 +5,11 @@ import {
   Landmark,
   PackageSearch,
   // UsersRound,
-  // BadgeInfo,
-  PanelsTopLeft,
-  IdCard
-  // SlidersVertical
+  IdCard,
+  // SlidersVertical,
+  LayoutDashboard,
+  UsersRound,
+  SlidersVertical
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
@@ -20,13 +21,15 @@ import SettingsSubCategories from '../../components/03-SettingsComponents/Settin
 import SettingsSuppliers from '../../components/03-SettingsComponents/SettingsSuppliers/SettingsSuppliers'
 import SettingsBranch from '../../components/03-SettingsComponents/SettingsBranch/SettingsBranch'
 import SettingsEmployees from '../../components/03-SettingsComponents/SettingsEmployees/SettingsEmployees'
+import SettingsAttribute from '../../components/03-SettingsComponents/SettingsAttribute/SettingsAttribute'
+import SettingsUserRoles from '../../components/03-SettingsComponents/SettingsUserRoles/SettingsUserRoles'
 
 // Sidebar items config
 const sidebarItems = [
   {
     key: 'overview',
     label: 'Overview',
-    icon: <PanelsTopLeft size={20} className="sidebar-icon" />,
+    icon: <LayoutDashboard size={20} className="sidebar-icon" />,
     component: <SettingsOverview />
   },
   {
@@ -53,18 +56,18 @@ const sidebarItems = [
     icon: <PackageSearch size={20} className="sidebar-icon" />,
     component: <SettingsSuppliers />
   },
-  // {
-  //   key: 'users',
-  //   label: 'Users Roles',
-  //   icon: <UsersRound size={20} className="sidebar-icon" />,
-  //   component: <SettingsOverview />
-  // },
-  // {
-  //   key: 'attributes',
-  //   label: 'Attributes',
-  //   icon: <SlidersVertical size={20} className="sidebar-icon" />,
-  //   component: <SettingsOverview />
-  // },
+  {
+    key: 'users',
+    label: 'Users Roles',
+    icon: <UsersRound size={20} className="sidebar-icon" />,
+    component: <SettingsUserRoles />
+  },
+  {
+    key: 'attributes',
+    label: 'Attributes',
+    icon: <SlidersVertical size={20} className="sidebar-icon" />,
+    component: <SettingsAttribute />
+  },
   {
     key: 'employees',
     label: 'Employees',
@@ -78,7 +81,15 @@ const Settings: React.FC = () => {
 
   return (
     <div className="settingsContainer">
-      <ComponentHeader title="Settings" subtitle="Monday, Jun 15, 2025" />
+      <ComponentHeader
+        title="Settings"
+        subtitle={new Date().toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        })}
+      />
 
       <div className="settingsMain">
         {/* Sidebar */}

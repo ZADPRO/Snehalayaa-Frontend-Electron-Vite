@@ -157,6 +157,10 @@
   text-align: start;
 }
 
+.customizedBtn .p-button-label.p-c{
+  text-align: center;
+}
+
 .p-button-primary {
   background-color: #6f1f5f;
 }
@@ -189,4 +193,31 @@
 .customized-timeline .p-timeline-event-marker {
   background-color: #1976d2;
   color: white;
+}
+
+.custom-confirm-dialog .p-dialog {
+  width: 800px !important; /* Adjust as needed */
+  max-width: 90vw;
+}
+
+.custom-multiselect .p-multiselect-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.5rem; /* Ensures consistent height */
+}
+
+.custom-multiselect .p-multiselect {
+  min-height: 2.5rem;
+}
+
+.p-divider.p-divider-vertical {
+  /* margin-left: 0;
+    margin-right: 5px;
+    padding: 3px ; */
+  margin: 0;
+}
+
+.verticalDivider.p-divider.p-divider-vertical {
+  margin: 0rem 1rem !important;
 }

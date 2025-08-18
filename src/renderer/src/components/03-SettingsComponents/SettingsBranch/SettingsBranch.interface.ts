@@ -8,4 +8,7 @@ export interface Branch {
   isActive: boolean
   refBTId: number
   refBranchId: number
+  isOnline: boolean
+  isOffline: boolean
+  floors:any
 }

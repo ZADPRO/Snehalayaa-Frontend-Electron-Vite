@@ -36,6 +36,7 @@ import { InputText } from 'primereact/inputtext'
 import { InputSwitch } from 'primereact/inputswitch'
 import { Tooltip } from 'primereact/tooltip'
 import SupplierPaymentDialog from './SupplierPaymentDialog/SupplierPaymentDialog'
+import PurchaseOrderImage from '../../PurchaseOrderImage/PurchaseOrderImage'
 
 const AddNewPurchaseOrder: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
@@ -371,7 +372,9 @@ const AddNewPurchaseOrder: React.FC = () => {
             />
           </div>
         </div>
-
+<div className='flex'>
+<PurchaseOrderImage/>
+</div>
         <Divider />
 
         <DataTable

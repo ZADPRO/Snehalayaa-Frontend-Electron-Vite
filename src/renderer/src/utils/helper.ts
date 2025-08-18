@@ -1,3 +1,6 @@
+
+// export const baseURL = 'http://192.168.29.236:8080/api/v1'
+// export const baseURL = 'https://snehalayaa.brightoncloudtech.com/api/v1'
 // export const baseURL = 'http://localhost:8080/api/v1'
 export const baseURL = 'https://snehalayaa.brightoncloudtech.com/api/v1'
 
