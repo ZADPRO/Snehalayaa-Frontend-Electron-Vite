@@ -18,3 +18,36 @@ export interface SettingsOverview {
     status: 'Success' | 'Pending' | 'Failed'
   }[]
 }
+
+
+interface CardMetrics {
+  Attributes: number
+  Branches: number
+  Categories: number
+  Supplier: number
+}
+
+interface LatestCategory {
+  refCategoryId: number
+  refCategoryName: string
+  createdAt: string
+}
+
+interface LatestSupplier {
+  refSupplierId: number
+  refSupplierName: string
+  createdAt: string
+}
+
+interface MonthlyCount {
+  month: string
+  Categories: number
+  SubCategories: number
+}
+
+interface DashboardData {
+  cards: CardMetrics
+  latestCategories: LatestCategory[]
+  latestSuppliers: LatestSupplier[]
+  monthlyCounts: MonthlyCount[]
+}

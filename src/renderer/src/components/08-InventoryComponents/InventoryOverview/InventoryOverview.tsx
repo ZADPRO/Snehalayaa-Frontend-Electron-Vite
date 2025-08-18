@@ -147,9 +147,9 @@ const InventoryOverview: React.FC = () => {
             <div className="chart-subtitle">Total Revenue of the Month</div>
             <div className="chart-value">$ 12,555</div>
             <div className="time-filter">
-              {/* <span className="active">Day</span>
+              <span className="active">Day</span>
               <span className="active">Week</span>
-              <span className="active">Month</span> */}
+              <span className="active">Month</span>
             </div>
           </div>
           <div className="chart-container">

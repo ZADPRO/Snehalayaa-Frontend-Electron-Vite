@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
 import 'primereact/resources/themes/lara-light-cyan/theme.css'
@@ -12,9 +12,27 @@ import {
   UserCheck,
   UserRoundCog
 } from 'lucide-react'
+import { SettingsOverview as SettingsOverviewType } from './SettingsOverview.interface'
+import { fetchDashboardData } from './SettingsOverview.function'
 
 const SettingsOverview: React.FC = () => {
+ const [_dashboardData, setDashboardData] = useState<SettingsOverviewType | null>(null)
+  const [_loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    const loadData = async () => {
+      console.log('loadData', loadData)
+      try {
+        const data = await fetchDashboardData()
+        setDashboardData(data)
+      } catch (error) {
+        console.error('Failed to load dashboard data', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
   // Bar chart data for Sales & Views
   const salesViewsData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
@@ -174,3 +192,4 @@ const SettingsOverview: React.FC = () => {
 }
 
 export default SettingsOverview
+

@@ -22,7 +22,7 @@ import SettingsSuppliers from '../../components/03-SettingsComponents/SettingsSu
 import SettingsBranch from '../../components/03-SettingsComponents/SettingsBranch/SettingsBranch'
 import SettingsEmployees from '../../components/03-SettingsComponents/SettingsEmployees/SettingsEmployees'
 import SettingsAttribute from '../../components/03-SettingsComponents/SettingsAttribute/SettingsAttribute'
-// import SettingsUserRoles from '../../components/03-SettingsComponents/SettingsUserRoles/SettingsUserRoles'
+import SettingsUserRoles from '../../components/03-SettingsComponents/SettingsUserRoles/SettingsUserRoles'
 
 // Sidebar items config
 const sidebarItems = [
@@ -60,7 +60,7 @@ const sidebarItems = [
     key: 'users',
     label: 'Users Roles',
     icon: <UsersRound size={20} className="sidebar-icon" />,
-    // component: <SettingsUserRoles />
+    component: <SettingsUserRoles />
   },
   {
     key: 'attributes',
