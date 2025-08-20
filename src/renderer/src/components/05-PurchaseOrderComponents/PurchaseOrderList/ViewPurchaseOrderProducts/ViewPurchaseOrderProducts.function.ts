@@ -15,7 +15,14 @@ export const fetchDummyProductsByPOId = async (purchaseOrderId: number) => {
       { headers }
     )
     return response.data?.data || []
-  } catch (error) {
+  } catch (error: any) {
+    const message = error?.response?.data?.error || error?.response?.data?.message
+
+    if (message === 'Invalid token') {
+      // Redirect to login page
+      window.location.href = '/login' // or whatever your login route is
+    }
+
     console.error('Failed to fetch dummy products:', error)
     return []
   }

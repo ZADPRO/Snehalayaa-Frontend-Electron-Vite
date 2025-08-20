@@ -27,6 +27,7 @@
   color: #6b7280;
   transition: none !important;
   background: white;
+  z-index: 1;
   padding: 0px 4px;
 }
 
@@ -157,7 +158,7 @@
   text-align: start;
 }
 
-.customizedBtn .p-button-label.p-c{
+.customizedBtn .p-button-label.p-c {
   text-align: center;
 }
 

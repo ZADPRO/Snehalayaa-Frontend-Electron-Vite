@@ -2,6 +2,7 @@ import axios from 'axios'
 import { baseURL } from '../../../../utils/helper'
 
 const token = localStorage.getItem('token') || ''
+console.log('token', token)
 const headers = {
   Authorization: token,
   'Content-Type': 'application/json'

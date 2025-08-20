@@ -22,12 +22,15 @@ const POSsalesReturn: React.FC = () => {
   const [soldEmployees, setSoldEmployees] = useState<any[]>([])
   const [currentProductIndex, setCurrentProductIndex] = useState<number | null>(null)
 
+  const [customerMobile, setCustomerMobile] = useState<string>('')
+
   const handleSKUFetch = async () => {
     try {
       const product = await fetchProductBySKU(sku)
       console.log('product', product)
       setProducts((prev) => [...prev, product])
       setSoldEmployees(product.SoldEmployee || [])
+      setCustomerMobile(product.customerPhoneNumber || '') // capture mobile number
 
       setSku('')
       setCurrentProductIndex(products.length) // Index of the product just added
@@ -43,6 +46,36 @@ const POSsalesReturn: React.FC = () => {
         reject: () => console.log('User cancelled')
       })
     }
+  }
+
+  const handleReturnClick = () => {
+    confirmDialog({
+      header: 'Add Credit Confirmation',
+      message: (
+        <div>
+          <p>
+            <strong>Customer Mobile:</strong> {customerMobile || 'N/A'}
+          </p>
+          <p>Are you sure you want to add the credit to the customer?</p>
+        </div>
+      ),
+      acceptLabel: 'Yes',
+      rejectLabel: 'No',
+      accept: () => {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Credit Added',
+          detail: `Amount successfully added to the customer's credit.`,
+          life: 3000
+        })
+
+        // ✅ Empty the table after successful return
+        setProducts([])
+      },
+      reject: () => {
+        console.log('Credit addition cancelled')
+      }
+    })
   }
 
   useEffect(() => {
@@ -119,9 +152,9 @@ const POSsalesReturn: React.FC = () => {
           </div>
           <div className="flex gap-2">
             <Button
-              label="Payment"
+              label="Return"
               icon={<Coins size={20} />}
-              // onClick={() => setPaymentDialogVisible(true)}
+              onClick={handleReturnClick} // ✅ return click handler
               severity="secondary"
             />
           </div>

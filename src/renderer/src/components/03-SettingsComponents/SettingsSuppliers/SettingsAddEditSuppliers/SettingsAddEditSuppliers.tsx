@@ -12,6 +12,7 @@ import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
 import { Check } from 'lucide-react'
+import { Calendar } from 'primereact/calendar'
 
 const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
   selectedSupplier,
@@ -43,10 +44,32 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
     selectedStatus: { name: 'Active', isActive: true }
   })
 
+  const [creditedDays, setCreditedDays] = useState<number>(0)
+  const [creditedUntilDate, setCreditedUntilDate] = useState<Date>(new Date())
+
   const statusOptions: SupplierStatusOptions[] = [
     { name: 'Active', isActive: true },
     { name: 'Inactive', isActive: false }
   ]
+
+  const handleCreditedDaysChange = (value: string) => {
+    const numeric = value.replace(/\D/g, '')
+    const days = parseInt(numeric || '0', 10)
+    setCreditedDays(days)
+
+    const calculatedDate = new Date()
+    calculatedDate.setDate(calculatedDate.getDate() + days)
+    setCreditedUntilDate(calculatedDate)
+  }
+
+  const handleCreditedDateChange = (date: Date) => {
+    setCreditedUntilDate(date)
+
+    const today = new Date()
+    const diffTime = date.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    setCreditedDays(diffDays > 0 ? diffDays : 0)
+  }
 
   useEffect(() => {
     if (selectedSupplier) {
@@ -163,7 +186,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 className="w-full"
                 onChange={(e) => handleInputChange('supplierName', e.target.value)}
               />
-              <label htmlFor="supplierName">supplier Name</label>
+              <label htmlFor="supplierName">Supplier Name</label>
             </FloatLabel>
           </div>
           <div className="flex-1">
@@ -174,7 +197,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 className="w-full"
                 onChange={(e) => handleInputChange('supplierCompanyName', e.target.value)}
               />
-              <label htmlFor="supplierCompanyName">supplier Company Name</label>
+              <label htmlFor="supplierCompanyName">Supplier Company Name</label>
             </FloatLabel>
           </div>
         </div>
@@ -188,7 +211,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 className="w-full"
                 onChange={(e) => handleInputChange('supplierCode', e.target.value)}
               />
-              <label htmlFor="supplierCode">supplier code</label>
+              <label htmlFor="supplierCode">Supplier code</label>
             </FloatLabel>
           </div>
           <div className="flex-1">
@@ -207,6 +230,34 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 className="w-full"
               />
               <label htmlFor="status">Status</label>
+            </FloatLabel>
+          </div>
+        </div>
+
+        <p className="mt-3">Credited Days</p>
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="creditedDays"
+                value={creditedDays.toString()}
+                className="w-full"
+                keyfilter="int"
+                onChange={(e) => handleCreditedDaysChange(e.target.value)}
+              />
+              <label htmlFor="creditedDays">Credited Days</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <Calendar
+                id="creditedUntilDate"
+                value={creditedUntilDate}
+                className="w-full"
+                onChange={(e) => handleCreditedDateChange(e.value as Date)}
+                dateFormat="dd/mm/yy"
+              />
+              <label htmlFor="creditedUntilDate">Credited Until</label>
             </FloatLabel>
           </div>
         </div>
