@@ -1,13 +1,13 @@
 import axios from 'axios'
 import { Branch } from './SettingsBranch.interface'
-import { baseURL } from '../../../utils/helper'
+import { baseURL, baseURLV2 } from '../../../utils/helper'
 import { saveAs } from 'file-saver'
 import autoTable from 'jspdf-autotable'
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
 
 export const fetchBranch = async (): Promise<Branch[]> => {
-  const response = await axios.get(`${baseURL}/admin/settings/branches`, {
+  const response = await axios.get(`${baseURLV2}/admin/settings/branches`, {
     headers: {
       Authorization: localStorage.getItem('token') || ''
     }

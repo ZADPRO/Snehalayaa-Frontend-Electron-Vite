@@ -2,8 +2,6 @@ import axios from 'axios'
 import { baseURL } from '../../../utils/helper'
 import { Attribute, AttributePayload, dataType } from './SettingsAttribute.interface'
 
-
-
 export const saveAttributeAPI = async (payload: AttributePayload) => {
   const response = await axios.post(`${baseURL}/admin/settings/attributes`, payload, {
     headers: {
@@ -18,7 +16,6 @@ export const saveAttributeAPI = async (payload: AttributePayload) => {
   }
 }
 
-
 export const fetchDataType = async (): Promise<dataType[]> => {
   const response = await axios.get(`${baseURL}/admin/settings/attributesDataType`, {
     headers: {
@@ -26,7 +23,6 @@ export const fetchDataType = async (): Promise<dataType[]> => {
     }
   })
 
-  console.log('response', response)
   if (response.data?.status) {
     return response.data.data
   } else {
@@ -41,7 +37,6 @@ export const fetchAttribute = async (): Promise<Attribute[]> => {
     }
   })
 
-  console.log('response', response)
   if (response.data?.status) {
     return response.data.data
   } else {
@@ -56,11 +51,45 @@ export const updateAttributeAPI = async (payload: AttributePayload) => {
         Authorization: localStorage.getItem('token') || ''
       }
     })
+    console.log('response', response)
 
     if (response.data?.status) {
       return response.data.data
     } else {
       throw new Error(response.data.message || 'Failed to update attribute')
+    }
+  } catch (error: any) {
+    throw new Error(error.message || 'API request failed')
+  }
+}
+
+
+
+export const deleteAttributeAPI = async (attributeId: number) => {
+  console.log('attributeId', attributeId)
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    console.log('🔑 Sending token:', token) // debug
+
+    const response = await axios.post(
+      `${baseURL}/admin/settings/attributesHide`,
+      { attributeId },
+      {
+        headers: {
+          Authorization: `${token}`, // 👈 add Bearer
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    if (response.data?.status) {
+      return response.data.data
+    } else {
+      throw new Error(response.data.message || 'Failed to delete attribute')
     }
   } catch (error: any) {
     throw new Error(error.message || 'API request failed')

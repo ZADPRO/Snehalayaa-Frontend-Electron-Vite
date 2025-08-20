@@ -11,7 +11,7 @@ import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
-import { Plus } from 'lucide-react'
+import { Check, Plus } from 'lucide-react'
 // import { Category, SubCategory } from '../../SettingsCategories/SettingsCategories.interface'
 
 interface Section {
@@ -38,13 +38,6 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [floors, setFloors] = useState<Floor[]>([])
 
-  // const [selectedCategory, _setSelectedCategory] = useState<Category | null>(null)
-  // const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null)
-
-  // const filteredSubCategories = selectedCategory
-  //   ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
-  //   : []
-
   const [formData, setFormData] = useState<BranchFormData>({
     // refBranchId:0,
     refBranchName: '',
@@ -66,6 +59,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
 
   // useEffect(() => {
   //   if (selectedBranches) {
+
   //     setFormData({
   //       refBranchName: selectedBranches.refBranchName,
   //       refBranchCode: selectedBranches.refBranchCode,
@@ -80,13 +74,42 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   //         : { name: 'Inactive', isActive: false },
   //       floors: selectedBranches.floors
   //     })
-  //         setFloors(selectedBranches.floors || [])
-
+  //     setFloors(selectedBranches.floors || [])
+  //   } else {
+  //     setFloors([])
+  //     setFormData({
+  //       refBranchName: '',
+  //       refBranchCode: '',
+  //       refLocation: '',
+  //       refMobile: '',
+  //       refEmail: '',
+  //       isMainBranch: false,
+  //       isOnline: false,
+  //       isOffline: true,
+  //       selectedStatus: { name: 'Active', isActive: true },
+  //       floors: []
+  //     })
   //   }
   // }, [selectedBranches])
-  
+
   useEffect(() => {
     if (selectedBranches) {
+      console.log(
+        'SettingsAddEditBranch.tsx / selectedBranches / 98 -------------------  ',
+        selectedBranches
+      )
+
+      const mappedFloors = (selectedBranches.floors || []).map((floor: Floor) => ({
+        ...floor,
+        sections: (floor.sections || []).map((section: Section) => ({
+          ...section,
+          // Ensure IDs align with dropdown options
+          categoryId: section.categoryId || null,
+          refSubCategoryId: section.refSubCategoryId || null
+        }))
+      }))
+      console.log('mappedFloors', mappedFloors)
+
       setFormData({
         refBranchName: selectedBranches.refBranchName,
         refBranchCode: selectedBranches.refBranchCode,
@@ -99,9 +122,9 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
         selectedStatus: selectedBranches.isActive
           ? { name: 'Active', isActive: true }
           : { name: 'Inactive', isActive: false },
-        floors: selectedBranches.floors
+        floors: mappedFloors
       })
-      setFloors(selectedBranches.floors || [])
+      setFloors(mappedFloors)
     } else {
       setFloors([])
       setFormData({
@@ -261,9 +284,14 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
             <FloatLabel className="always-float">
               <InputText
                 id="refMobile"
+                keyfilter={'int'}
                 value={formData.refMobile}
                 className="w-full"
-                onChange={(e) => handleInputChange('refMobile', e.target.value)}
+                maxLength={10}
+                onChange={(e) => {
+                  const value = e.target.value.slice(0, 10)
+                  handleInputChange('refMobile', value)
+                }}
               />
               <label htmlFor="refMobile">Contact Number</label>
             </FloatLabel>
@@ -274,7 +302,10 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                 id="refEmail"
                 value={formData.refEmail}
                 className="w-full"
-                onChange={(e) => handleInputChange('refEmail', e.target.value)}
+                onChange={(e) => 
+                  handleInputChange('refEmail', e.target.value)
+                }
+                type="email"
               />
               <label htmlFor="refEmail">Email</label>
             </FloatLabel>
@@ -396,13 +427,13 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                 )
 
                 return (
-                  <div key={sectionIndex} className="flex flex-column  w-full">
+                  <div key={sectionIndex} className="flex flex-column  mt-3  w-full">
                     <p className="w-full font-medium text-gray-900">
                       Section {`${floorIndex + 1}.${String.fromCharCode(97 + sectionIndex)}`}
                     </p>
                     <div className="flex flex-column gap-3 mt-3">
                       <div className="flex gap-3">
-                        <div className="flex-1">
+                        <div className="flex-1 ">
                           <FloatLabel className="always-float">
                             <InputText
                               id={`sectionName-${floorIndex}-${sectionIndex}`}
@@ -452,7 +483,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                               value={section.categoryId}
                               onChange={(e) => {
                                 handleSectionChange(floorIndex, sectionIndex, 'categoryId', e.value)
-                                // Optionally, also clear subcategory if category changes:
+
                                 handleSectionChange(
                                   floorIndex,
                                   sectionIndex,
@@ -514,7 +545,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           <Button
             // label="Save"
             label={selectedBranches ? 'Update' : 'Save'}
-            icon="pi pi-check"
+            icon={<Check size={18} />}
             className="bg-[#8e5ea8] border-none gap-2"
             onClick={handleSubmit}
             loading={isSubmitting}

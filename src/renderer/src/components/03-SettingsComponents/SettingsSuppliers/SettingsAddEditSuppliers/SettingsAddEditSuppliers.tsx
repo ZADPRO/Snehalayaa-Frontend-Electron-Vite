@@ -11,6 +11,7 @@ import { FloatLabel } from 'primereact/floatlabel'
 import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
+import { Check } from 'lucide-react'
 
 const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
   selectedSupplier,
@@ -218,6 +219,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 id="supplierEmail"
                 value={formData.supplierEmail}
                 className="w-full"
+                type="email"
                 onChange={(e) => handleInputChange('supplierEmail', e.target.value)}
               />
               <label htmlFor="supplierEmail"> Email</label>
@@ -230,7 +232,11 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 value={formData.supplierContactNumber}
                 keyfilter="int"
                 className="w-full"
-                onChange={(e) => handleInputChange('supplierContactNumber', e.target.value)}
+                maxLength={10}
+                onChange={(e) => {
+                  const value = e.target.value.slice(0, 10)
+                  handleInputChange('supplierContactNumber', value)
+                }}
               />
               <label htmlFor="supplierContactNumber">Contact Number</label>
             </FloatLabel>
@@ -395,7 +401,12 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 id="emergencyContactNumber"
                 value={formData.emergencyContactNumber}
                 className="w-full"
-                onChange={(e) => handleInputChange('emergencyContactNumber', e.target.value)}
+                maxLength={10}
+                keyfilter={'int'}
+                onChange={(e) => {
+                   const value = e.target.value.slice(0, 10)
+                  handleInputChange('emergencyContactNumber', value)
+                }}
               />
               <label htmlFor="emergencyContactNumber">Emergency Contact Number</label>
             </FloatLabel>
@@ -406,7 +417,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
           <Button
             // label="Save"
             label={selectedSupplier ? 'Update' : 'Save'}
-            icon="pi pi-check"
+            icon={<Check size={18} />}
             className="bg-[#8e5ea8] border-none gap-2"
             onClick={handleSubmit}
             loading={isSubmitting}

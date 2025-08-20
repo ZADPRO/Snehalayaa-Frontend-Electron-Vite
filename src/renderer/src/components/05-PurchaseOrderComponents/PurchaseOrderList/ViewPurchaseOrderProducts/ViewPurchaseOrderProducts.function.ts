@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { baseURL } from '../../../../utils/helper'
+import { PurchaseReturnPayload } from './ViewPurchaseOrderProducts.interface'
 
 const token = localStorage.getItem('token') || ''
 const headers = {
@@ -100,5 +101,19 @@ export const fetchSubCategories = async () => {
   } catch (error) {
     console.error('Failed to fetch subcategories:', error)
     return []
+  }
+}
+
+export const createPurchaseReturn = async (payload: PurchaseReturnPayload): Promise<any> => {
+  const response = await axios.post(`${baseURL}/admin/purchaseReturn`, payload, {
+    headers: {
+      Authorization: localStorage.getItem('token') || ''
+    }
+  })
+
+  if (response.data?.status) {
+    return response.data.data
+  } else {
+    throw new Error(response.data.message || 'Failed to create purchase return')
   }
 }

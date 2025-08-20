@@ -3,11 +3,10 @@ export interface UserRoles {
     userName:string;
     email:string;
     role:string;
- createdAt:string;
+   createdAt:string;
     createdBy:string
 }
 export interface UserRoleTypes {
     id:number;
     rolename:string;
 }
-

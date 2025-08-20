@@ -20,34 +20,34 @@ export interface SettingsOverview {
 }
 
 
-interface CardMetrics {
-  Attributes: number
-  Branches: number
-  Categories: number
-  Supplier: number
-}
+// export interface CardMetrics {
+//   Attributes: number
+//   Branches: number
+//   Categories: number
+//   Supplier: number
+// }
 
-interface LatestCategory {
-  refCategoryId: number
-  refCategoryName: string
-  createdAt: string
-}
+// export interface LatestCategory {
+//   refCategoryId: number
+//   refCategoryName: string
+//   createdAt: string
+// }
 
-interface LatestSupplier {
-  refSupplierId: number
-  refSupplierName: string
-  createdAt: string
-}
+// export interface LatestSupplier {
+//   refSupplierId: number
+//   refSupplierName: string
+//   createdAt: string
+// }
 
-interface MonthlyCount {
-  month: string
-  Categories: number
-  SubCategories: number
-}
+// export interface MonthlyCount {
+//   month: string
+//   Categories: number
+//   SubCategories: number
+// }
 
-interface DashboardData {
-  cards: CardMetrics
-  latestCategories: LatestCategory[]
-  latestSuppliers: LatestSupplier[]
-  monthlyCounts: MonthlyCount[]
-}
+// interface DashboardData {
+//   cards: CardMetrics
+//   latestCategories: LatestCategory[]
+//   latestSuppliers: LatestSupplier[]
+//   monthlyCounts: MonthlyCount[]
+// }
