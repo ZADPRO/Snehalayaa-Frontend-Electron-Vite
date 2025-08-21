@@ -30,7 +30,10 @@ const ReportsProducts: React.FC = () => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
 
-  // const [selectedPurchaseOrder, _setSelectedPurchaseOrder] = useState<PurchaseOrder[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [totalRecords, setTotalRecords] = useState(0)
+  const [loading, setLoading] = useState(false)
+
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
 
   const [selectedPurchaseOrderId, setSelectedPurchaseOrderId] = useState<number | null>(null)
@@ -76,23 +79,23 @@ const ReportsProducts: React.FC = () => {
     }))
   }
 
-  const handlePageChange = async (event: DataTableStateEvent) => {
+  const handlePageChange = (event: DataTableStateEvent) => {
     const updatedForm = {
       ...formData,
-      paginationOffset: String(event.page! + 1),
+      paginationOffset: String(event.page! + 1), // backend expects 1-based
       paginationLimit: String(event.rows)
     }
     setFormData(updatedForm)
-    await filterOptions(updatedForm)
   }
 
   const handleFetchFilteredData = async () => {
     try {
-      console.log('Sending Payload:', formData) // 👀 check in console
+      setLoading(true)
       const response = await filterOptions(formData)
-      console.log('API Response:', response)
-      // TODO: set response data to DataTable if needed
-      // setCategories(response.data)
+      const { data } = response
+
+      setProducts(data.data) // current page data
+      setTotalRecords(data.totalCount) // total count = 26
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
@@ -100,8 +103,11 @@ const ReportsProducts: React.FC = () => {
         detail: err.message || 'Failed to fetch data',
         life: 3000
       })
+    } finally {
+      setLoading(false)
     }
   }
+
   const load = async () => {
     try {
       const data = await fetchSupplier()
@@ -243,19 +249,30 @@ const ReportsProducts: React.FC = () => {
       <Tooltip target=".p-button" position="left" />
 
       <DataTable
-        id="categories-table"
-        dataKey="refCategoryId"
+        value={products}
+        lazy
         paginator
-        showGridlines
-        stripedRows
-        rows={10}
-        rowsPerPageOptions={[5, 10, 20]}
+        totalRecords={totalRecords}
+        rows={+formData.paginationLimit}
+        first={(+formData.paginationOffset - 1) * +formData.paginationLimit}
         onPage={handlePageChange}
+        rowsPerPageOptions={[5, 10, 20]} // 👈 user can change
+        loading={loading}
+        stripedRows
+        showGridlines
         responsiveLayout="scroll"
       >
-        <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
-        <Column field="categoryCode" header="Code" sortable />
-        <Column field="categoryName" header="Name" sortable />
+        <Column
+          header="SNo"
+          body={(_, opts) =>
+            opts.rowIndex + 1 + (+formData.paginationOffset - 1) * +formData.paginationLimit
+          }
+        />
+        <Column field="productName" header="Product" sortable />
+        <Column field="HSNCode" header="HSN Code" />
+        <Column field="price" header="Price" />
+        <Column field="discountPercentage" header="Discount %" />
+        <Column field="acceptanceStatus" header="Status" />
         <Column field="createdBy" header="Created By" />
         <Column field="createdAt" header="Created At" />
       </DataTable>

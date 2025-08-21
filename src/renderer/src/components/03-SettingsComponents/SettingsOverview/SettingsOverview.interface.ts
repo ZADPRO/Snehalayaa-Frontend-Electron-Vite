@@ -45,9 +45,9 @@ export interface SettingsOverview {
 //   SubCategories: number
 // }
 
-export interface DashboardData {
-  cards: CardMetrics
-  latestCategories: LatestCategory[]
-  latestSuppliers: LatestSupplier[]
-  monthlyCounts: MonthlyCount[]
-}
+// export interface DashboardData {
+//   cards: CardMetrics
+//   latestCategories: LatestCategory[]
+//   latestSuppliers: LatestSupplier[]
+//   monthlyCounts: MonthlyCount[]
+// }

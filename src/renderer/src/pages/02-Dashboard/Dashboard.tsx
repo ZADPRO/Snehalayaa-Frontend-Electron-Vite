@@ -14,7 +14,7 @@ import { Product } from './Dashboard.interface'
 const Dashboard: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState({ name: 'Weekly', code: 'weekly' })
   const [products, setProducts] = useState<Product[]>([])
-
+  
   const periodOptions = [
     { name: 'Weekly', code: 'weekly' },
     { name: 'Monthly', code: 'monthly' },

@@ -1,5 +1,5 @@
-export const baseURL = 'http://192.168.29.236:8080/api/v1'
-export const baseURLV2 = 'http://192.168.29.236:8080/api/v2'
+export const baseURL = 'http://localhost:8080/api/v1'
+export const baseURLV2 = 'http://localhost:8080/api/v2'
 // export const baseURL = 'http://192.168.29.236:8080/api/v1'
 // export const baseURL = 'http://192.168.29.236:8080/api/v1'
 // export const baseURL = 'http://192.168.29.236:8080/api/v1'
@@ -10,4 +10,3 @@ export const ACCESS_TOKEN =
 
 
 
-  

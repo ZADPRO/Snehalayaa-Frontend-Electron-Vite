@@ -58,6 +58,7 @@ const AddNewPurchaseOrder: React.FC = () => {
   const [tableData, setTableData] = useState<any[]>([])
   const [selectedRows, setSelectedRows] = useState<any[]>([])
   const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const [pendingAmountInput, setPendingAmountInput] = useState('')
   const [applyTax, setApplyTax] = useState(false)
@@ -284,19 +285,21 @@ const AddNewPurchaseOrder: React.FC = () => {
         detail: 'Purchase order form has been reset.'
       })
       return
-    }
+    } // 🟢 Loader starts here
 
-    // 🟢 If not saved, do save logic
-    if (!selectedBranch || !selectedSupplier) {
-      toast.current?.show({
-        severity: 'warn',
-        summary: 'Missing Address',
-        detail: 'Please select both branch and supplier before saving.'
-      })
-      return
-    }
-
+    setIsSaving(true)
     try {
+      // 🟢 If not saved, do save logic
+      if (!selectedBranch || !selectedSupplier) {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Missing Address',
+          detail: 'Please select both branch and supplier before saving.'
+        })
+        setIsSaving(false) // Stop loader
+        return
+      }
+
       const payload = buildPayload()
       const res = await createPurchaseOrder(payload)
 
@@ -305,7 +308,6 @@ const AddNewPurchaseOrder: React.FC = () => {
         summary: 'Purchase Order Saved',
         detail: res.message || 'Your purchase order has been saved successfully.'
       })
-
       setIsSaved(true)
     } catch (error) {
       console.error('Error saving purchase order:', error)
@@ -314,6 +316,8 @@ const AddNewPurchaseOrder: React.FC = () => {
         summary: 'Save Failed',
         detail: (error as Error).message
       })
+    } finally {
+      setIsSaving(false) // Stop loader on completion
     }
   }
 
@@ -512,11 +516,21 @@ const AddNewPurchaseOrder: React.FC = () => {
             onClick={handleAddNewClick}
           />
           <Button
-            label={isSaved ? 'Close' : 'Save'}
-            icon={isSaved ? <CheckCheck size={20} /> : <Check size={20} />}
+            label={isSaving ? (isSaved ? 'Closing...' : 'Saving...') : isSaved ? 'Close' : 'Save'}
+            icon={
+              isSaving ? (
+                <LoaderCircle className="spin" size={20} />
+              ) : isSaved ? (
+                <CheckCheck size={20} />
+              ) : (
+                <Check size={20} />
+              )
+            }
             className="w-full gap-2 p-button-primary"
             onClick={handleSave}
+            disabled={isSaving}
           />
+
           {/* <Button
             label="Preview"
             icon={<Eye size={20} />}
