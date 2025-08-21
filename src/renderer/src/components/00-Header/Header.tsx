@@ -4,6 +4,7 @@ import './Header.css'
 import {
   BellRing,
   CircleUserRound,
+  FileStack,
   LayoutGrid,
   LogOut,
   PackageSearch,
@@ -40,6 +41,11 @@ const topRoutes = [
     path: '/notifications',
     name: 'Notifications',
     icon: <BellRing />
+  },
+  {
+    path: '/reports',
+    name: 'Reports',
+    icon: <FileStack />
   }
 ]
 

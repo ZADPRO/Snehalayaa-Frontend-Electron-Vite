@@ -10,6 +10,7 @@ import PurchaseOrder from '../pages/05-PurchaseOrder/PurchaseOrder'
 import Inventory from '../pages/06-Inventory/Inventory'
 import Profile from '../pages/04-Profile/Profile'
 import POSmanagement from '../pages/07-POSmanagement/POSmanagement'
+import Reports from '../pages/10-Reports/Reports'
 
 const MainAppRoutes: React.FC = () => {
   return (
@@ -30,6 +31,7 @@ const MainAppRoutes: React.FC = () => {
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/pos" element={<POSmanagement />} />
+                <Route path="/reports" element={<Reports />} />
               </Routes>
             </Header>
           }
