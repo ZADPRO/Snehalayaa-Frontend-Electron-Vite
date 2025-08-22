@@ -11,7 +11,12 @@ import { Calendar } from 'primereact/calendar'
 import { Nullable } from 'primereact/ts-helpers'
 import { Toast } from 'primereact/toast'
 import { FilterOptions, PurchaseOrder, Supplier } from './ReportsProducts.interface'
-import { fetchInvoice, fetchSupplier, filterOptions } from './ReportsProducts.function'
+import {
+  fetchInvoice,
+  fetchSupplier,
+  filterOptions,
+  exportReport
+} from './ReportsProducts.function'
 import { Dropdown } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
 
@@ -166,24 +171,67 @@ const ReportsProducts: React.FC = () => {
         tooltipOptions={{ position: 'left' }}
         loading={exportLoading.csv}
         disabled={exportLoading.csv}
+        onClick={async () => {
+          try {
+            _setExportLoading((prev) => ({ ...prev, csv: true }))
+            await exportReport(formData, 'csv')
+          } catch (err: any) {
+            toast.current?.show({
+              severity: 'error',
+              summary: 'Export Failed',
+              detail: err.message,
+              life: 3000
+            })
+          } finally {
+            _setExportLoading((prev) => ({ ...prev, csv: false }))
+          }
+        }}
       />
       <Button
         icon={<FileSpreadsheet size={16} strokeWidth={2} />}
         severity="success"
         tooltip="Export as Excel"
         tooltipOptions={{ position: 'left' }}
-        onClick={() => console.log('Payload:', formData)}
         loading={exportLoading.excel}
         disabled={exportLoading.excel}
+        onClick={async () => {
+          try {
+            _setExportLoading((prev) => ({ ...prev, excel: true }))
+            await exportReport(formData, 'excel')
+          } catch (err: any) {
+            toast.current?.show({
+              severity: 'error',
+              summary: 'Export Failed',
+              detail: err.message,
+              life: 3000
+            })
+          } finally {
+            _setExportLoading((prev) => ({ ...prev, excel: false }))
+          }
+        }}
       />
       <Button
         icon={<FileSignature size={16} strokeWidth={2} />}
         severity="danger"
         tooltip="Export as PDF"
         tooltipOptions={{ position: 'left' }}
-        onClick={() => console.log('Payload:', formData)}
         loading={exportLoading.pdf}
         disabled={exportLoading.pdf}
+        onClick={async () => {
+          try {
+            _setExportLoading((prev) => ({ ...prev, pdf: true }))
+            await exportReport(formData, 'pdf')
+          } catch (err: any) {
+            toast.current?.show({
+              severity: 'error',
+              summary: 'Export Failed',
+              detail: err.message,
+              life: 3000
+            })
+          } finally {
+            _setExportLoading((prev) => ({ ...prev, pdf: false }))
+          }
+        }}
       />
     </div>
   )

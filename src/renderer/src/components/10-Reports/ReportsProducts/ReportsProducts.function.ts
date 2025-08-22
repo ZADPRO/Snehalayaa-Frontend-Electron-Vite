@@ -1,5 +1,6 @@
 // import { saveAs } from 'file-saver'
 import autoTable from 'jspdf-autotable'
+import { saveAs } from 'file-saver'
 import jsPDF from 'jspdf'
 import { FilterOptions, Products, PurchaseOrder, Supplier } from './ReportsProducts.interface'
 import axios from 'axios'
@@ -8,6 +9,26 @@ import { baseURL } from '../../../../src/utils/helper'
 
 export const exportCSV = (dtRef: React.RefObject<any>) => {
   dtRef.current?.exportCSV()
+}
+
+export const exportReport = async (
+  payload: Partial<FilterOptions>,
+  format: 'csv' | 'excel' | 'pdf'
+) => {
+  try {
+    const response = await axios.post(`${baseURL}/admin/reports/productReportsDownload`, payload, {
+      headers: {
+        Authorization: localStorage.getItem('token') || ''
+      },
+      responseType: 'blob',
+      params: { format }
+    })
+
+    const fileName = `product_report_${new Date().getTime()}.${format === 'excel' ? 'xlsx' : format}`
+    saveAs(new Blob([response.data]), fileName)
+  } catch (err: any) {
+    throw new Error(err.message || 'Export failed')
+  }
 }
 
 export const exportPdf = ([]) => {
