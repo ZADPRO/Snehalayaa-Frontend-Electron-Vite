@@ -80,12 +80,12 @@ const ReportsProducts: React.FC = () => {
   }
 
   const handlePageChange = (event: DataTableStateEvent) => {
-    const updatedForm = {
+    const page = Math.floor(event.first / event.rows) + 1
+    setFormData({
       ...formData,
-      paginationOffset: String(event.page! + 1), // backend expects 1-based
+      paginationOffset: String(page),
       paginationLimit: String(event.rows)
-    }
-    setFormData(updatedForm)
+    })
   }
 
   const handleFetchFilteredData = async () => {
@@ -256,7 +256,7 @@ const ReportsProducts: React.FC = () => {
         rows={+formData.paginationLimit}
         first={(+formData.paginationOffset - 1) * +formData.paginationLimit}
         onPage={handlePageChange}
-        rowsPerPageOptions={[5, 10, 20]} // 👈 user can change
+        rowsPerPageOptions={[5, 10, 20]}
         loading={loading}
         stripedRows
         showGridlines
@@ -265,9 +265,12 @@ const ReportsProducts: React.FC = () => {
         <Column
           header="SNo"
           body={(_, opts) =>
-            opts.rowIndex + 1 + (+formData.paginationOffset - 1) * +formData.paginationLimit
+            (Number(formData.paginationOffset) - 1) * Number(formData.paginationLimit) +
+            opts.rowIndex +
+            1
           }
         />
+
         <Column field="productName" header="Product" sortable />
         <Column field="HSNCode" header="HSN Code" />
         <Column field="price" header="Price" />
