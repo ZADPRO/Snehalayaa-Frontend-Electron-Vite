@@ -4,7 +4,7 @@ import jsPDF from 'jspdf'
 import { FilterOptions, Products, PurchaseOrder, Supplier } from './ReportsProducts.interface'
 import axios from 'axios'
 // import * as XLSX from 'xlsx'
-import { baseURL, baseURLV2 } from '../../../../src/utils/helper'
+import { baseURL } from '../../../../src/utils/helper'
 
 export const exportCSV = (dtRef: React.RefObject<any>) => {
   dtRef.current?.exportCSV()

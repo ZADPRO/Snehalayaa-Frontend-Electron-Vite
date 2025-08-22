@@ -29,6 +29,7 @@ const ReportsProducts: React.FC = () => {
   const [todate, setToDate] = useState<Nullable<Date>>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
+  const [first, setFirst] = useState(0)
 
   const [products, setProducts] = useState<any[]>([])
   const [totalRecords, setTotalRecords] = useState(0)
@@ -81,11 +82,12 @@ const ReportsProducts: React.FC = () => {
 
   const handlePageChange = (event: DataTableStateEvent) => {
     const page = Math.floor(event.first / event.rows) + 1
-    setFormData({
-      ...formData,
+    setFirst(event.first)
+    setFormData((prev) => ({
+      ...prev,
       paginationOffset: String(page),
       paginationLimit: String(event.rows)
-    })
+    }))
   }
 
   const handleFetchFilteredData = async () => {
@@ -239,8 +241,8 @@ const ReportsProducts: React.FC = () => {
           value={selectedPurchaseOrderId}
           onChange={(e) => setSelectedPurchaseOrderId(e.value)}
           options={flattenedPOs}
-          optionLabel="poNumber" // label shown in dropdown
-          optionValue="purchaseOrderId" // value stored in state
+          optionLabel="poNumber"
+          optionValue="purchaseOrderId"
           placeholder="Select Invoice"
         />
       </div>
@@ -254,7 +256,7 @@ const ReportsProducts: React.FC = () => {
         paginator
         totalRecords={totalRecords}
         rows={+formData.paginationLimit}
-        first={(+formData.paginationOffset - 1) * +formData.paginationLimit}
+        first={first}
         onPage={handlePageChange}
         rowsPerPageOptions={[5, 10, 20]}
         loading={loading}
@@ -262,22 +264,13 @@ const ReportsProducts: React.FC = () => {
         showGridlines
         responsiveLayout="scroll"
       >
-        <Column
-          header="SNo"
-          body={(_, opts) =>
-            (Number(formData.paginationOffset) - 1) * Number(formData.paginationLimit) +
-            opts.rowIndex +
-            1
-          }
-        />
+        <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
 
         <Column field="productName" header="Product" sortable />
         <Column field="HSNCode" header="HSN Code" />
         <Column field="price" header="Price" />
         <Column field="discountPercentage" header="Discount %" />
         <Column field="acceptanceStatus" header="Status" />
-        <Column field="createdBy" header="Created By" />
-        <Column field="createdAt" header="Created At" />
       </DataTable>
     </div>
   )
