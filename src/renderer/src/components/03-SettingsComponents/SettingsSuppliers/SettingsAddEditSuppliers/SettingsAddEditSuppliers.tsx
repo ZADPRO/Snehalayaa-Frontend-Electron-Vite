@@ -12,7 +12,6 @@ import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
 import { Check } from 'lucide-react'
-import { Calendar } from 'primereact/calendar'
 
 const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
   selectedSupplier,
@@ -41,11 +40,9 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
     supplierCity: '',
     supplierState: '',
     supplierCountry: '',
+    creditedDays: 0,
     selectedStatus: { name: 'Active', isActive: true }
   })
-
-  const [creditedDays, setCreditedDays] = useState<number>(0)
-  const [creditedUntilDate, setCreditedUntilDate] = useState<Date>(new Date())
 
   const statusOptions: SupplierStatusOptions[] = [
     { name: 'Active', isActive: true },
@@ -55,20 +52,11 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
   const handleCreditedDaysChange = (value: string) => {
     const numeric = value.replace(/\D/g, '')
     const days = parseInt(numeric || '0', 10)
-    setCreditedDays(days)
 
-    const calculatedDate = new Date()
-    calculatedDate.setDate(calculatedDate.getDate() + days)
-    setCreditedUntilDate(calculatedDate)
-  }
-
-  const handleCreditedDateChange = (date: Date) => {
-    setCreditedUntilDate(date)
-
-    const today = new Date()
-    const diffTime = date.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    setCreditedDays(diffDays > 0 ? diffDays : 0)
+    setFormData((prev) => ({
+      ...prev,
+      creditedDays: days
+    }))
   }
 
   useEffect(() => {
@@ -92,6 +80,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
         supplierCity: selectedSupplier.supplierCity,
         supplierState: selectedSupplier.supplierState,
         supplierCountry: selectedSupplier.supplierCountry,
+        creditedDays: selectedSupplier.creditedDays,
         selectedStatus: selectedSupplier.supplierIsActive
           ? { name: 'Active', isActive: true }
           : { name: 'Inactive', isActive: false }
@@ -139,6 +128,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
       supplierCity: formData.supplierCity,
       supplierState: formData.supplierState,
       supplierCountry: formData.supplierCountry,
+      creditedDays: formData.creditedDays,
       supplierIsActive: formData.selectedStatus?.isActive ? 'true' : 'false'
     }
 
@@ -240,7 +230,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
             <FloatLabel className="always-float">
               <InputText
                 id="creditedDays"
-                value={creditedDays.toString()}
+                value={formData.creditedDays.toString()}
                 className="w-full"
                 keyfilter="int"
                 onChange={(e) => handleCreditedDaysChange(e.target.value)}
@@ -248,18 +238,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
               <label htmlFor="creditedDays">Credited Days</label>
             </FloatLabel>
           </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <Calendar
-                id="creditedUntilDate"
-                value={creditedUntilDate}
-                className="w-full"
-                onChange={(e) => handleCreditedDateChange(e.value as Date)}
-                dateFormat="dd/mm/yy"
-              />
-              <label htmlFor="creditedUntilDate">Credited Until</label>
-            </FloatLabel>
-          </div>
+          <div className="flex-1"></div>
         </div>
 
         <p className="mt-3">Communication details</p>
@@ -455,7 +434,7 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
                 maxLength={10}
                 keyfilter={'int'}
                 onChange={(e) => {
-                   const value = e.target.value.slice(0, 10)
+                  const value = e.target.value.slice(0, 10)
                   handleInputChange('emergencyContactNumber', value)
                 }}
               />
@@ -466,7 +445,6 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
 
         <div className="flex justify-content-end mt-3">
           <Button
-            // label="Save"
             label={selectedSupplier ? 'Update' : 'Save'}
             icon={<Check size={18} />}
             className="bg-[#8e5ea8] border-none gap-2"
@@ -476,18 +454,6 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
           />
         </div>
       </div>
-
-      {/* <div className="fixed bottom-0 left-0 w-full shadow-md p-4 text-right z-10">
-        <Button
-          label="Save"
-          // label={selectedCategory ? 'Update' : 'Save'}
-          icon="pi pi-check"
-          className="bg-[#8e5ea8] border-none gap-2"
-          // onClick={handleSubmit}
-          loading={isSubmitting}
-          disabled={isSubmitting}
-        />
-      </div> */}
     </div>
   )
 }

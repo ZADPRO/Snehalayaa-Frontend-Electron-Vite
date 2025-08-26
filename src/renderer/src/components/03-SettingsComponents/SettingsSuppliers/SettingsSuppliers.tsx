@@ -4,7 +4,8 @@ import {
   exportCSV,
   exportExcel,
   exportPdf,
-  deleteSupplier
+  deleteSupplier,
+  deleteSuppliers
 } from './SettingsSuppliers.function'
 import { Supplier } from './SettingsSuppliers.interface'
 import { DataTable } from 'primereact/datatable'
@@ -58,9 +59,10 @@ const SettingsSuppliers: React.FC = () => {
   const handleDelete = async () => {
     if (!selectedSuppliers.length) return
 
-    const categoryToDelete = selectedSuppliers[0]
     try {
-      const res = await deleteSupplier(categoryToDelete.supplierId)
+      const supplierIds = selectedSuppliers.map((s) => s.supplierId)
+
+      const res = await deleteSuppliers(supplierIds, true) // true = delete
       if (res.status) {
         toast.current?.show({
           severity: 'success',
@@ -69,19 +71,18 @@ const SettingsSuppliers: React.FC = () => {
         })
         setSelectedSuppliers([])
         load()
-      } else if (res.confirmationNeeded) {
+      } else {
         toast.current?.show({
           severity: 'warn',
-          summary: 'Needs Confirmation',
+          summary: 'Warning',
           detail: res.message
         })
-        // You can implement subcategory confirmation UI here if needed
       }
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Failed to delete'
+        detail: err.message || 'Failed to delete suppliers'
       })
     }
   }

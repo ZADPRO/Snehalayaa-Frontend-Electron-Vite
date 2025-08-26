@@ -19,6 +19,7 @@ export interface Supplier {
   supplierCity: string
   supplierState: string
   supplierCountry: string
+  creditedDays: number
 }
 
 export interface SupplierStatusOptions {
@@ -46,6 +47,7 @@ export interface SupplierFormData {
   supplierStreet: string
   supplierCity: string
   supplierState: string
+  creditedDays: number
   supplierCountry: string
 }
 

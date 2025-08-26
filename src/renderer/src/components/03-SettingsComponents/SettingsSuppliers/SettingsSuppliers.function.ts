@@ -20,7 +20,7 @@ export const fetchSupplier = async (): Promise<Supplier[]> => {
   }
 }
 
-export const deleteSupplier  = async (
+export const deleteSupplier = async (
   supplierId: number,
   forceDelete: boolean = false
 ): Promise<any> => {
@@ -69,4 +69,24 @@ export const exportExcel = (suppliers: Supplier[]) => {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
   })
   saveAs(blob, `categories_export_${new Date().getTime()}.xlsx`)
+}
+
+export const deleteSuppliers = async (
+  supplierIds: number[],
+  isDelete: boolean = true // default true = soft delete, false = restore
+): Promise<any> => {
+  const token = localStorage.getItem('token') || ''
+
+  const response = await axios.post(
+    `${baseURL}/admin/suppliers/delete/bulk`,
+    {
+      ids: supplierIds,
+      isDelete
+    },
+    {
+      headers: { Authorization: token }
+    }
+  )
+
+  return response.data
 }
