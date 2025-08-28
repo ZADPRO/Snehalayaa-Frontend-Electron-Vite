@@ -205,7 +205,7 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
           </div>
         </div>
 
-        <div className="flex justify-end mt-4">
+        <div className="fixed bottom-0 left-0 w-full shadow-md p-4 text-right z-10">
           <Button
             label={isEditMode ? 'Update' : 'Save'}
             icon={<Check />}

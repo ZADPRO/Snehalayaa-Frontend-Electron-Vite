@@ -138,33 +138,33 @@ const InventoryStockTransfer: React.FC = () => {
         })
       })
   }
-const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') => {
-  try {
-    if (action === 'print') {
-      setExportLoading((prev) => ({ ...prev, print: true }))
-    }
-    const invoiceProps = mapToInvoiceProps(po)
-    const logoBase64 = await getBase64FromImage(logo)
+  const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') => {
+    try {
+      if (action === 'print') {
+        setExportLoading((prev) => ({ ...prev, print: true }))
+      }
+      const invoiceProps = mapToInvoiceProps(po)
+      const logoBase64 = await getBase64FromImage(logo)
 
-    await generateInvoicePdf({
-      ...invoiceProps,
-      invoiceNo: po.totalSummary.poNumber,
-      action,
-      logoBase64
-    })
-  } catch (error) {
-    toast.current?.show({
-      severity: 'error',
-      summary: 'Error',
-      detail: (error as Error).message,
-      life: 3000
-    })
-  } finally {
-    if (action === 'print') {
-      setExportLoading((prev) => ({ ...prev, print: false }))
+      await generateInvoicePdf({
+        ...invoiceProps,
+        invoiceNo: po.totalSummary.poNumber,
+        action,
+        logoBase64
+      })
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: (error as Error).message,
+        life: 3000
+      })
+    } finally {
+      if (action === 'print') {
+        setExportLoading((prev) => ({ ...prev, print: false }))
+      }
     }
   }
-}
 
   const actionColumn = (rowData: PurchaseOrder) => {
     return (
@@ -218,7 +218,7 @@ const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') =>
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
         <Column
           field="totalSummary.poNumber"
-          header="PO Number"
+          header="Stock Transfer"
           body={(rowData) => (
             <span
               className="cursor-pointer font-bold underline"
@@ -242,7 +242,7 @@ const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') =>
         <Column field="totalSummary.createdAt" header="Created At" />
         <Column header="Actions" body={actionColumn} />
       </DataTable>
-       <Sidebar
+      <Sidebar
         visible={visibleRight}
         position="right"
         header={

@@ -13,7 +13,6 @@ import {
   exportExcel,
   exportPdf,
   bulkDeleteCategories
-  // deleteCategory
 } from './SettingsCategories.function'
 
 import { Category } from './SettingsCategories.interface'
@@ -28,6 +27,7 @@ const SettingsCategories: React.FC = () => {
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
   const [pendingForceDeleteIds, setPendingForceDeleteIds] = useState<number[]>([])
   const [showForceDialog, setShowForceDialog] = useState(false)
+  const [loading, setLoading] = useState<boolean>(false)
 
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<Category[]>>(null)
@@ -65,6 +65,7 @@ const SettingsCategories: React.FC = () => {
   }
 
   const load = async () => {
+    setLoading(true)
     try {
       const data = await fetchCategories()
       setCategories(data)
@@ -75,54 +76,13 @@ const SettingsCategories: React.FC = () => {
         detail: err.message || 'Failed to load categories',
         life: 3000
       })
+    } finally {
+      setLoading(false)
     }
   }
   useEffect(() => {
     load()
   }, [])
-
-  //   const handleDelete = async () => {
-  //     if (!selectedCategories.length) return
-
-  //     const idsToDelete = selectedCategories.map((cat) => cat.refCategoryId)
-
-  //     try {
-  //       const res = await bulkDeleteCategories(idsToDelete)
-  //       console.log('idsToDelete', idsToDelete)
-
-  //       if (res.status) {
-  //         toast.current?.show({
-  //           severity: 'success',
-  //           summary: 'Success',
-  //           detail: res.message
-  //         })
-  //         setSelectedCategories([])
-  //         load()
-  //       } else if (res.confirmationNeeded) {
-  //         toast.current?.show({
-  //           severity: 'warn',
-  //           summary: 'Needs Confirmation',
-  //           detail: res.message
-  //         })
-  //         // Optional: Show list of subcategories from res.subcategoriesMap in a dialog here
-  //       } else {
-  //         toast.current?.show({
-  //           severity: 'error',
-  //           summary: 'Error',
-  //           detail: res.message
-  //         })
-  //       }
-  //     } catch (err: any) {
-  //   const backendMessage =
-  //     err?.response?.data?.message || err?.message || 'Failed to delete'
-
-  //   toast.current?.show({
-  //     severity: 'error',
-  //     summary: 'Error',
-  //     detail: backendMessage
-  //   })
-  // }
-  //   }
 
   const handleDelete = async () => {
     if (!selectedCategories.length) return
@@ -183,7 +143,7 @@ const SettingsCategories: React.FC = () => {
         severity="success"
         tooltip="Add Category"
         tooltipOptions={{ position: 'left' }}
-          disabled={!!selectedCategory} // ✅ disable when a category is selected
+        disabled={!!selectedCategory} // ✅ disable when a category is selected
         onClick={() => setVisibleRight(true)}
       />
       <Button
@@ -253,6 +213,7 @@ const SettingsCategories: React.FC = () => {
         selectionMode="multiple"
         paginator
         showGridlines
+        loading={loading}
         stripedRows
         rows={10}
         rowsPerPageOptions={[5, 10, 20]}
@@ -284,7 +245,10 @@ const SettingsCategories: React.FC = () => {
       >
         <SettingsAddEditCategories
           selectedCategory={selectedCategory}
-          onClose={() => setVisibleRight(false)}
+          onClose={() => {
+            setVisibleRight(false)
+            setSelectedCategories([])
+          }}
           reloadData={load}
         />
       </Sidebar>

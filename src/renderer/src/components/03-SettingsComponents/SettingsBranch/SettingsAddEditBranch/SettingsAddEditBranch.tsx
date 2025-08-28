@@ -12,7 +12,6 @@ import { FloatLabel } from 'primereact/floatlabel'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
 import { Check, Plus } from 'lucide-react'
-// import { Category, SubCategory } from '../../SettingsCategories/SettingsCategories.interface'
 
 interface Section {
   sectionName: string
@@ -56,41 +55,6 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     { name: 'Active', isActive: true },
     { name: 'Inactive', isActive: false }
   ]
-
-  // useEffect(() => {
-  //   if (selectedBranches) {
-
-  //     setFormData({
-  //       refBranchName: selectedBranches.refBranchName,
-  //       refBranchCode: selectedBranches.refBranchCode,
-  //       refLocation: selectedBranches.refLocation,
-  //       refMobile: selectedBranches.refMobile,
-  //       refEmail: selectedBranches.refEmail,
-  //       isMainBranch: selectedBranches.isMainBranch,
-  //       isOnline: selectedBranches.isOnline,
-  //       isOffline: selectedBranches.isOffline,
-  //       selectedStatus: selectedBranches.isActive
-  //         ? { name: 'Active', isActive: true }
-  //         : { name: 'Inactive', isActive: false },
-  //       floors: selectedBranches.floors
-  //     })
-  //     setFloors(selectedBranches.floors || [])
-  //   } else {
-  //     setFloors([])
-  //     setFormData({
-  //       refBranchName: '',
-  //       refBranchCode: '',
-  //       refLocation: '',
-  //       refMobile: '',
-  //       refEmail: '',
-  //       isMainBranch: false,
-  //       isOnline: false,
-  //       isOffline: true,
-  //       selectedStatus: { name: 'Active', isActive: true },
-  //       floors: []
-  //     })
-  //   }
-  // }, [selectedBranches])
 
   useEffect(() => {
     if (selectedBranches) {
@@ -302,9 +266,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                 id="refEmail"
                 value={formData.refEmail}
                 className="w-full"
-                onChange={(e) => 
-                  handleInputChange('refEmail', e.target.value)
-                }
+                onChange={(e) => handleInputChange('refEmail', e.target.value)}
                 type="email"
               />
               <label htmlFor="refEmail">Email</label>
@@ -386,18 +348,18 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           <div className="flex-1"></div>
         </div>
 
-        <div className="flex justify-content-end mt-3 mb-3 w-full">
+        <div className="flex justify-content-end w-full">
           <Button label="Add Floor" className="bg-[#8e5ea8] border-none" onClick={handleAddFloor} />
         </div>
-        <div className="w-full justify-content-start ml-0 ">
+        <div className="w-full justify-content-start ml-0 pb-20">
           {floors.map((floor, floorIndex) => (
-            <div key={floorIndex} className="border rounded-xl p-2 shadow-md bg-gray-50 space-y-2 ">
+            <div key={floorIndex} className="border rounded-xl px-2 shadow-md bg-gray-50">
               {/* Floor Label */}
               <div className="font-semibold text-lg text-purple-700 mb-3">
                 Floor <span>{floorIndex + 1}</span>
               </div>
 
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-1 align-items-center">
                 <FloatLabel className="always-float">
                   <InputText
                     id={`floorName-${floorIndex}`}
@@ -415,7 +377,8 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                   <label htmlFor={`floorCode-${floorIndex}`}>Floor Code</label>
                 </FloatLabel>
                 <Button
-                  icon={<Plus className="w-8 h-8" />}
+                  icon={<Plus className="" />}
+                  label="Add Section"
                   onClick={() => handleAddSection(floorIndex)}
                 />
               </div>
@@ -429,7 +392,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                 return (
                   <div key={sectionIndex} className="flex flex-column  mt-3  w-full">
                     <p className="w-full font-medium text-gray-900">
-                      Section {`${floorIndex + 1}.${String.fromCharCode(97 + sectionIndex)}`}
+                      Section {`${floorIndex + 1}.${String.fromCharCode(65 + sectionIndex)}`}
                     </p>
                     <div className="flex flex-column gap-3 mt-3">
                       <div className="flex gap-3">
@@ -541,9 +504,8 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           ))}
         </div>
 
-        <div className="flex justify-content-end mt-3">
+        <div className="py-4 text-right z-10">
           <Button
-            // label="Save"
             label={selectedBranches ? 'Update' : 'Save'}
             icon={<Check size={18} />}
             className="bg-[#8e5ea8] border-none gap-2"

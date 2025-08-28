@@ -3,18 +3,25 @@ import { FloatLabel } from 'primereact/floatlabel'
 import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { Calendar } from 'primereact/calendar'
-import { FileUpload } from 'primereact/fileupload'
 import { Button } from 'primereact/button'
 import { Check } from 'lucide-react'
 import { InputSwitch } from 'primereact/inputswitch'
 import { Toast } from 'primereact/toast'
 import { useRef } from 'react'
+import { PurchaseOrderProduct } from '../PurchaseOrderCatalog.interface'
+import { CatalogFormData, Option } from '../CatalogAddEditForm/CatalogAddEditForm.interface'
+import { fetchCategories } from '../PurchaseOrderCatalog.function'
+import { fetchSubcategories, saveProduct } from '../CatalogAddEditForm/CatalogAddEditForm.function'
 
-import { fetchCategories, fetchSubcategories, saveProduct } from './CatalogAddEditForm.function'
+interface BulkUpdateProductCatalogProps {
+  selectedProducts: PurchaseOrderProduct[]
+  onSuccess: () => void
+}
 
-import { CatalogAddEditFormProps, CatalogFormData, Option } from './CatalogAddEditForm.interface'
-
-const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct, onSuccess }) => {
+const BulkUpdateProductCatalog: React.FC<BulkUpdateProductCatalogProps> = ({
+  selectedProducts,
+  onSuccess
+}) => {
   const toast = useRef<Toast>(null)
 
   const [formData, setFormData] = useState<CatalogFormData>({
@@ -41,35 +48,37 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
   const [subCategories, setSubCategories] = useState<Option[]>([])
 
   useEffect(() => {
-    if (!selectedProduct) return
+    if (!selectedProducts) return
 
-    const price = parseFloat(selectedProduct.Price || '0')
-    const discount = parseFloat(selectedProduct.DiscountAmount || '0')
+    const price = parseFloat(selectedProducts[0].Price || '0')
+    const discount = parseFloat(selectedProducts[0].DiscountAmount || '0')
     const cost = price + discount
     const mrp = (cost + cost * 0.1).toFixed(2)
 
     setFormData((prev) => ({
       ...prev,
-      name: selectedProduct.ProductName,
-      sku: selectedProduct.DummySKU,
-      category: selectedProduct.RefCategoryID,
-      subcategory: selectedProduct.RefSubCategoryID,
-      price: selectedProduct.Price,
+      name: selectedProducts[0].ProductName,
+      sku: selectedProducts[0].DummySKU,
+      category: selectedProducts[0].RefCategoryID,
+      subcategory: selectedProducts[0].RefSubCategoryID,
+      price: selectedProducts[0].Price,
       mrp: mrp,
       cost: cost.toString()
     }))
 
     fetchCategories().then(setCategories).catch(console.error)
-    fetchSubcategories(selectedProduct.RefCategoryID).then(setSubCategories).catch(console.error)
-  }, [selectedProduct])
+    fetchSubcategories(selectedProducts[0].RefCategoryID)
+      .then(setSubCategories)
+      .catch(console.error)
+  }, [selectedProducts])
 
   const handleInputChange = (field: keyof CatalogFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleImageUpload = (e: any) => {
-    handleInputChange('productImage', e.files?.[0] ?? null)
-  }
+  // const handleImageUpload = (e: any) => {
+  //   handleInputChange('productImage', e.files?.[0] ?? null)
+  // }
 
   const handleSave = async () => {
     const validationErrors = validateForm(formData)
@@ -145,7 +154,7 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
   }
 
   return (
-    <div className="px-2">
+    <div className="flex flex-column gap-1">
       <Toast ref={toast} />
 
       {/* 1️⃣ Basic Product Information */}
@@ -330,21 +339,6 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
         </div>
       </section>
 
-      {/* Media Upload */}
-      <section className="mt-3">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">3. Media / Uploads</h3>
-        <FileUpload
-          name="productImage"
-          mode="basic"
-          accept="image/*"
-          maxFileSize={1000000}
-          auto
-          chooseLabel="Upload Product Image (Optional)"
-          customUpload
-          uploadHandler={handleImageUpload}
-        />
-      </section>
-
       {/* Save Button */}
       <div className="mt-3 flex justify-content-end">
         <Button
@@ -359,4 +353,4 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
   )
 }
 
-export default CatalogAddEditForm
+export default BulkUpdateProductCatalog

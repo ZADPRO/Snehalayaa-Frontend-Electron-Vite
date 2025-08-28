@@ -4,7 +4,6 @@ import {
   exportCSV,
   exportExcel,
   exportPdf,
-  deleteSupplier,
   deleteSuppliers
 } from './SettingsSuppliers.function'
 import { Supplier } from './SettingsSuppliers.interface'

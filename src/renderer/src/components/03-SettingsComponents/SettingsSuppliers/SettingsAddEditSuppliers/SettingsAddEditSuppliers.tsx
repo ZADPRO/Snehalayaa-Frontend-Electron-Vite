@@ -12,6 +12,8 @@ import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
 import { Check } from 'lucide-react'
+// import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
   selectedSupplier,
@@ -270,6 +272,18 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
               />
               <label htmlFor="supplierContactNumber">Contact Number</label>
             </FloatLabel>
+            {/* <PhoneInput
+              country={'in'}
+              value={formData.supplierContactNumber}
+              onChange={(e) => {
+                console.log('e', e)
+                // const value = e.target.value.slice(0, 10)
+                handleInputChange('supplierContactNumber', e.target.value)
+              }}
+              // value={formData.mobile}
+              // onChange={(phone) => setFormData({ ...formData, mobile: phone })}
+              // className={`w-full phoneInput border rounded-md`}
+            /> */}
           </div>
         </div>
 

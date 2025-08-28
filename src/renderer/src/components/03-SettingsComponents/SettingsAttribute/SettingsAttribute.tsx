@@ -158,37 +158,34 @@ const SettingsAttribute: React.FC = () => {
     }
   }
 
-const onDeleteClick = async () => {
-  if (isAnySelected) {
-    try {
-      const attributeToDelete = selectedAttributes[0];
+  const onDeleteClick = async () => {
+    if (isAnySelected) {
+      try {
+        const attributeToDelete = selectedAttributes[0]
 
-      const res = await deleteAttributeAPI(attributeToDelete.AttributeId);
+        const res = await deleteAttributeAPI(attributeToDelete.AttributeId)
 
-      setAttributes((prev) =>
-        prev.filter((a) => a.AttributeId !== attributeToDelete.AttributeId)
-      );
-      setSelectedAttributes([]);
+        setAttributes((prev) => prev.filter((a) => a.AttributeId !== attributeToDelete.AttributeId))
+        setSelectedAttributes([])
 
-      if (res.status) {
+        if (res.status) {
+          toast.current?.show({
+            severity: 'success',
+            summary: 'Success',
+            detail: res.message || 'Attribute deleted successfully',
+            life: 3000
+          })
+        }
+      } catch (error: any) {
         toast.current?.show({
-          severity: 'success',
-          summary: 'Success',
-          detail: res.message || 'Attribute deleted successfully',
-          life: 3000,
-        });
+          severity: 'error',
+          summary: 'Error',
+          detail: error.message || 'Failed to delete attribute',
+          life: 3000
+        })
       }
-    } catch (error: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: error.message || 'Failed to delete attribute',
-        life: 3000,
-      });
     }
   }
-};
-
 
   // Save attribute (add or update)
   const saveAttribute = async () => {
@@ -261,8 +258,6 @@ const onDeleteClick = async () => {
   }
 
   useEffect(() => {
-  
-
     if (isSingleSelected) {
       console.log('selectedAttributes', selectedAttributes)
       setSelectedDataType(selectedAttributes[0])
@@ -278,7 +273,7 @@ const onDeleteClick = async () => {
   return (
     <div>
       <div className="mt-0">
-        <h3 className="mt-0 font-semibold">Products</h3>
+        <h3 className="mt-0 font-semibold">Product Attributes</h3>
       </div>
       <Toast ref={toast} />
       <Toolbar
@@ -334,17 +329,18 @@ const onDeleteClick = async () => {
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
         <Column field="AttributeValue" header="Name" sortable />
         <Column field="attributeGroupName" header="Data Type" sortable />
-        <Column
+        {/* <Column
           field="isDelete"
           header="Visibility"
-          body={(rowData) =>
+          body={(rowData) => {
+            console.log('rowData', rowData)
             rowData.isDelete ? (
               <span className="text-red-500">Hidden</span>
             ) : (
               <span className="text-green-500">Visible</span>
             )
-          }
-        />
+          }}
+        /> */}
       </DataTable>
       <Sidebar
         visible={visibleRight}
@@ -359,7 +355,7 @@ const onDeleteClick = async () => {
         }}
         style={{ width: '50vw' }}
       >
-        <div className="p-4 gap-4">
+        <div className="py-2 gap-4">
           <div className="flex gap-3">
             <div className="flex-1">
               <FloatLabel className="always-float">

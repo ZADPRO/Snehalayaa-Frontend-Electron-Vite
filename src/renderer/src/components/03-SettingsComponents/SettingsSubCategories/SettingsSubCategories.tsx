@@ -25,6 +25,7 @@ const SettingsSubCategories: React.FC = () => {
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [selectedSubCategories, setSelectedSubCategories] = useState<SubCategory[]>([])
   const [editSubCategory, setEditSubCategory] = useState<SubCategory | null>(null)
+  const [loading, setLoading] = useState<boolean>(false)
 
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<SubCategory[]>>(null)
@@ -37,6 +38,8 @@ const SettingsSubCategories: React.FC = () => {
   })
 
   const load = async () => {
+    setLoading(true)
+
     try {
       const data = await fetchSubCategories()
       setSubCategories(data)
@@ -47,6 +50,8 @@ const SettingsSubCategories: React.FC = () => {
         detail: err.message || 'Failed to load subcategories',
         life: 3000
       })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -197,6 +202,7 @@ const SettingsSubCategories: React.FC = () => {
         paginator
         rows={10}
         stripedRows
+        loading={loading}
         responsiveLayout="scroll"
       >
         <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
@@ -229,6 +235,7 @@ const SettingsSubCategories: React.FC = () => {
           onClose={() => {
             setVisibleRight(false)
             setEditSubCategory(null)
+            setSelectedSubCategories([])
           }}
           reloadData={load}
         />

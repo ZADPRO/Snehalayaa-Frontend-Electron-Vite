@@ -303,8 +303,8 @@ const InventoryAddEditStockTransfer: React.FC<ViewPurchaseOrderProductsProps> = 
         <Column selectionMode="multiple" />
         <Column header="S.No" body={serialBodyTemplate} />
         <Column header="Product Name" field="productName" style={{ minWidth: '200px' }} />
-        <Column header="Category" field="categoryName" />
-        <Column header="Subcategory" field="subCategoryName" />
+        {/* <Column header="Category" field="categoryName" /> */}
+        {/* <Column header="Subcategory" field="subCategoryName" /> */}
         <Column header="HSN Code" field="HSNCode" style={{ minWidth: '100px' }} />
         <Column header="Price" field="purchasePrice" />
         <Column header="Status" body={statusColumn} />

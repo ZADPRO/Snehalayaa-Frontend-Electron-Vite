@@ -10,13 +10,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Calendar } from 'primereact/calendar'
 import { Nullable } from 'primereact/ts-helpers'
 import { Toast } from 'primereact/toast'
-import { FilterOptions, PurchaseOrder, Supplier } from './ReportsProducts.interface'
+import { FilterOptions, PurchaseOrder, Supplier } from './ReportsSupplier.interface'
 import {
   fetchInvoice,
   fetchSupplier,
   filterOptions,
   exportReport
-} from './ReportsProducts.function'
+} from './ReportsSupplier.function'
 import { Dropdown } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
 
@@ -29,7 +29,7 @@ const formatDate = (date: Date | null | undefined): string => {
   return `${day}-${month}-${year}`
 }
 
-const ReportsProducts: React.FC = () => {
+const ReportsSupplier: React.FC = () => {
   const [fromdate, setFromDate] = useState<Nullable<Date>>(null)
   const [todate, setToDate] = useState<Nullable<Date>>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -329,4 +329,4 @@ const ReportsProducts: React.FC = () => {
   )
 }
 
-export default ReportsProducts
+export default ReportsSupplier
