@@ -269,7 +269,7 @@ const PurchaseOrderList: React.FC = () => {
             </span>
           )}
         />
-        <Column field="supplierDetails.supplierName" header="Supplier" sortable />
+        <Column field="supplierDetails.supplierName" header="Supplier" filter sortable />
         <Column field="branchDetails.branchName" header="Branch" sortable />
         <Column
           field="totalSummary.status"

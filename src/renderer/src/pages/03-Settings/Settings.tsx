@@ -21,7 +21,8 @@ import SettingsSubCategories from '../../components/03-SettingsComponents/Settin
 import SettingsSuppliers from '../../components/03-SettingsComponents/SettingsSuppliers/SettingsSuppliers'
 import SettingsBranch from '../../components/03-SettingsComponents/SettingsBranch/SettingsBranch'
 import SettingsEmployees from '../../components/03-SettingsComponents/SettingsEmployees/SettingsEmployees'
-import SettingsAttribute from '../../components/03-SettingsComponents/SettingsAttribute/SettingsAttribute'
+// import SettingsAttribute from '../../components/03-SettingsComponents/SettingsAttribute/SettingsAttribute'
+import SettingsAttributes from '../../components/03-SettingsComponents/SettingsAttributes/SettingsAttributes'
 // import SettingsUserRoles from '../../components/03-SettingsComponents/SettingsUserRoles/SettingsUserRoles'
 
 // Sidebar items config
@@ -66,7 +67,7 @@ const sidebarItems = [
     key: 'attributes',
     label: 'Attributes',
     icon: <SlidersVertical size={20} className="sidebar-icon" />,
-    component: <SettingsAttribute />
+    component: <SettingsAttributes />
   },
   {
     key: 'employees',
@@ -77,7 +78,7 @@ const sidebarItems = [
 ]
 
 const Settings: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('categories')
+  const [activeKey, setActiveKey] = useState('attributes')
 
   return (
     <div className="settingsContainer">

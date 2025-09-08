@@ -1,5 +1,5 @@
 import api from '../../../utils/api'
-import { Attribute, AttributePayload, dataType } from './SettingsAttribute.interface'
+import { Attribute, AttributePayload, dataType } from './SettingsAttributes.interface'
 
 export const saveAttributeAPI = async (payload: AttributePayload) => {
   const response = await api.post(`/admin/settings/attributes`, payload)
@@ -12,7 +12,6 @@ export const saveAttributeAPI = async (payload: AttributePayload) => {
 
 export const fetchDataType = async (): Promise<dataType[]> => {
   const response = await api.get(`/admin/settings/attributesDataType`)
-  console.log('response', response)
   if (response.data?.status) {
     return response.data.data
   } else {
@@ -24,7 +23,6 @@ export const fetchAttribute = async (): Promise<Attribute[]> => {
   const response = await api.get(`/admin/settings/attributes`)
   console.log('response', response)
   if (response.data?.status) {
-    console.log('response', response)
     return response.data.data
   } else {
     throw new Error(response.data.message || 'Failed to fetch attributes')

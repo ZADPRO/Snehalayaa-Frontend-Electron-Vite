@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { baseURL, baseURLV2 } from '../../../../utils/helper'
+import { baseURLV2 } from '../../../../utils/helper'
 import { Branch } from '../SettingsBranch.interface'
 
 export const createBranch = async (payload: Partial<Branch>) => {
@@ -12,12 +12,20 @@ export const createBranch = async (payload: Partial<Branch>) => {
   return response.data
 }
 
-export const updateBranch   = async (payload: Partial<Branch>) => {
-  const response = await axios.put(`${baseURL}/admin/settings/branches`, payload, {
-    headers: {
-      Authorization: localStorage.getItem('token') || ''
+export const updateBranch = async (payload: Partial<Branch>) => {
+  if (!payload.refBranchId) {
+    throw new Error('Branch ID is required for update')
+  }
+
+  const response = await axios.put(
+    `${baseURLV2}/admin/settings/branches/${payload.refBranchId}`, // 👈 pass ID in URL
+    payload,
+    {
+      headers: {
+        Authorization: localStorage.getItem('token') || ''
+      }
     }
-  })
+  )
   console.log('response.data', response.data)
   return response.data
 }
