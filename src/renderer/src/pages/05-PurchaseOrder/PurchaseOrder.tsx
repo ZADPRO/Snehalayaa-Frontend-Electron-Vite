@@ -60,7 +60,7 @@ const sidebarItems = [
 ]
 
 const PurchaseOrder: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('purchaseOrder')
+  const [activeKey, setActiveKey] = useState('createPurchaseOrder')
 
   return (
     <div className="settingsContainer">

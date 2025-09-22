@@ -37,11 +37,11 @@ const topRoutes = [
     name: 'POS',
     icon: <ShoppingBag />
   },
-  {
-    path: '/notifications',
-    name: 'Notifications',
-    icon: <BellRing />
-  },
+  // {
+  //   path: '/notifications',
+  //   name: 'Notifications',
+  //   icon: <BellRing />
+  // },
   {
     path: '/reports',
     name: 'Reports',

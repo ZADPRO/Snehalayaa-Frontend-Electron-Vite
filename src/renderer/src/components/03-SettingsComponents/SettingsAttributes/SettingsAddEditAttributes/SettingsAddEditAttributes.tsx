@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { SettingsAddEditAttributesProps } from './SettingsAddEditAttributes.interface'
 import { Toast } from 'primereact/toast'
 
@@ -7,17 +7,19 @@ const SettingsAddEditAttributes: React.FC<SettingsAddEditAttributesProps> = ({
   onClose,
   reloadData
 }) => {
+  console.log('onClose', onClose)
+  console.log('reloadData', reloadData)
   const toast = useRef<Toast>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmitForm = async () => {
-    try {
-      onClose()
-      reloadData()
-    } catch (err: any) {
-      console.log('err', err)
-    }
-  }
+  // const handleSubmitForm = async () => {
+  //   try {
+  //     onClose()
+  //     reloadData()
+  //   } catch (err: any) {
+  //     console.log('err', err)
+  //   }
+  // }
 
   useEffect(() => {
     if (selectedAttribute) {

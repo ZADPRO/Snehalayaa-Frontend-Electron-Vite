@@ -5,7 +5,7 @@ import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { Category, SubCategory, Branch, Supplier } from '../AddNewPurchaseOrder.interface'
-import { Check } from 'lucide-react'
+import { Check, Plus } from 'lucide-react'
 import { formatINRCurrency } from './AddNewProductsForPurchaseOrder.function'
 import { Message } from 'primereact/message'
 
@@ -214,6 +214,16 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <strong>IFSC:</strong> {toAddress?.supplierIFSC || 'N/A'}
           </div>
         </div>
+      </div>
+
+      <div className="flex gap-2 justify-content-end mb-3">
+        <Button label="Add Category" icon={<Plus size={20} />} className="gap-2" />
+        <Button
+          label="Add Sub Category"
+          icon={<Plus size={20} />}
+          className="gap-2"
+          severity="info"
+        />
       </div>
 
       {showInfoMessage && existingMatch && (

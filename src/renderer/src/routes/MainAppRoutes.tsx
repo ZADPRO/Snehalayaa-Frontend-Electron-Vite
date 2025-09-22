@@ -11,6 +11,8 @@ import Inventory from '../pages/06-Inventory/Inventory'
 import Profile from '../pages/04-Profile/Profile'
 import POSmanagement from '../pages/07-POSmanagement/POSmanagement'
 import Reports from '../pages/10-Reports/Reports'
+import ReportsStockSummary from '../components/10-Reports/04-ReportsInventory/ReportsStockSummary/ReportsStockSummary'
+import ReportsStockLedger from '../components/10-Reports/04-ReportsInventory/ReportsStockLedger/ReportsStockLedger'
 
 const MainAppRoutes: React.FC = () => {
   return (
@@ -32,6 +34,8 @@ const MainAppRoutes: React.FC = () => {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/pos" element={<POSmanagement />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/inventoryReports/stockSummary" element={<ReportsStockSummary />} />
+                <Route path="/inventoryReports/stockLedger" element={<ReportsStockLedger />} />
               </Routes>
             </Header>
           }

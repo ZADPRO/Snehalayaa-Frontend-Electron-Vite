@@ -6,8 +6,8 @@ import { Divider } from 'primereact/divider'
 import './Reports.css'
 import ReportsOverview from '../../components/10-Reports/ReportsOverview/ReportsOverview'
 import ReportsProducts from '../../components/10-Reports/ReportsProducts/ReportsProducts'
-// import ReportsSales from '../../components/10-Reports/ReportsSales/ReportsSales'
 import ReportsSupplier from '../../components/10-Reports/ReportsSupplier/ReportsSupplier'
+import ReportsInventory from '../../components/10-Reports/04-ReportsInventory/ReportsInventory'
 
 // Sidebar items config
 const sidebarItems = [
@@ -18,20 +18,44 @@ const sidebarItems = [
     component: <ReportsOverview />
   },
   {
-    key: 'productReports',
-    label: 'Product Reports',
+    key: 'orderReports',
+    label: 'Order Reports',
     icon: <FolderClosed size={20} className="sidebar-icon" />,
     component: <ReportsProducts />
   },
-  // {
-  //   key: 'salesReport',
-  //   label: 'Sales Reports',
-  //   icon: <FolderClosed size={20} className="sidebar-icon" />,
-  //   component: <ReportsSales />
-  // },
+  {
+    key: 'salesReport',
+    label: 'Sales / Purchase Reports',
+    icon: <FolderClosed size={20} className="sidebar-icon" />,
+    component: <ReportsProducts />
+  },
   {
     key: 'supplierReport',
     label: 'Supplier Reports',
+    icon: <FolderClosed size={20} className="sidebar-icon" />,
+    component: <ReportsProducts />
+  },
+  {
+    key: 'inventoryReports',
+    label: 'Inventory Reports',
+    icon: <FolderClosed size={20} className="sidebar-icon" />,
+    component: <ReportsInventory />
+  },
+  {
+    key: 'accountsReport',
+    label: 'Accounts Reports',
+    icon: <FolderClosed size={20} className="sidebar-icon" />,
+    component: <ReportsSupplier />
+  },
+  {
+    key: 'posReports',
+    label: 'POS Reports',
+    icon: <FolderClosed size={20} className="sidebar-icon" />,
+    component: <ReportsProducts />
+  },
+  {
+    key: 'miscellaneousReports',
+    label: 'Miscellaneous Reports',
     icon: <FolderClosed size={20} className="sidebar-icon" />,
     component: <ReportsSupplier />
   }

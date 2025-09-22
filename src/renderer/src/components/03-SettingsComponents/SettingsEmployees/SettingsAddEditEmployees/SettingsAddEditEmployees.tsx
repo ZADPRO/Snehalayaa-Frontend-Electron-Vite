@@ -126,6 +126,8 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
       // console.log('selectedBr', selectedBr)
       const selectedRole = roleTypes.find((rt) => rt.refRTId === emp.RefRTId) || null
       const selectedBr = branches.find((br) => br.refBranchId === emp.RefUserBranchId) || null
+      console.log('branches', branches)
+      console.log('selectedBr', selectedBr)
 
       setFormData({
         branchId: emp.RefUserBranchId || 0,
@@ -299,7 +301,7 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
               value={formData.mobile}
               className="w-full"
               onChange={(e) => {
-                 const value = e.target.value.slice(0, 10)
+                const value = e.target.value.slice(0, 10)
                 handleInputChange('mobile', value)
               }}
             />
@@ -348,7 +350,6 @@ const SettingsAddEditEmployees: React.FC<SettingsAddEditEmployeeProps> = ({
           <FloatLabel className="always-float">
             <InputText
               id="state"
-              keyfilter="pint"
               value={formData.state}
               className="w-full"
               onChange={(e) => handleInputChange('state', e.target.value)}

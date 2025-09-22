@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FolderKanban, Layers3, BadgeInfo, PanelsTopLeft, PackageCheck } from 'lucide-react'
+import { FolderKanban, Layers3, BadgeInfo, PanelsTopLeft, PackageCheck, Boxes } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
 import './Inventory.css'
@@ -9,6 +9,7 @@ import InventoryStockTake from '../../components/08-InventoryComponents/Inventor
 import InventoryTracker from '../../components/08-InventoryComponents/InventoryTracker/InventoryTracker'
 import InventoryStockTransfer from '../../components/08-InventoryComponents/InventoryStockTransfer/InventoryStockTransfer'
 import InventoryProducts from '../../components/08-InventoryComponents/InventoryProducts/InventoryProducts'
+import InventoryBulkUpdate from '../../components/08-InventoryComponents/InventoryBulkUpdate/InventoryBulkUpdate'
 
 // Sidebar items config
 const sidebarItems = [
@@ -42,11 +43,17 @@ const sidebarItems = [
     label: 'Products',
     icon: <PackageCheck size={20} className="sidebar-icon" />,
     component: <InventoryProducts />
+  },
+  {
+    key: 'bulkUpload',
+    label: 'Bulk Upload',
+    icon: <Boxes size={20} className="sidebar-icon" />,
+    component: <InventoryBulkUpdate />
   }
 ]
 
 const Settings: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('overview')
+  const [activeKey, setActiveKey] = useState('bulkUpload')
 
   return (
     <div className="settingsContainer">
