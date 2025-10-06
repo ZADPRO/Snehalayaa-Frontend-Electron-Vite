@@ -9,7 +9,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Floor, Products, Section } from './InventoryProducts.interface'
 import {
   fetchFloor,
-  fetchProducts,
   fetchSection,
   saveAcceptProducts
 } from './InventoryProducts.function'
@@ -35,19 +34,30 @@ const InventoryProducts: React.FC = () => {
   })
 
   // Load Products
-  const loadProducts = async () => {
+  // Load Products from localStorage
+  const loadProducts = () => {
     try {
-      const data = await fetchProducts()
-      setProduct(data)
+      const storedData = localStorage.getItem('inventoryData')
+      if (storedData) {
+        const parsedData = JSON.parse(storedData)
+        setProduct(parsedData)
+      } else {
+        setProduct([]) // empty if nothing in localStorage
+      }
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: error.message || 'Failed to load Products',
+        detail: error.message || 'Failed to load Products from localStorage',
         life: 3000
       })
     }
   }
+
+  // On mount, load products
+  useEffect(() => {
+    loadProducts()
+  }, [])
 
   // Load dropdowns
   useEffect(() => {
@@ -152,7 +162,7 @@ const InventoryProducts: React.FC = () => {
         value={products}
         selection={selectedProduct}
         onSelectionChange={(e) => setSelectedProduct(e.value as Products[])}
-        dataKey="refPtId"
+        dataKey="SKU"
         selectionMode="multiple"
         paginator
         showGridlines
@@ -162,13 +172,17 @@ const InventoryProducts: React.FC = () => {
         responsiveLayout="scroll"
         scrollable
       >
-        <Column selectionMode="multiple" style={{ minWidth: '60px' }} />
-        <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} style={{ minWidth: '50px' }} />
-        <Column field="poName" header="Product Name" style={{ minWidth: '300px' }} />
-        <Column field="refCategoryId" header="Category" sortable />
-        <Column field="refSubCategoryId" header="Sub Category" sortable />
-        <Column field="poHSN" header="HSN Code" />
-        <Column field="poPrice" header="Price" />
+        <Column selectionMode="multiple" style={{ minWidth: '3rem' }} />
+        <Column field="S.No" header="SNo" style={{ minWidth: '3rem' }} />
+        <Column field="ProductName" header="Product Name" style={{ minWidth: '13rem' }} />
+        <Column field="SKU" header="SKU" style={{ minWidth: '12rem' }} />
+        <Column field="ProductType" header="Product Type" style={{ minWidth: '13rem' }} />
+        <Column field="Category" header="Category" style={{ minWidth: '10rem' }} />
+        <Column field="SubCategory" header="Sub Category" style={{ minWidth: '13rem' }} />
+        <Column field="Fabric" header="Fabric" />
+        <Column field="SellingPrice" header="Selling Price" style={{ minWidth: '13rem' }} />
+        <Column field="CostPrice" header="Cost Price" style={{ minWidth: '13rem' }} />
+        <Column field="Discount" header="Discount (%)" style={{ minWidth: '13rem' }} />
       </DataTable>
 
       {/* Move Dialog */}

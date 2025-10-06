@@ -31,7 +31,7 @@ const sidebarItems = [
 ]
 
 const POSmanagement: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('overview')
+  const [activeKey, setActiveKey] = useState('salesOrder')
 
   return (
     <div className="settingsContainer">

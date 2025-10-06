@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { BreadCrumb } from 'primereact/breadcrumb'
 import { MenuItem } from 'primereact/menuitem'
 import { useNavigate } from 'react-router-dom'
@@ -11,66 +11,99 @@ import ComponentHeader from '../../../00-Header/ComponentHeader'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 
-interface StockItem {
-  'S.No': number
-  ProductName: string
-  SKU: string
-  ProductType: string
-  Category: string
-  SubCategory: string
-  Fabric: string
-  SellingPrice: number
-  CostPrice: number
-  Discount: number
+interface CurrentCash {
+  cashier: string
+  openingBalance: number
+  cashSales: number
+  cardSales: number
+  upiSales: number
+  expenses: number
+  closingBalance: number
 }
 
-const ReportsStockSummary: React.FC = () => {
+const ReportsCurrentCash: React.FC = () => {
   const navigate = useNavigate()
   const toast = useRef<Toast>(null)
 
   const items: MenuItem[] = [
     { label: 'Reports', command: () => navigate('/reports') },
-    { label: 'Inventory Reports', command: () => navigate('/reports') },
-    { label: 'Stock Summary Report' }
+    { label: 'POS Reports', command: () => navigate('/reports') },
+    { label: 'Current Cash Report' }
   ]
 
+  // Filters
   const [fromDate, setFromDate] = useState<Date | null>(null)
   const [toDate, setToDate] = useState<Date | null>(null)
   const [loading, setLoading] = useState({ csv: false, excel: false })
 
-  const [stockData, setStockData] = useState<StockItem[]>([])
+  // Sample Data - mimicking O2Vend current cash
+  const [currentCashData, setCurrentCashData] = useState<CurrentCash[]>([])
 
-  // Fetch data from localStorage
   useEffect(() => {
-    const data: StockItem[] = JSON.parse(localStorage.getItem('inventoryData') || '[]')
-    setStockData(data)
-  }, [])
+    const today = new Date()
+    console.log('today', today)
+    const sampleData: CurrentCash[] = [
+      {
+        cashier: 'Thiru',
+        openingBalance: 50000,
+        cashSales: 15000,
+        cardSales: 10000,
+        upiSales: 8000,
+        expenses: 2000,
+        closingBalance: 61000
+      },
+      {
+        cashier: 'Thiru',
+        openingBalance: 60000,
+        cashSales: 20000,
+        cardSales: 15000,
+        upiSales: 10000,
+        expenses: 3000,
+        closingBalance: 102000
+      },
+      {
+        cashier: 'Thiru',
+        openingBalance: 40000,
+        cashSales: 12000,
+        cardSales: 8000,
+        upiSales: 5000,
+        expenses: 1000,
+        closingBalance: 55000
+      }
+    ]
 
-  // Filter by date if needed (optional)
-  const filteredData = stockData.filter((row) => {
-    console.log('row', row)
-    return true // No date filter by default; can be customized if date exists
-  })
+    setCurrentCashData(sampleData)
+  }, [])
 
   const exportData = (type: 'csv' | 'excel') => {
     setLoading((prev) => ({ ...prev, [type]: true }))
     setTimeout(() => {
-      const worksheet = XLSX.utils.json_to_sheet(filteredData)
+      const worksheet = XLSX.utils.json_to_sheet(
+        currentCashData.map((d) => ({
+          Cashier: d.cashier,
+          'Opening Balance': d.openingBalance,
+          'Cash Sales': d.cashSales,
+          'Card Sales': d.cardSales,
+          'UPI/Online Sales': d.upiSales,
+          Expenses: d.expenses,
+          'Closing Balance': d.closingBalance
+        }))
+      )
       const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'StockSummary')
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'CurrentCash')
       const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
       const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
-      saveAs(blob, `stock_summary.${type === 'csv' ? 'csv' : 'xlsx'}`)
+      saveAs(blob, `current_cash.${type === 'csv' ? 'csv' : 'xlsx'}`)
       setLoading((prev) => ({ ...prev, [type]: false }))
       toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Export completed!' })
-    }, 1000)
+    }, 3000)
   }
 
   return (
     <div>
       <Toast ref={toast} />
       <ComponentHeader
-        title="Stock Summary Report"
+        title="Current Cash Report"
         subtitle={new Date().toLocaleDateString('en-US', {
           weekday: 'long',
           month: 'short',
@@ -112,27 +145,25 @@ const ReportsStockSummary: React.FC = () => {
 
         {/* DataTable */}
         <DataTable
-          value={filteredData}
+          value={currentCashData}
           paginator
           rows={5}
           showGridlines
           stripedRows
           responsiveLayout="scroll"
         >
-          <Column field="S.No" header="S.No" />
-          <Column field="ProductName" header="Product Name" />
-          <Column field="SKU" header="SKU" />
-          <Column field="ProductType" header="Product Type" />
-          <Column field="Category" header="Category" />
-          <Column field="SubCategory" header="Sub Category" />
-          <Column field="Fabric" header="Fabric" />
-          <Column field="SellingPrice" header="Selling Price" />
-          <Column field="CostPrice" header="Cost Price" />
-          <Column field="Discount" header="Discount" />
+          <Column header="S.No" body={(_, opts) => opts.rowIndex + 1} style={{ width: '60px' }} />
+          <Column field="cashier" header="Cashier" />
+          <Column field="openingBalance" header="Opening Balance" />
+          <Column field="cashSales" header="Cash Sales" />
+          <Column field="cardSales" header="Card Sales" />
+          <Column field="upiSales" header="UPI/Online Sales" />
+          <Column field="expenses" header="Expenses" />
+          <Column field="closingBalance" header="Closing Balance" />
         </DataTable>
       </div>
     </div>
   )
 }
 
-export default ReportsStockSummary
+export default ReportsCurrentCash

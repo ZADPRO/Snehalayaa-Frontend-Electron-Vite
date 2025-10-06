@@ -1,18 +1,10 @@
-import React, { JSX, useRef, useState } from 'react'
+import React, { JSX, useEffect, useRef, useState } from 'react'
 import { DataTable } from 'primereact/datatable'
 import { Toast } from 'primereact/toast'
 import { inventory } from './InventoryTracker.interface'
 import { exportCSV, exportPdf, exportExcel } from './InventoryTracker.function'
 import { Button } from 'primereact/button'
-import {
-  FileSignature,
-  FileSpreadsheet,
-  FileText,
-  ShoppingCart,
-  Truck,
-  Book,
-  Boxes
-} from 'lucide-react'
+import { FileSignature, FileSpreadsheet, FileText, Upload } from 'lucide-react'
 import { Toolbar } from 'primereact/toolbar'
 import { Tooltip } from 'primereact/tooltip'
 import { Sidebar } from 'primereact/sidebar'
@@ -29,65 +21,8 @@ interface TimelineEvent {
 const InventoryTracker: React.FC = () => {
   const [visibleSidebar, setVisibleSidebar] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<inventory | null>(null)
-
-  const timelineEvents: TimelineEvent[] = selectedProduct
-    ? [
-        {
-          status: 'PO Initiated',
-          date: new Date(new Date().setDate(new Date().getDate() - 1)).toLocaleString(),
-          color: '#9C27B0',
-          icon: <ShoppingCart size={18} className="text-white" />
-        },
-        {
-          status: 'Product Received',
-          date: new Date('2025-07-25T02:20:42.724Z').toLocaleString(),
-          color: '#673AB7',
-          icon: <Truck size={18} className="text-white" />
-        },
-        {
-          status: 'Catalog Created',
-          date: new Date(selectedProduct.createdAt).toLocaleString(),
-          color: '#FF9800',
-          icon: <Book size={18} className="text-white" />
-        },
-        {
-          status: 'Moved to Inventory',
-          date: new Date(selectedProduct.createdAt).toLocaleString(),
-          color: '#607D8B',
-          icon: <Boxes size={18} className="text-white" />
-        }
-      ]
-    : []
-
-  const [inventory, _setInventory] = useState<inventory[]>([
-    {
-      id: 6,
-      ProductName: 'New saree 01',
-      skuCode: 'SS072500001',
-      hsnCode: '45678i',
-      price: 7800,
-      quantity: 2,
-      movement: '8580.00',
-      branchName: 'GST_2',
-      createdBy: 'Admin',
-      createdAt: '2025-07-25 09:35:56'
-    },
-    {
-      id: 7,
-      ProductName: 'New saree 02',
-      skuCode: 'SS072500002',
-      hsnCode: '9i876545678',
-      price: 7800,
-      quantity: 2,
-      movement: '8580.00',
-      branchName: 'GST_0',
-      createdBy: 'Admin',
-      createdAt: '2025-07-25 09:42:23'
-    }
-  ])
-
+  const [inventory, setInventory] = useState<inventory[]>([])
   const [selectedinventory, _setSelectedInventory] = useState<inventory[]>([])
-
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<inventory[]>>(null)
   const [exportLoading, setExportLoading] = useState({
@@ -96,6 +31,38 @@ const InventoryTracker: React.FC = () => {
     pdf: false
   })
 
+  // ✅ Load inventory from localStorage
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem('inventoryData')
+      if (storedData) {
+        setInventory(JSON.parse(storedData))
+      } else {
+        setInventory([])
+      }
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load inventory data',
+        life: 3000
+      })
+    }
+  }, [])
+
+  // ✅ Timeline content
+  const timelineEvents: TimelineEvent[] = selectedProduct
+    ? [
+        {
+          status: 'Product uploaded via bulk update',
+          date: new Date().toLocaleDateString(), // only today's date
+          color: '#2196F3',
+          icon: <Upload size={18} className="text-white" />
+        }
+      ]
+    : []
+
+  // ✅ Export handlers
   const handleExportCSV = () => {
     setExportLoading((prev) => ({ ...prev, csv: true }))
     setTimeout(() => {
@@ -158,6 +125,7 @@ const InventoryTracker: React.FC = () => {
       <Toolbar className="mb-2" right={rightToolbarTemplate} />
       <Tooltip target=".p-button" position="left" />
 
+      {/* ✅ Inventory Table */}
       <DataTable
         value={inventory}
         selection={selectedinventory}
@@ -171,6 +139,7 @@ const InventoryTracker: React.FC = () => {
       >
         <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
+
         <Column
           header="Product Name"
           field="ProductName"
@@ -187,16 +156,36 @@ const InventoryTracker: React.FC = () => {
           )}
           style={{ minWidth: '200px' }}
         />
-        <Column field="skuCode" header="SKU Code" sortable style={{ minWidth: '200px' }} />
-        <Column field="hsnCode" header="HSN Code" />
-        <Column field="price" header="Price" />
-        <Column field="movement" header="Movement" />
-        <Column field="quantity" header="Quantity" />
-        <Column field="branchName" header="Branch " style={{ minWidth: '100px' }} />
-        <Column field="createdBy" header="Created By" style={{ minWidth: '200px' }} />
-        <Column field="createdAt" header="Created At" sortable style={{ minWidth: '200px' }} />
+
+        <Column field="SKU" header="SKU Code" sortable style={{ minWidth: '200px' }} />
+
+        <Column
+          field="hsnCode"
+          header="HSN Code"
+          body={(rowData) =>
+            rowData.hsnCode && rowData.hsnCode.trim() !== '' ? rowData.hsnCode : '-'
+          }
+        />
+
+        <Column field="SellingPrice" header="Selling Price" />
+        <Column field="CostPrice" header="Cost Price" />
+
+        <Column
+          field="movement"
+          header="Movement"
+          body={(rowData) =>
+            rowData.movement && rowData.movement.trim() !== '' ? rowData.movement : '-'
+          }
+        />
+
+        <Column
+          field="quantity"
+          header="Quantity"
+          body={(rowData) => (rowData.quantity && !isNaN(rowData.quantity) ? rowData.quantity : 1)}
+        />
       </DataTable>
 
+      {/* ✅ Sidebar with timeline */}
       <Sidebar
         visible={visibleSidebar}
         position="right"
@@ -214,7 +203,7 @@ const InventoryTracker: React.FC = () => {
               content={(item) => (
                 <div className="flex flex-column text-sm text-gray-700">
                   <span>{item.date}</span>
-                  <span className="text-gray-500">By: Admin</span>
+                  <span className="text-gray-500">By: Super Admin</span>
                 </div>
               )}
               marker={(item) => (

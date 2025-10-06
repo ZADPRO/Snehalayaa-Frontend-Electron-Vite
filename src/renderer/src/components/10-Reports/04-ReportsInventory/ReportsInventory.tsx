@@ -1,4 +1,3 @@
-import { Blocks } from 'lucide-react'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -15,20 +14,23 @@ const ReportsInventory: React.FC = () => {
         >
           <p>Stock Summary</p>
         </div>
-        <div className="flex-1 reportItem">
+        <div
+          className="flex-1 reportItem"
+          onClick={() => navigate('/inventoryReports/stockValuation')}
+        >
           <p>Stock Valuation Summary</p>
         </div>
-        <div className="flex-1 reportItem">
+        <div
+          className="flex-1 reportItem"
+          onClick={() => navigate('/inventoryReports/stockAgeing')}
+        >
           <p>Stock Ageing Summary</p>
         </div>
         <div className="flex-1 reportItem">
-          <p>Stock Location Summary</p>
+          <p>Stock Movement Summary</p>
         </div>
       </div>
       <div className="flex gap-3">
-        <div className="flex-1 reportItem">
-          <p>Stock Movement Summary</p>
-        </div>
         <div
           className="flex-1 reportItem"
           onClick={() => navigate('/inventoryReports/stockLedger')}
@@ -38,10 +40,8 @@ const ReportsInventory: React.FC = () => {
         <div className="flex-1 reportItem">
           <p>Stock Movement & Valuation</p>
         </div>
-
-        <div className="flex-1 reportItem">
-          <p>Stock / Location Summary</p>
-        </div>
+        <div className="flex-1 reportItemEMpty"></div>
+        <div className="flex-1 reportItemEMpty"></div>
       </div>
     </div>
   )

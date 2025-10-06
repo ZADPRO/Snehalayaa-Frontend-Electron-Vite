@@ -174,7 +174,7 @@ const BulkUpdateProductCatalog: React.FC<BulkUpdateProductCatalogProps> = ({
             </FloatLabel>
           </div>
           <div className="flex-1">
-            <FloatLabel className="always-float">
+            <FloatLabel className="always-float hidden">
               <InputText id="sku" value={formData.sku} className="w-full" disabled />
               <label htmlFor="sku">SKU</label>
             </FloatLabel>

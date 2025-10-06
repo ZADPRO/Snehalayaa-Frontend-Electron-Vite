@@ -131,10 +131,26 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
       onClose()
       reloadData()
     } catch (err: any) {
+      let errorMessage = 'Operation failed'
+
+      if (err.response) {
+        // Backend responded with a specific HTTP status
+        if (err.response.status === 409) {
+          errorMessage = 'Duplicate sub-category found. Please use a different name or code.'
+        } else if (err.response.status === 400) {
+          errorMessage = err.response.data?.message || 'Invalid request data.'
+        } else {
+          errorMessage = err.response.data?.message || err.message
+        }
+      } else {
+        // Network or unexpected error
+        errorMessage = err.message || 'Network error'
+      }
+
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Operation failed',
+        detail: errorMessage,
         life: 3000
       })
     } finally {

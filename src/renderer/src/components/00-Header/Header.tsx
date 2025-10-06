@@ -2,7 +2,6 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import './Header.css'
 
 import {
-  BellRing,
   CircleUserRound,
   FileStack,
   LayoutGrid,

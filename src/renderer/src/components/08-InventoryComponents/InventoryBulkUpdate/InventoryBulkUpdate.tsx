@@ -59,6 +59,8 @@ const SAMPLE_DATA = [
   }
 ]
 
+const LOCAL_STORAGE_KEY = 'inventoryData'
+
 const InventoryBulkUpdate: React.FC = () => {
   const [products, setProducts] = useState<any[]>([])
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -66,6 +68,10 @@ const InventoryBulkUpdate: React.FC = () => {
 
   const showError = (msg: string) => {
     toast.current?.show({ severity: 'error', summary: 'Error', detail: msg })
+  }
+
+  const showSuccess = (msg: string) => {
+    toast.current?.show({ severity: 'success', summary: 'Success', detail: msg })
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,6 +86,7 @@ const InventoryBulkUpdate: React.FC = () => {
       const sheet = workbook.Sheets[sheetName]
       const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' })
 
+      // ✅ Validate headers
       const headers = Object.keys(jsonData[0] || {})
       const missingHeaders = REQUIRED_HEADERS.filter((h) => !headers.includes(h))
       if (missingHeaders.length > 0) {
@@ -87,10 +94,11 @@ const InventoryBulkUpdate: React.FC = () => {
         return
       }
 
+      // ✅ Check SKU uniqueness inside uploaded sheet
       const skuList = jsonData.map((row: any) => row.SKU)
       const duplicateSKUs = skuList.filter((sku, index) => skuList.indexOf(sku) !== index)
       if (duplicateSKUs.length > 0) {
-        showError(`Duplicate SKUs found: ${[...new Set(duplicateSKUs)].join(', ')}`)
+        showError(`Duplicate SKUs in file: ${[...new Set(duplicateSKUs)].join(', ')}`)
         return
       }
 
@@ -115,6 +123,33 @@ const InventoryBulkUpdate: React.FC = () => {
       type: 'application/octet-stream'
     })
     saveAs(blob, 'sample_inventory.xlsx')
+  }
+
+  const handleUpdate = () => {
+    if (products.length === 0) {
+      showError('No products to update. Please upload a file first.')
+      return
+    }
+
+    // ✅ Get existing inventory from LocalStorage
+    const existingData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]')
+
+    // ✅ Check for SKU conflicts
+    const existingSKUs = existingData.map((p: any) => p.SKU)
+    const newSKUs = products.map((p) => p.SKU)
+    const conflicts = newSKUs.filter((sku) => existingSKUs.includes(sku))
+
+    if (conflicts.length > 0) {
+      showError(`SKU(s) already exist in server: ${conflicts.join(', ')}`)
+      return
+    }
+
+    // ✅ Append new products to LocalStorage
+    const updatedData = [...existingData, ...products]
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedData))
+
+    showSuccess('Products successfully updated!')
+    setProducts([]) // clear table after update
   }
 
   return (
@@ -144,7 +179,13 @@ const InventoryBulkUpdate: React.FC = () => {
             icon={<Upload />}
             onClick={handleBulkUploadClick}
           />
-          <Button label="Update" severity="success" className="gap-2" icon={<RefreshCw />} />
+          <Button
+            label="Update"
+            severity="success"
+            className="gap-2"
+            icon={<RefreshCw />}
+            onClick={handleUpdate}
+          />
         </div>
       </div>
 
