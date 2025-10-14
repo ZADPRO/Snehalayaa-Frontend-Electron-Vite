@@ -8,54 +8,43 @@ import { saveAs } from 'file-saver'
 import { Download, RefreshCw, Upload } from 'lucide-react'
 
 const REQUIRED_HEADERS = [
-  'S.No',
-  'ProductName',
+  'Product Name',
   'SKU',
-  'ProductType',
-  'Category',
-  'SubCategory',
-  'Fabric',
-  'SellingPrice',
-  'CostPrice',
-  'Discount'
+  'GTIN',
+  'Brand',
+  'Categories',
+  'Sub Categories',
+  'Quantity',
+  'Valuation based on MRP',
+  'Valuation based on Price',
+  'Valuation based on Cost'
 ]
 
+// ✅ Updated Sample Data
 const SAMPLE_DATA = [
   {
-    'S.No': 1,
-    ProductName: 'Kanjivaram',
-    SKU: 'SS072039',
-    ProductType: 'Kancheevaram',
-    Category: 'Silk Saree',
-    SubCategory: 'Kanjivaram',
-    Fabric: '',
-    SellingPrice: 50000,
-    CostPrice: 30000,
-    Discount: 0
+    'Product Name': 'KANCHEEVARAM SAREE 0001012425',
+    SKU: 'SS000005',
+    GTIN: '0001012425',
+    Brand: 'Snehalayaa',
+    Categories: 'KANCHEEVARAM',
+    'Sub Categories': 'SILK SAREE',
+    Quantity: -1,
+    'Valuation based on MRP': -38110,
+    'Valuation based on Price': -38110,
+    'Valuation based on Cost': -21000
   },
   {
-    'S.No': 2,
-    ProductName: 'Kanjivaram',
-    SKU: 'SS072040',
-    ProductType: 'Kancheevaram',
-    Category: 'Silk Saree',
-    SubCategory: 'Kanjivaram',
-    Fabric: '',
-    SellingPrice: 50000,
-    CostPrice: 30000,
-    Discount: 0
-  },
-  {
-    'S.No': 3,
-    ProductName: 'Kanjivaram',
-    SKU: 'SS072041',
-    ProductType: 'Kancheevaram',
-    Category: 'Silk Saree',
-    SubCategory: 'Kanjivaram',
-    Fabric: '',
-    SellingPrice: 50000,
-    CostPrice: 30000,
-    Discount: 0
+    'Product Name': 'KANCHEEVARAM SAREE 0001012462',
+    SKU: 'SS000022',
+    GTIN: '0001012462',
+    Brand: 'Snehalayaa',
+    Categories: '50,KANCHEEVARAM',
+    'Sub Categories': 'SILK SAREE',
+    Quantity: 1,
+    'Valuation based on MRP': 23647,
+    'Valuation based on Price': 23647,
+    'Valuation based on Cost': 10500
   }
 ]
 
@@ -86,23 +75,41 @@ const InventoryBulkUpdate: React.FC = () => {
       const sheet = workbook.Sheets[sheetName]
       const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' })
 
-      // ✅ Validate headers
-      const headers = Object.keys(jsonData[0] || {})
-      const missingHeaders = REQUIRED_HEADERS.filter((h) => !headers.includes(h))
+      if (jsonData.length === 0) {
+        showError('Uploaded file is empty.')
+        return
+      }
+
+      const rawHeaders = Object.keys(jsonData[0])
+      const normalizedHeaders = rawHeaders.map((h) => h.replace(/\r|\n/g, '').trim())
+
+      const missingHeaders = REQUIRED_HEADERS.filter(
+        (req) => !normalizedHeaders.includes(req.trim())
+      )
+
       if (missingHeaders.length > 0) {
         showError(`Missing required headers: ${missingHeaders.join(', ')}`)
         return
       }
 
-      // ✅ Check SKU uniqueness inside uploaded sheet
-      const skuList = jsonData.map((row: any) => row.SKU)
+      const normalizedData = jsonData.map((row: any) => {
+        const newRow: any = {}
+        rawHeaders.forEach((key, index) => {
+          const cleanKey = rawHeaders[index].replace(/\r|\n/g, '').trim()
+          newRow[cleanKey] = row[key]
+        })
+        return newRow
+      })
+
+      const skuList = normalizedData.map((row: any) => row.SKU)
       const duplicateSKUs = skuList.filter((sku, index) => skuList.indexOf(sku) !== index)
       if (duplicateSKUs.length > 0) {
         showError(`Duplicate SKUs in file: ${[...new Set(duplicateSKUs)].join(', ')}`)
         return
       }
 
-      setProducts(jsonData)
+      setProducts(normalizedData)
+      showSuccess('File uploaded successfully! Preview generated.')
     }
     reader.readAsBinaryString(file)
   }
@@ -111,10 +118,12 @@ const InventoryBulkUpdate: React.FC = () => {
     fileInputRef.current?.click()
   }
 
+  // ✅ Updated to export the required Excel format
   const downloadSampleExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(SAMPLE_DATA)
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sample')
+
     const excelBuffer = XLSX.write(workbook, {
       bookType: 'xlsx',
       type: 'array'
@@ -131,10 +140,7 @@ const InventoryBulkUpdate: React.FC = () => {
       return
     }
 
-    // ✅ Get existing inventory from LocalStorage
     const existingData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]')
-
-    // ✅ Check for SKU conflicts
     const existingSKUs = existingData.map((p: any) => p.SKU)
     const newSKUs = products.map((p) => p.SKU)
     const conflicts = newSKUs.filter((sku) => existingSKUs.includes(sku))
@@ -144,12 +150,10 @@ const InventoryBulkUpdate: React.FC = () => {
       return
     }
 
-    // ✅ Append new products to LocalStorage
     const updatedData = [...existingData, ...products]
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedData))
-
     showSuccess('Products successfully updated!')
-    setProducts([]) // clear table after update
+    setProducts([])
   }
 
   return (
@@ -195,19 +199,36 @@ const InventoryBulkUpdate: React.FC = () => {
         scrollable
         className="mt-3"
         paginator
-        rows={5}
+        rows={25}
         rowsPerPageOptions={[10, 25, 50, 100]}
       >
-        <Column field="S.No" header="S.No" />
-        <Column field="ProductName" header="Product Name" />
-        <Column field="SKU" header="SKU" />
-        <Column field="ProductType" header="Product Type" />
-        <Column field="Category" header="Category" />
-        <Column field="SubCategory" header="Sub Category" />
-        <Column field="Fabric" header="Fabric" />
-        <Column field="SellingPrice" header="Selling Price" />
-        <Column field="CostPrice" header="Cost Price" />
-        <Column field="Discount" header="Discount" />
+        <Column
+          header="S.No"
+          body={(_, { rowIndex }) => rowIndex + 1}
+          style={{ width: '80px', textAlign: 'center' }}
+          frozen
+        />
+
+        <Column field="Product Name" header="Product Name" style={{ minWidth: '14rem' }} frozen />
+        <Column field="SKU" header="SKU" style={{ minWidth: '8rem' }} frozen sortable />
+        <Column field="GTIN" header="GTIN" style={{ minWidth: '14rem' }} />
+        <Column field="Brand" header="Brand" style={{ minWidth: '10rem' }} />
+        <Column field="Categories" header="Categories" style={{ minWidth: '10rem' }} />
+        <Column field="Sub Categories" header="Sub Categories" style={{ minWidth: '14rem' }} />
+        <Column field="Quantity" header="Quantity" sortable />
+        <Column field="Valuation based on MRP" header="MRP" style={{ minWidth: '7rem' }} sortable />
+        <Column
+          field="Valuation based on Price"
+          header="Price"
+          style={{ minWidth: '7rem' }}
+          sortable
+        />
+        <Column
+          field="Valuation based on Cost"
+          header="Cost"
+          style={{ minWidth: '7rem' }}
+          sortable
+        />
       </DataTable>
     </div>
   )

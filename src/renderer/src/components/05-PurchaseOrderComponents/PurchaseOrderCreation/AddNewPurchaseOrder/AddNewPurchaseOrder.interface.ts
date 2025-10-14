@@ -41,6 +41,7 @@ export interface Supplier {
   supplierUPI: string
   updatedAt: string
   updatedBy: string
+  creditedDays: number
 }
 
 export interface Category {

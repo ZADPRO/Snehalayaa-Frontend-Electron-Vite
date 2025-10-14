@@ -8,7 +8,7 @@ import { Toast } from 'primereact/toast'
 
 import React, { useEffect, useRef, useState } from 'react'
 
-import logo from '../../../../assets/logo/invoice.png'
+import logo from '../../../../assets/logo/transparentLogo01.png'
 
 import {
   fetchBranches,
@@ -39,6 +39,7 @@ import { InputSwitch } from 'primereact/inputswitch'
 import { Tooltip } from 'primereact/tooltip'
 import SupplierPaymentDialog from './SupplierPaymentDialog/SupplierPaymentDialog'
 import { Dialog } from 'primereact/dialog'
+import { Checkbox } from 'primereact/checkbox'
 // import PurchaseOrderImage from '../../PurchaseOrderImage/PurchaseOrderImage'
 
 const AddNewPurchaseOrder: React.FC = () => {
@@ -54,6 +55,7 @@ const AddNewPurchaseOrder: React.FC = () => {
 
   const [selectedBranch, setSelectedBranch] = useState<Supplier | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<Branch | null>(null)
+  const [modeOfTransport, setModeOfTransport] = useState('')
 
   const [tableData, setTableData] = useState<any[]>([])
   const [selectedRows, setSelectedRows] = useState<any[]>([])
@@ -63,6 +65,8 @@ const AddNewPurchaseOrder: React.FC = () => {
   const [pendingAmountInput, setPendingAmountInput] = useState('')
   const [applyTax, setApplyTax] = useState(false)
 
+  const [isInternalPO, setIsInternalPO] = useState(false)
+
   const subTotal = tableData.reduce((sum, item) => sum + item.quantity * item.purchasePrice, 0)
   const discountAmount = tableData.reduce((sum, item) => sum + (item.discount || 0), 0)
   const taxAmount = applyTax ? (subTotal - discountAmount) * 0.05 : 0
@@ -70,13 +74,12 @@ const AddNewPurchaseOrder: React.FC = () => {
   const totalPaid = Number(pendingAmountInput || 0)
   const pendingPayment = finalAmount - totalPaid
 
-  const [showSupplierDialog, setShowSupplierDialog] = useState(false)
+  const [showDialog, setShowDialog] = useState(false)
   const [creditDays, setCreditDays] = useState('')
   const [creditDate, setCreditDate] = useState<Date | null>(null)
 
   const [isDownloading, setIsDownloading] = useState(false)
   const [isPrinting, setIsPrinting] = useState(false)
-  // const [isPreviousPaymentDone, setIsPreviousPaymentDone] = useState(false)
 
   const [visible, setVisible] = useState(false)
   const [file, setFile] = useState<File | null>(null)
@@ -133,7 +136,8 @@ const AddNewPurchaseOrder: React.FC = () => {
           detail: 'Your file has been uploaded successfully.'
         })
 
-        console.log('Uploaded file path:', fileUrl) // This is the document path
+        console.log('Uploaded file path:', fileUrl)
+        setVisible(false)
       } else {
         throw new Error(`Upload failed with status ${status}`)
       }
@@ -217,8 +221,9 @@ const AddNewPurchaseOrder: React.FC = () => {
       branchAddress: selectedSupplier.refLocation
     }
 
+    console.log('\n\n\nitem', tableData)
     const productDetails = tableData.map((item) => ({
-      productName: item.productName,
+      productDescription: item.productDescription,
       refCategoryid: item.refCategoryId,
       refSubCategoryId: item.refSubCategoryId,
       HSNCode: item.hsnCode,
@@ -242,7 +247,7 @@ const AddNewPurchaseOrder: React.FC = () => {
       branchId: selectedSupplier?.refBranchId,
       status: 1,
       expectedDate: creditDate?.toISOString() || new Date().toISOString(),
-      modeOfTransport: 'Road',
+      modeOfTransport: modeOfTransport,
       subTotal: subTotal.toString(),
       discountOverall: discountAmount.toString(),
       payAmount: finalAmount.toString(),
@@ -263,13 +268,13 @@ const AddNewPurchaseOrder: React.FC = () => {
       supplierDetails,
       branchDetails,
       productDetails,
-      totalSummary
+      totalSummary,
+      isInternalPO
     }
   }
 
   const handleSave = async () => {
     if (isSaved) {
-      // ⛔ If already saved, now act as "Close" => Reset the form
       setSelectedBranch(null)
       setSelectedSupplier(null)
       setTableData([])
@@ -368,6 +373,19 @@ const AddNewPurchaseOrder: React.FC = () => {
     })
   }
 
+  const openDialog = (supplier: Supplier) => {
+    console.log('supplier', supplier)
+    setCreditDays(supplier.creditedDays.toString())
+
+    // Calculate default credit date = today + creditedDays
+    const today = new Date()
+    const defaultCreditDate = new Date(today)
+    defaultCreditDate.setDate(today.getDate() + supplier.creditedDays)
+    setCreditDate(defaultCreditDate)
+
+    setShowDialog(true)
+  }
+
   const isEditEnabled = selectedRows.length === 1
   const isDeleteEnabled = selectedRows.length >= 1
 
@@ -422,8 +440,8 @@ const AddNewPurchaseOrder: React.FC = () => {
             <FloatLabel className="always-float">
               <InputText
                 id="modeOfTransport"
-                // value={hsnCode}
-                // onChange={(e) => setHsnCode(e.target.value)}
+                value={modeOfTransport}
+                onChange={(e) => setModeOfTransport(e.target.value)}
                 className="w-full"
               />
               <label htmlFor="status">Mode of Transport</label>
@@ -604,7 +622,11 @@ const AddNewPurchaseOrder: React.FC = () => {
             label="Supplier Details"
             icon={<Pencil size={18} />}
             className="w-full gap-2 p-button-primary"
-            onClick={() => setShowSupplierDialog(true)}
+            // onClick={() => {
+            //   console.log('selectedBranch', selectedBranch)
+            //   setShowSupplierDialog(true)
+            // }}
+            onClick={() => selectedBranch && openDialog(selectedBranch)}
           />
 
           <Button
@@ -613,6 +635,15 @@ const AddNewPurchaseOrder: React.FC = () => {
             className="w-full gap-2 p-button-primary"
             onClick={() => setVisible(true)}
           />
+
+          <div className="flex align-items-center gap-2 mt-2">
+            <Checkbox
+              inputId="internalPO"
+              checked={isInternalPO}
+              onChange={(e) => setIsInternalPO(e.checked ?? false)}
+            />
+            <label htmlFor="internalPO">Is Internal PO?</label>
+          </div>
         </div>
         <div className="flex flex-column gap-2 pb-3 surface-100 border-round">
           <h4 className="mb-2">Payment Summary</h4>
@@ -752,24 +783,36 @@ const AddNewPurchaseOrder: React.FC = () => {
         )}
       </Dialog>
 
-      <SupplierPaymentDialog
-        visible={showSupplierDialog}
-        creditDays={creditDays}
-        creditDate={creditDate}
-        pendingAmountInput={pendingAmountInput}
-        onHide={() => setShowSupplierDialog(false)}
-        onCreditDaysChange={(value) => setCreditDays(value)}
-        onCreditDateChange={(date) => setCreditDate(date)}
-        onPendingAmountChange={(value) => setPendingAmountInput(value)}
-        onSave={() => {
-          console.log('Supplier Details', {
-            creditDays,
-            creditDate,
-            pendingAmountInput
-          })
-          setShowSupplierDialog(false)
-        }}
-      />
+      {selectedBranch && (
+        <SupplierPaymentDialog
+          visible={showDialog}
+          creditDays={creditDays}
+          creditDate={creditDate}
+          pendingAmountInput={pendingAmountInput}
+          onHide={() => setShowDialog(false)}
+          onCreditDaysChange={(value) => {
+            setCreditDays(value)
+            const days = parseInt(value)
+            if (!isNaN(days) && days >= 0) {
+              const today = new Date()
+              const newCreditDate = new Date(today)
+              newCreditDate.setDate(today.getDate() + days)
+              setCreditDate(newCreditDate)
+            }
+          }}
+          onCreditDateChange={(date) => setCreditDate(date)}
+          onPendingAmountChange={(value) => setPendingAmountInput(value)}
+          onSave={() => {
+            console.log('Supplier Details Saved:', {
+              supplier: selectedSupplier,
+              creditDays,
+              creditDate,
+              pendingAmountInput
+            })
+            setShowDialog(false)
+          }}
+        />
+      )}
     </div>
   )
 }

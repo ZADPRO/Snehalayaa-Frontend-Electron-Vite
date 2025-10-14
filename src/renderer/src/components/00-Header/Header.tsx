@@ -143,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
               </div>
             </div>
 
-            <main style={{ width: isOpen ? '85vw' : '97vw', marginLeft: '75px' }}>{children}</main>
+            <main style={{ width: isOpen ? '85vw' : '95vw', marginLeft: '75px' }}>{children}</main>
           </>
         )}
         {hideSidebarPaths.includes(location.pathname) && (

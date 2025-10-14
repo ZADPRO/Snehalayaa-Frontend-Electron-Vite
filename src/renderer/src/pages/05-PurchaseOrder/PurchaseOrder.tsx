@@ -43,6 +43,12 @@ const sidebarItems = [
     component: <PurchaseOrderList />
   },
   {
+    key: 'modifyPO',
+    label: 'Modify PO',
+    icon: <ShoppingBag size={20} className="sidebar-icon" />,
+    component: <PurchaseOrderList />
+  },
+  {
     key: 'createPurchaseOrder',
     label: 'Create PO',
     icon: <PackagePlus size={20} className="sidebar-icon" />,
