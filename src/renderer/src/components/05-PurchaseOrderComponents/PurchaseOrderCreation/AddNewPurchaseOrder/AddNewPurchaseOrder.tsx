@@ -331,7 +331,8 @@ const AddNewPurchaseOrder: React.FC = () => {
         (item) =>
           item.refCategoryId === newItem.refCategoryId &&
           item.refSubCategoryId === newItem.refSubCategoryId &&
-          item.productName.trim().toLowerCase() === newItem.productName.trim().toLowerCase()
+          item.productDescription.trim().toLowerCase() ===
+            newItem.productDescription.trim().toLowerCase()
       )
 
       if (existingIndex !== -1) {
@@ -482,7 +483,7 @@ const AddNewPurchaseOrder: React.FC = () => {
           <Column
             header="Name"
             body={(rowData) => {
-              const combined = `${rowData.category || ''} - ${rowData.subCategory || ''}`
+              const combined = `${rowData.category || ''} - ${rowData.subCategory || ''} - ${rowData.productDescription}`
               return (
                 <span
                   className="name-tooltip"

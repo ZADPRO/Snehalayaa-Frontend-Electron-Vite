@@ -24,7 +24,7 @@ export interface CategoryFormData {
 }
 
 export interface SettingsAddEditCategoriesProps {
-  selectedCategory: Category | null
+  selectedCategory?: Category | null
   onClose: () => void
   reloadData: () => void
 }
