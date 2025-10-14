@@ -1,3 +1,11 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+* {
+  font-size: 14px;
+}
+
 /* PASSWORD */
 .p-password-input.p-inputtext.p-component {
   width: 100%;

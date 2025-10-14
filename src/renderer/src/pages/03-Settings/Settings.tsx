@@ -78,7 +78,7 @@ const sidebarItems = [
 ]
 
 const Settings: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('attributes')
+  const [activeKey, setActiveKey] = useState('categories')
 
   return (
     <div className="settingsContainer">

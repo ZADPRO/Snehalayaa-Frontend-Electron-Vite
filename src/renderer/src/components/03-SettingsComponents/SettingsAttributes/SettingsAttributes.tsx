@@ -117,7 +117,7 @@ const SettingsAttributes: React.FC = () => {
         rowsPerPageOptions={[5, 10, 20]}
         responsiveLayout="scroll"
       >
-        <Column selectionMode="single" headerStyle={{ textAlign: 'center' }} />
+        <Column selectionMode="single" header="#" headerStyle={{ textAlign: 'center' }} />
         <Column header="S.No" body={(_, opts) => opts.rowIndex + 1} />
         <Column field="column_label" header="Label" sortable />
         <Column field="data_type" header="Data Type" sortable />

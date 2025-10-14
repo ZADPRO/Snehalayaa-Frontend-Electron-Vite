@@ -8,6 +8,7 @@ import { Category, SubCategory, Branch, Supplier } from '../AddNewPurchaseOrder.
 import { Check, Plus } from 'lucide-react'
 import { formatINRCurrency } from './AddNewProductsForPurchaseOrder.function'
 import { Message } from 'primereact/message'
+import { InputNumber } from 'primereact/inputnumber'
 
 interface Props {
   categories: Category[]
@@ -36,9 +37,9 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   const [existingMatch, setExistingMatch] = useState<any | null>(null)
   const [showInfoMessage, setShowInfoMessage] = useState(false)
 
-  const [_productName, setProductName] = useState('')
+  const [productDescription, setProductDescription] = useState('')
   const [quantity, setQuantity] = useState('')
-  const [purchasePrice, setPurchasePrice] = useState('')
+  const [purchasePrice, setPurchasePrice] = useState<number>()
   const [discount, setDiscount] = useState('')
   const [hsnCode, setHsnCode] = useState('') // Added HSN Code state
   const total =
@@ -70,7 +71,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     if (
       !selectedCategory ||
       !selectedSubCategory ||
-      // !productName.trim() ||
+      !productDescription.trim() ||
       !quantity ||
       !purchasePrice ||
       isNaN(quantityNum) ||
@@ -90,7 +91,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     }
 
     const newItem = {
-      productName: '-',
+      productDescription: '-',
       quantity: quantityNum,
       purchasePrice: priceNum,
       discount: discountNum,
@@ -107,7 +108,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     onAdd(newItem)
 
     // Reset fields
-    setProductName('')
+    setProductDescription('')
     setQuantity('')
     setPurchasePrice('')
     setDiscount('')
@@ -123,7 +124,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       setSelectedSubCategory(
         subCategories.find((sub) => sub.refSubCategoryId === editItem.refSubCategoryId) || null
       )
-      // setProductName(editItem.productName || '')
+      // setProductDescription(editItem.productName || '')
       setQuantity(editItem.quantity?.toString() || '')
       setPurchasePrice(editItem.purchasePrice?.toString() || '')
       setDiscount(editItem.discount?.toString() || '')
@@ -160,13 +161,10 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       {/* From and To Details */}
       <div className="grid">
         {/* Branch Details */}
-        <div className="col-6 p-3 surface-100">
-          <p className="">Branch Details</p>
+        <div className="col-6 p-3 surface-100 text-sm">
+          <p className="font-bold uppercase underline">Branch Details</p>
           <div>
             <strong>Name:</strong> {fromAddress?.refBranchName || 'N/A'}
-          </div>
-          <div>
-            <strong>Email:</strong> {fromAddress?.refEmail || 'N/A'}
           </div>
           <div>
             <strong>Mobile:</strong> {fromAddress?.refMobile || 'N/A'}
@@ -177,21 +175,15 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
           <div>
             <strong>Branch Code:</strong> {fromAddress?.refBranchCode || 'N/A'}
           </div>
-          <div>
-            <strong>Type:</strong> {fromAddress?.isMainBranch ? 'Main Branch' : 'Sub Branch'}
-          </div>
         </div>
         {/* Supplier Details */}
-        <div className="col-6 p-3 surface-100">
-          <p className="">Supplier Details</p>
+        <div className="col-6 p-3 surface-100 text-sm">
+          <p className="font-bold uppercase underline">Supplier Details</p>
           <div>
             <strong>Company Name:</strong> {toAddress?.supplierCompanyName || 'N/A'}
           </div>
           <div>
             <strong>Contact Name:</strong> {toAddress?.supplierName || 'N/A'}
-          </div>
-          <div>
-            <strong>Email:</strong> {toAddress?.supplierEmail || 'N/A'}
           </div>
           <div>
             <strong>Mobile:</strong> {toAddress?.supplierContactNumber || 'N/A'}
@@ -200,27 +192,14 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <strong>Address:</strong>
             {`${toAddress?.supplierDoorNumber || ''}, ${toAddress?.supplierStreet || ''}, ${toAddress?.supplierCity || ''}, ${toAddress?.supplierState || ''}, ${toAddress?.supplierCountry || ''}`}
           </div>
-          <div>
-            <strong>UPI:</strong> {toAddress?.supplierUPI || 'N/A'}
-          </div>
-          <div>
-            <strong>GST No:</strong> {toAddress?.supplierGSTNumber || 'N/A'}
-          </div>
-          <div>
-            <strong>Bank:</strong>{' '}
-            {`${toAddress?.supplierBankName || ''} - ${toAddress?.supplierBankACNumber || ''}`}
-          </div>
-          <div>
-            <strong>IFSC:</strong> {toAddress?.supplierIFSC || 'N/A'}
-          </div>
         </div>
       </div>
 
       <div className="flex gap-2 justify-content-end mb-3">
-        <Button label="Add Category" icon={<Plus size={20} />} className="gap-2" />
+        <Button label="Add Category" icon={<Plus size={16} />} className="gap-2" />
         <Button
           label="Add Sub Category"
-          icon={<Plus size={20} />}
+          icon={<Plus size={16} />}
           className="gap-2"
           severity="info"
         />
@@ -274,16 +253,24 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             </small>
           )}
         </div>
+      </div>
+
+      <div className="flex">
         <div className="flex-1">
-          {/* <FloatLabel className="always-float">
+          <FloatLabel className="always-float">
             <InputText
-              id="productName"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              id="hsnCode"
+              value={productDescription}
+              onChange={(e) => {
+                const rawValue = e.target.value
+                console.log('rawValue', rawValue)
+                setProductDescription(rawValue)
+              }}
               className="w-full"
             />
-            <label htmlFor="productName">Product Name</label>
-          </FloatLabel> */}
+
+            <label htmlFor="hsnCode">Product Description</label>
+          </FloatLabel>
         </div>
       </div>
 
@@ -319,11 +306,15 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
         <div className="flex-1">
           <FloatLabel className="always-float">
-            <InputText
+            <InputNumber
               id="purchasePrice"
               keyfilter="num"
               value={purchasePrice}
-              onChange={(e) => setPurchasePrice(e.target.value)}
+              mode="currency"
+              currency="INR"
+              currencyDisplay="symbol"
+              locale="en-IN"
+              onValueChange={(e) => setPurchasePrice(e.value)}
               className="w-full"
             />
             <label htmlFor="purchasePrice">Purchase Price</label>

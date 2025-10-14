@@ -681,7 +681,7 @@ const AddNewPurchaseOrder: React.FC = () => {
           </span>
         }
         onHide={() => setVisibleRight(false)}
-        style={{ width: '50vw' }}
+        style={{ width: '60vw' }}
       >
         <AddNewProductsForPurchaseOrder
           categories={categories}
