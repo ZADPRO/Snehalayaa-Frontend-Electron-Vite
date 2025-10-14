@@ -6,6 +6,13 @@ import autoTable from 'jspdf-autotable'
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
 
+const getFormattedTimestamp = () => {
+  const now = new Date()
+  const date = now.toLocaleDateString('en-GB').replace(/\//g, '-') // 06-10-2025
+  const time = now.toTimeString().split(' ')[0].replace(/:/g, '-') // 17-23-45
+  return `${date}_${time}`
+}
+
 // Fetch all categories
 export const fetchCategories = async (): Promise<Category[]> => {
   const response = await api.get(`${baseURL}/admin/settings/categories`)
@@ -44,7 +51,8 @@ export const bulkDeleteCategories = async (
 
 // Export categories as CSV
 export const exportCSV = (dtRef: React.RefObject<any>) => {
-  dtRef.current?.exportCSV()
+  const fileName = `categories_csv_${getFormattedTimestamp()}.csv`
+  dtRef.current?.exportCSV({ selectionOnly: false, filename: fileName })
 }
 
 // Export categories as PDF
@@ -60,7 +68,9 @@ export const exportPdf = (categories: Category[]) => {
       item.isActive ? 'Active' : 'Inactive'
     ])
   })
-  doc.save('categories.pdf')
+
+  const fileName = `categories_pdf_${getFormattedTimestamp()}.pdf`
+  doc.save(fileName)
 }
 
 // Export categories as Excel
@@ -80,5 +90,7 @@ export const exportExcel = (categories: Category[]) => {
   const blob = new Blob([excelBuffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
   })
-  saveAs(blob, `categories_export_${new Date().getTime()}.xlsx`)
+
+  const fileName = `categories_excel_${getFormattedTimestamp()}.xlsx`
+  saveAs(blob, fileName)
 }

@@ -6,10 +6,11 @@ import { Attribute } from './SettingsAttributes.interface'
 import { fetchAttribute } from './SettingsAttributes.function'
 import { Toolbar } from 'primereact/toolbar'
 import { Button } from 'primereact/button'
-import { EyeOff, Pencil, Plus } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { Sidebar } from 'primereact/sidebar'
 import SettingsAddEditAttributes from './SettingsAddEditAttributes/SettingsAddEditAttributes'
 import { Dialog } from 'primereact/dialog'
+import PreviewForm from './PreviewForm/PreviewForm'
 
 const SettingsAttributes: React.FC = () => {
   const toast = useRef<Toast>(null)
@@ -23,6 +24,8 @@ const SettingsAttributes: React.FC = () => {
 
   const editMode = Array.isArray(selectedAttributes) && selectedAttributes.length === 1
   const selectedAttribute = editMode ? selectedAttributes[0] : null
+
+  const [previewAttributes, setPreviewAttributes] = useState<Attribute[]>([])
 
   const loadAttributes = async () => {
     try {
@@ -42,8 +45,20 @@ const SettingsAttributes: React.FC = () => {
     setAttributeSidebarVisible(true)
   }
 
-  const onPreviewClick = () => {
-    setAttributePreviewForm(true)
+  const onPreviewClick = async () => {
+    try {
+      const data = await fetchAttribute()
+      console.log('Preview Form Data:', data)
+      setPreviewAttributes(data) // ✅ store in state
+      setAttributePreviewForm(true) // open dialog
+    } catch (error: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: error.message || 'Failed to fetch preview data',
+        life: 3000
+      })
+    }
   }
 
   const leftToolbarTemplate = () => (
@@ -61,17 +76,10 @@ const SettingsAttributes: React.FC = () => {
         severity="info"
         tooltip="Edit Attribute"
         tooltipOptions={{ position: 'left' }}
-        // disabled={!isSingleSelected}
-        // onClick={onEditClick}
+        disabled={selectedAttributes.length !== 1} // ✅ only enable if exactly 1 selected
+        onClick={() => setAttributeSidebarVisible(true)}
       />
-      <Button
-        icon={<EyeOff size={16} strokeWidth={2} />}
-        // severity="danger"
-        tooltip="Hide Attribute"
-        tooltipOptions={{ position: 'left' }}
-        // disabled={!isAnySelected}
-        // onClick={onDeleteClick}
-      />
+
       <Button
         // severity="danger"
         tooltip="Preview Form"
@@ -97,12 +105,11 @@ const SettingsAttributes: React.FC = () => {
       <DataTable
         ref={dt}
         className="mt-2"
-        id="attribute"
         value={attributes}
-        selection={selectedAttributes}
-        onSelectionChange={(e) => setSelectedAttributes(e.value as Attribute[])}
-        dataKey="AttributeId"
-        selectionMode="multiple"
+        selection={selectedAttributes[0] || null} // single selected attribute
+        onSelectionChange={(e) => setSelectedAttributes(e.value ? [e.value] : [])}
+        dataKey="id"
+        selectionMode="single" // ✅ only allow single selection
         paginator
         showGridlines
         stripedRows
@@ -110,40 +117,41 @@ const SettingsAttributes: React.FC = () => {
         rowsPerPageOptions={[5, 10, 20]}
         responsiveLayout="scroll"
       >
-        <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
-        <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
-        <Column field="attributeGroupName" header="Group" sortable />
-        <Column field="AttributeValue" header="Name" sortable />
-        <Column field="attributeGroupName" header="Data Type" sortable />
-
+        <Column selectionMode="single" headerStyle={{ textAlign: 'center' }} />
+        <Column header="S.No" body={(_, opts) => opts.rowIndex + 1} />
+        <Column field="column_label" header="Label" sortable />
+        <Column field="data_type" header="Data Type" sortable />
         <Column
-          field="isDelete"
-          header="Type"
+          field="is_required"
+          header="Required"
           body={(rowData) =>
-            rowData.isDelete ? (
-              <span className="text-red-500">Static</span>
+            rowData.is_required ? (
+              <span className="text-green-500 font-semibold">Yes</span>
             ) : (
-              <span className="text-green-500">Dynamic</span>
+              <span className="text-gray-500">No</span>
             )
           }
         />
+        <Column field="type" header="Type" sortable />
         <Column
           field="isDelete"
-          header="Visibility"
+          header="Status"
           body={(rowData) =>
             rowData.isDelete ? (
-              <span className="text-red-500">Hidden</span>
+              <span className="text-red-500 font-semibold">Deleted</span>
             ) : (
-              <span className="text-green-500">Visible</span>
+              <span className="text-green-500 font-semibold">Active</span>
             )
           }
         />
+        <Column field="createdBy" header="Created By" />
+        <Column field="createdAt" header="Created At" />
       </DataTable>
 
       <Sidebar
         position="right"
         style={{ width: '50vw' }}
-        header={editMode ? 'Edit Attributes' : 'Add Attributes'}
+        header={selectedAttribute ? 'Edit Attribute' : 'Add Attribute'}
         visible={attributeSidebarVisible}
         onHide={() => setAttributeSidebarVisible(false)}
       >
@@ -151,7 +159,7 @@ const SettingsAttributes: React.FC = () => {
           selectedAttribute={selectedAttribute}
           onClose={() => {
             setAttributeSidebarVisible(false)
-            setSelectedAttributes([])
+            setSelectedAttributes([]) // clear selection after close
           }}
           reloadData={loadAttributes}
         />
@@ -160,12 +168,11 @@ const SettingsAttributes: React.FC = () => {
       <Dialog
         header="Preview"
         visible={attributePreviewForm}
-        style={{ width: '50vw' }}
-        onHide={() => {
-          if (!attributePreviewForm) return
-          setAttributePreviewForm(false)
-        }}
-      ></Dialog>
+        style={{ width: '70vw' }}
+        onHide={() => setAttributePreviewForm(false)}
+      >
+        <PreviewForm attributes={previewAttributes} />
+      </Dialog>
     </div>
   )
 }

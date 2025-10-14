@@ -20,7 +20,7 @@ export const fetchDataType = async (): Promise<dataType[]> => {
 }
 
 export const fetchAttribute = async (): Promise<Attribute[]> => {
-  const response = await api.get(`/admin/settings/attributes`)
+  const response = await api.get(`/admin/settings/product-fields`)
   console.log('response', response)
   if (response.data?.status) {
     return response.data.data

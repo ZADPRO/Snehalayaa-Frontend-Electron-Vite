@@ -1,13 +1,14 @@
 export interface Attribute {
-  AttributeGroupId: number
-  AttributeId: number
-  AttributeKey: string
-  AttributeValue: string
-  CreatedAt: string
-  CreatedBy: string
-  UpdatedAt: string
-  UpdatedBy: string
-  attributeGroupName: string
+  id: number
+  column_name: string
+  column_label: string
+  data_type: string
+  type: string
+  is_required: boolean
+  createdAt: string
+  createdBy: string
+  updatedAt: string
+  updatedBy: string
   isDelete: boolean
 }
 

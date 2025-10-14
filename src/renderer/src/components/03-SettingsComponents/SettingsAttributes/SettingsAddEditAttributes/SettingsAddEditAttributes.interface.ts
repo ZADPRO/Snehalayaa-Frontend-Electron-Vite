@@ -1,5 +1,5 @@
 export interface SettingsAddEditAttributesProps {
-  selectedAttribute: any
+  selectedAttribute?: any
   onClose: () => void
   reloadData: () => void
 }

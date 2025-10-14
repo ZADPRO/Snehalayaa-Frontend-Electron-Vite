@@ -3,84 +3,119 @@ import JSZip from 'jszip'
 import imageCompression from 'browser-image-compression'
 import { FileUpload, FileUploadSelectEvent } from 'primereact/fileupload'
 import { ProgressSpinner } from 'primereact/progressspinner'
-import { ListBox } from 'primereact/listbox'
 import { Toast } from 'primereact/toast'
-// import { ToastMessage } from 'primereact/toast'
+import { Card } from 'primereact/card'
+import { Button } from 'primereact/button'
+import { Check } from 'lucide-react'
 
-// type CompressedImage = {
-//   name: string
-//   file: File
-// }
+type ExtractedImage = {
+  name: string
+  url: string
+  file: File
+  selected: boolean
+}
 
 const PurchaseOrderImage: React.FC = () => {
-  const [fileNames, _setFileNames] = useState<string[]>([])
-  // const [compressedImages, setCompressedImages] = useState<CompressedImage[]>([])
-  const [loading, _setLoading] = useState(false)
+  const [images, setImages] = useState<ExtractedImage[]>([])
+  const [loading, setLoading] = useState(false)
   const toast = useRef<Toast>(null)
 
-  // const showToast = (message: ToastMessage) => {
-  //   toast.current?.show(message)
-  // }
+  // Determine MIME type based on file extension
+  const getMimeType = (filename: string) => {
+    const ext = filename.split('.').pop()?.toLowerCase()
+    switch (ext) {
+      case 'png':
+        return 'image/png'
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg'
+      case 'gif':
+        return 'image/gif'
+      default:
+        return 'application/octet-stream'
+    }
+  }
 
   const compressImage = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      throw new Error('The file given is not an image')
-    }
-
-    const options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1024,
-      useWebWorker: true
-    }
-
+    if (!file.type.startsWith('image/')) return file
+    const options = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true }
     return await imageCompression(file, options)
   }
 
-
   const handleZipUpload = async (event: FileUploadSelectEvent) => {
     const file = event.files?.[0]
-    console.log('file', file)
-
-    if (!file || file.type !== 'application/x-zip-compressed') {
-      console.error('Not a ZIP file')
+    if (!file || !file.name.endsWith('.zip')) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Invalid File',
+        detail: 'Please upload a ZIP file'
+      })
       return
     }
+
+    setLoading(true)
 
     try {
       const zip = new JSZip()
       const content = await zip.loadAsync(file)
-      const fileNames: string[] = []
+      const extractedImages: ExtractedImage[] = []
 
       await Promise.all(
-        Object.keys(content.files).map(async (filename) => {
-          const entry = content.files[filename]
-
+        Object.values(content.files).map(async (entry) => {
           if (!entry.dir) {
-            fileNames.push(filename)
-
+            const nameOnly = entry.name.split('/').pop() || entry.name
             const blob = await entry.async('blob')
+            const mimeType = getMimeType(nameOnly)
+            const fileObj = new File([blob], nameOnly, { type: mimeType })
 
-            if (blob.type.startsWith('image/')) {
-              const fileObj = new File([blob], filename, { type: blob.type })
-
-              try {
-                const compressed = await compressImage(fileObj)
-                console.log('Compressed:', compressed)
-                // You can upload or store the compressed file here
-              } catch (err: any) {
-                console.warn('Compression skipped:', err.message)
-              }
-            } else {
-              console.log('Skipping non-image:', filename)
+            if (fileObj.type.startsWith('image/')) {
+              const compressed = await compressImage(fileObj)
+              const url = URL.createObjectURL(compressed)
+              extractedImages.push({ name: nameOnly, url, file: compressed, selected: false })
             }
           }
         })
       )
 
-      console.log('All filenames:', fileNames)
+      setImages(extractedImages)
+
+      if (extractedImages.length === 0) {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'No Images',
+          detail: 'No images found in ZIP'
+        })
+      } else {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'ZIP Extracted',
+          detail: 'Images loaded successfully'
+        })
+      }
     } catch (err) {
       console.error('ZIP extraction failed:', err)
+      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to extract ZIP' })
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const toggleSelect = (index: number) => {
+    setImages((prev) =>
+      prev.map((img, idx) => (idx === index ? { ...img, selected: !img.selected } : img))
+    )
+  }
+
+  const handleSubmit = () => {
+    const selectedImages = images.filter((img) => img.selected)
+    toast.current?.show({
+      severity: 'info',
+      summary: 'Selected Images',
+      detail: `${selectedImages.length} images selected`
+    })
+
+    // You can now send `selectedImages` to your backend or do any processing
+    console.log('Selected Images:', selectedImages)
   }
 
   return (
@@ -103,10 +138,33 @@ const PurchaseOrderImage: React.FC = () => {
         </div>
       )}
 
-      {fileNames.length > 0 && (
+      {images.length > 0 && (
         <div className="mt-4">
-          <h5>Extracted Images</h5>
-          <ListBox value={fileNames} options={fileNames.map((f) => ({ label: f, value: f }))} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {images.map((img, idx) => (
+              <Card
+                key={idx}
+                className={`p-2 cursor-pointer ${img.selected ? 'border-4 border-blue-500' : 'border border-gray-300'}`}
+                onClick={() => toggleSelect(idx)}
+                style={{ width: '180px', height: '200px' }} // fixed size
+              >
+                <img
+                  src={img.url}
+                  alt={img.name}
+                  className="w-full h-32 object-cover rounded-md"
+                  style={{ height: '110px', objectFit: 'cover' }} // image fixed height
+                />
+                <div className="flex justify-between items-center mt-2">
+                  <span className="truncate text-xs">{img.name}</span>
+                  {/* <Checkbox checked={img.selected} onChange={() => toggleSelect(idx)} /> */}
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <div className="flex justify-end mt-4">
+            <Button label="Submit" icon={<Check />} onClick={handleSubmit} />
+          </div>
         </div>
       )}
     </div>

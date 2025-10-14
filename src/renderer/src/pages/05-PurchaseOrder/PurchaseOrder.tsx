@@ -1,4 +1,12 @@
-import { Barcode, Blocks, PackageCheck, PackagePlus, PackageX, ShoppingBag } from 'lucide-react'
+import {
+  Barcode,
+  Blocks,
+  Images,
+  PackageCheck,
+  PackagePlus,
+  PackageX,
+  ShoppingBag
+} from 'lucide-react'
 import React, { useState } from 'react'
 import PurchaseOrderOverview from '../../components/05-PurchaseOrderComponents/PurchaseOrderOverview/PurchaseOrderOverview'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
@@ -12,6 +20,7 @@ import PurchaseOrderRejectedProducts from '../../components/05-PurchaseOrderComp
 import BarcodeCreation from '../../components/05-PurchaseOrderComponents/BarcodeCreation/BarcodeCreation'
 
 import './PurchaseOrder.css'
+import PurchaseOrderImage from '../../components/05-PurchaseOrderComponents/PurchaseOrderImage/PurchaseOrderImage'
 
 // Sidebar items config
 const sidebarItems = [
@@ -56,6 +65,12 @@ const sidebarItems = [
     label: 'Barcode Creation',
     icon: <Barcode size={20} className="sidebar-icon" />,
     component: <BarcodeCreation />
+  },
+  {
+    key: 'bulkImagesUpdated',
+    label: 'Bulk Images',
+    icon: <Images size={20} className="sidebar-icon" />,
+    component: <PurchaseOrderImage />
   }
 ]
 

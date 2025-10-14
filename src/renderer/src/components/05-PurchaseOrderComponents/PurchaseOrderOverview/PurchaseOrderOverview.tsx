@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Card } from 'primereact/card'
-
 import { Chart } from 'primereact/chart'
 import { Calendar } from 'primereact/calendar'
 import { fetchPurchaseOverview, PurchaseOverviewResponse } from './PurchaseOrderOverview.function'
 import { ChartNoAxesCombined, ClipboardMinus } from 'lucide-react'
-import './PurchaseOrderOverview.css'
 import { Dropdown } from 'primereact/dropdown'
+import './PurchaseOrderOverview.css'
+
 type SelectedDate = Date | null
 
 const PurchaseOrderOverview: React.FC = () => {
@@ -19,60 +19,45 @@ const PurchaseOrderOverview: React.FC = () => {
     })
   }, [])
 
- const currentYear = new Date().getFullYear();
-
-const periodOptions = Array.from({ length: 12 }, (_, i) => {
-  const monthName = new Date(currentYear, i).toLocaleString('default', { month: 'long' });
-  return { name: `${monthName} ${currentYear}`, code: `${monthName.toLowerCase()}-${currentYear}` };
-});
-
-// Example selected state
-const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
-
-
-  console.log(periodOptions)
+  const currentYear = new Date().getFullYear()
+  const periodOptions = Array.from({ length: 12 }, (_, i) => {
+    const monthName = new Date(currentYear, i).toLocaleString('default', { month: 'long' })
+    return {
+      name: `${monthName} ${currentYear}`,
+      code: `${monthName.toLowerCase()}-${currentYear}`
+    }
+  })
+  const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0])
 
   const data = overview?.data ?? []
   const summary = overview?.summary ?? { suppliers: 0, invoices: 0 }
+  console.log('summary', summary)
 
-  // Helper to compare just dates (ignoring time)
   const isSameDate = (d1: Date, d2: Date) =>
     d1.getFullYear() === d2.getFullYear() &&
     d1.getMonth() === d2.getMonth() &&
     d1.getDate() === d2.getDate()
 
-  // FILTER ONLY FOR SUMMARY STATS:
-  // For stats calculation, filter data only if date selected; else use full data
   const dataForStats = selectedDate
     ? data.filter((item) => isSameDate(new Date(item.date), selectedDate))
     : data
+  console.log('dataForStats', dataForStats)
 
-  // Stats for cards (filtered by selectedDate)
-  const statTypes = [
-    { title: 'PO Create' as const, color: '#6f1f5f', icon: '📋' },
-    { title: 'PO Taken' as const, color: '#6f1f5f', icon: '↩️' }
-  ]
+  // Stats for cards — all counts set to 0
   const stats = [
-    ...statTypes.map((type) => ({
-      title: type.title,
-      count: dataForStats
-        .filter((d) => d.type === type.title)
-        .reduce((acc, curr) => acc + curr.count, 0),
-      color: type.color,
-      icon: type.icon
-    })),
-    { title: 'Barcode Generated', count: summary.suppliers, color: '#059669', icon: '🏢' },
-    { title: 'Rejected Products', count: summary.invoices, color: '#d97706', icon: '📄' }
+    { title: 'PO Create', count: 0, color: '#6f1f5f', icon: '📋' },
+    { title: 'PO Taken', count: 0, color: '#6f1f5f', icon: '↩️' },
+    { title: 'Barcode Generated', count: 0, color: '#059669', icon: '🏢' },
+    { title: 'Rejected Products', count: 0, color: '#d97706', icon: '📄' }
   ]
 
-  // Enhanced Doughnut chart
-
+  // Doughnut chart — all values 0
   const doughnutData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
     datasets: [
       {
         label: 'Take',
-        data: [8000, 9000, 7000, 8500, 12000, 9500, 11000],
+        data: Array(7).fill(0),
         fill: true,
         backgroundColor: 'rgba(139, 92, 246, 0.3)',
         borderColor: '#8b5cf6',
@@ -81,7 +66,7 @@ const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
       },
       {
         label: 'Return',
-        data: [6000, 7500, 9000, 7000, 8000, 10000, 8500],
+        data: Array(7).fill(0),
         fill: true,
         backgroundColor: 'rgba(236, 72, 153, 0.3)',
         borderColor: '#ec4899',
@@ -94,56 +79,32 @@ const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
   const areaOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false
-      }
-    },
-    scales: {
-      x: {
-        display: false
-      },
-      y: {
-        display: false
-      }
-    }
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } }
   }
 
-  // Progress cards (always full data - no filter)
-  const getDateRanges = (baseDate: Date = new Date('2025-07-01')) => {
+  // Progress cards — all counts and percentages 0
+  const getDateRanges = (baseDate: Date = new Date()) => {
     const ranges: { label: string; start: Date; end: Date }[] = []
     for (let i = 0; i < 4; i++) {
       const start = new Date(baseDate)
       start.setDate(start.getDate() + i * 7)
       const end = new Date(start)
       end.setDate(end.getDate() + 6)
-      ranges.push({
-        label: `Week ${i + 1}`,
-        start,
-        end
-      })
+      ranges.push({ label: `Week ${i + 1}`, start, end })
     }
     return ranges
   }
 
-  const ranges = getDateRanges(new Date('2025-07-01'))
-  const staticCounts = [3, 0, 0, 0]
+  const ranges = getDateRanges()
   const progressColors = ['#4f46e5', '#7c3aed', '#059669', '#d97706']
 
-  const rangeGroups = ranges.map((range, index) => {
-    const count = staticCounts[index] || 0
-    return {
-      ...range,
-      count,
-      percent: 0,
-      color: progressColors[index]
-    }
-  })
-
-  const totalInRanges = rangeGroups.reduce((acc, r) => acc + r.count, 0)
-  rangeGroups.forEach((r) => {
-    r.percent = totalInRanges ? Math.round((r.count / totalInRanges) * 100) : 0
-  })
+  const rangeGroups = ranges.map((range, index) => ({
+    ...range,
+    count: 0,
+    percent: 0,
+    color: progressColors[index]
+  }))
 
   return (
     <div>
@@ -158,7 +119,6 @@ const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
                   <ChartNoAxesCombined />
                 </span>
               </div>
-
               <div style={styles.progressBarContainer}>
                 <div
                   style={{
@@ -168,7 +128,6 @@ const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
                   }}
                 />
               </div>
-
               <div style={styles.progressFooter}>
                 <span style={styles.progressCount}>{item.count}</span>
                 <span style={styles.progressLabel}>Products</span>
@@ -180,14 +139,13 @@ const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
 
       {/* Main Content Area */}
       <div style={styles.mainContent}>
-        {/* Enhanced Doughnut Chart */}
         <Card className="chart-card product-sales-card" style={{ borderRadius: '20px' }}>
           <div className="chart-header flex justify-content-between">
             <h3>Purchase Order</h3>
             <Dropdown
               value={selectedPeriod}
               options={periodOptions}
-              placeholder='Select Month'
+              placeholder="Select Month"
               onChange={(e) => setSelectedPeriod(e.value)}
               optionLabel="name"
               style={{ width: '120px' }}
@@ -196,19 +154,9 @@ const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
           <div className="chart-container">
             <Chart type="line" data={doughnutData} options={areaOptions} />
           </div>
-          <div className="chart-legend">
-            <div className="legend-item">
-              <span className="legend-color purple"></span>
-              <span>Take</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color pink"></span>
-              <span>Return</span>
-            </div>
-          </div>
         </Card>
 
-        {/* Enhanced Summary Section */}
+        {/* Summary Section */}
         <div>
           <Card style={{ borderRadius: '20px' }}>
             <div>
@@ -231,10 +179,9 @@ const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]);
             <div style={styles.statsGrid}>
               {stats.map((item, idx) => (
                 <div key={idx} style={styles.statCard}>
-                  <div style={styles.statIcon}>{item.icon}</div>{' '}
+                  <div style={styles.statIcon}>{item.icon}</div>
                   <div style={styles.statContent}>
-                    {' '}
-                    <h4 style={styles.statTitle}>{item.title}</h4>{' '}
+                    <h4 style={styles.statTitle}>{item.title}</h4>
                     <p style={{ ...styles.statCount, color: item.color }}>{item.count}</p>
                   </div>
                 </div>
