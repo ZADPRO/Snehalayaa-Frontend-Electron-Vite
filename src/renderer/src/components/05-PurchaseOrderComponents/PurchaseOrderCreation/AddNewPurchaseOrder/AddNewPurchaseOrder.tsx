@@ -448,9 +448,6 @@ const AddNewPurchaseOrder: React.FC = () => {
             />
           </div>
         </div>
-        {/* <div className='flex'>
-<PurchaseOrderImage/>
-</div> */}
         <Divider />
 
         <DataTable
@@ -469,11 +466,7 @@ const AddNewPurchaseOrder: React.FC = () => {
           rowsPerPageOptions={[5, 10, 20]}
           responsiveLayout="scroll"
         >
-          <Column
-            selectionMode="multiple"
-            headerStyle={{ textAlign: 'center' }}
-            style={{ minWidth: '50px' }}
-          />
+          <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} />
           <Column
             header="SNo"
             body={(_, opts) => opts.rowIndex + 1}
@@ -483,7 +476,7 @@ const AddNewPurchaseOrder: React.FC = () => {
           <Column
             header="Name"
             body={(rowData) => {
-              const combined = `${rowData.category || ''} - ${rowData.subCategory || ''} - ${rowData.productDescription}`
+              const combined = `${rowData.category || ''} | ${rowData.subCategory || ''} | ${rowData.productDescription}`
               return (
                 <span
                   className="name-tooltip"
@@ -495,7 +488,7 @@ const AddNewPurchaseOrder: React.FC = () => {
                 </span>
               )
             }}
-            style={{ minWidth: '400px' }}
+            style={{ minWidth: '300px' }}
           />
           <Column field="hsnCode" header="HSN" />
           <Column field="quantity" header="Quantity" />

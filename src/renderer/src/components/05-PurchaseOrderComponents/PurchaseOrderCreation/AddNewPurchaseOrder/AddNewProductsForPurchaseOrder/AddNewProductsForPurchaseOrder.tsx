@@ -222,7 +222,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         <Button
           label="Add Category"
           icon={<Plus size={16} />}
-          className="gap-2"
+          className="gap-2 p-button-primary"
           onClick={() => {
             setCategoryToEdit(null)
             setCategorySidebarVisible(true)
@@ -231,8 +231,8 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         <Button
           label="Add Sub Category"
           icon={<Plus size={16} />}
-          className="gap-2"
-          severity="info"
+          className="gap-2 p-button-outlined custom-primary"
+          outlined
           onClick={() => {
             setSubCategoryToEdit(null)
             setSubCategorySidebarVisible(true)
@@ -413,7 +413,12 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       {/* Actions */}
       <div className="flex justify-content-end gap-2 mt-3">
         <Button label="Close" severity="secondary" onClick={onClose} />
-        <Button label="Add" icon={<Check size={20} />} className="gap-2" onClick={handleAdd} />
+        <Button
+          label="Add"
+          icon={<Check size={20} />}
+          className="gap-2 p-button-primary"
+          onClick={handleAdd}
+        />
       </div>
 
       <Sidebar

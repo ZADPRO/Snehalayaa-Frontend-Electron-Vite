@@ -184,6 +184,17 @@ Specificity: (0,2,2)
   background-color: #6f1f5f;
 }
 
+.p-button-outlined.custom-primary {
+  border: 1px solid #6f1f5f; /* border color */
+  color: #6f1f5f; /* text color */
+  background-color: transparent; /* keep background transparent */
+}
+
+.p-button-outlined.custom-primary:hover {
+  background-color: #6f1f5f; /* fill background on hover */
+  color: #fff; /* text color on hover */
+}
+
 .p-dialog .p-dialog-header {
   padding: 10px;
 }
