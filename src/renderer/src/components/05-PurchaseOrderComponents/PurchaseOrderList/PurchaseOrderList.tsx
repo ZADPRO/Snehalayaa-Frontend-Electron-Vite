@@ -125,7 +125,7 @@ const PurchaseOrderList: React.FC = () => {
         .map((item) => ({
           category: `Category ${item.refCategoryid}`,
           subCategory: `SubCategory ${item.refSubCategoryId}`,
-          productName: item.productName,
+          productDescription: item.productDescription,
           hsnCode: item.HSNCode,
           quantity: Number(item.purchaseQuantity) || 0,
           purchasePrice: Number(item.purchasePrice) || 0,

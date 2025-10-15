@@ -9,7 +9,7 @@ export interface PartyDetails {
 export interface InvoiceItem {
   category: string
   subCategory: string
-  productName: string
+  productDescription: string
   hsnCode?: string
   quantity: number
   purchasePrice: number

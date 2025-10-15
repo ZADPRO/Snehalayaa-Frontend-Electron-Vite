@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { PurchaseOrder } from './InventoryStockTransfer.interface'
 import { fetchCategories, generateInvoicePdf } from './InventoryStockTransfer.function'
 import { InvoiceProps } from '../../05-PurchaseOrderComponents/PurchaseOrderCreation/PurchaseOrderInvoice/PurchaseOrderInvoice.interface'
-import logo from '../../../assets/logo/invoice.png'
+import logo from '../../../assets/logo/transparentLogo01.png'
 import { Sidebar } from 'primereact/sidebar'
 import InventoryAddEditStockTransfer from './InventoryAddEditStockTransfer/InventoryAddEditStockTransfer'
 
@@ -72,7 +72,7 @@ const InventoryStockTransfer: React.FC = () => {
         .map((item) => ({
           category: `Category ${item.refCategoryid}`,
           subCategory: `SubCategory ${item.refSubCategoryId}`,
-          productName: item.productName,
+          productDescription: item.productName,
           hsnCode: item.HSNCode,
           quantity: Number(item.purchaseQuantity) || 0,
           purchasePrice: Number(item.purchasePrice) || 0,

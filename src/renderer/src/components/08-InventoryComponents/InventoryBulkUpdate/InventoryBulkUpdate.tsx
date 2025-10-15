@@ -8,43 +8,40 @@ import { saveAs } from 'file-saver'
 import { Download, RefreshCw, Upload } from 'lucide-react'
 
 const REQUIRED_HEADERS = [
+  'Unit',
   'Product Name',
   'SKU',
-  'GTIN',
   'Brand',
-  'Categories',
-  'Sub Categories',
+  'Category',
+  'Sub Category',
   'Quantity',
-  'Valuation based on MRP',
-  'Valuation based on Price',
-  'Valuation based on Cost'
+  'MRP',
+  'Cost'
 ]
 
-// ✅ Updated Sample Data
+// ✅ Sample data for downloading Excel
 const SAMPLE_DATA = [
   {
-    'Product Name': 'KANCHEEVARAM SAREE 0001012425',
-    SKU: 'SS000005',
-    GTIN: '0001012425',
+    Unit: 'WH',
+    'Product Name': 'DESIGNER SAREE 2',
+    SKU: 'SS121120',
     Brand: 'Snehalayaa',
-    Categories: 'KANCHEEVARAM',
-    'Sub Categories': 'SILK SAREE',
-    Quantity: -1,
-    'Valuation based on MRP': -38110,
-    'Valuation based on Price': -38110,
-    'Valuation based on Cost': -21000
+    Category: 'FANCY',
+    'Sub Category': 'DESIGNER SAREE',
+    Quantity: 1,
+    MRP: 3100,
+    Cost: 1695
   },
   {
-    'Product Name': 'KANCHEEVARAM SAREE 0001012462',
-    SKU: 'SS000022',
-    GTIN: '0001012462',
+    Unit: 'WH',
+    'Product Name': 'SEMI BANARAS PAITHANI 7',
+    SKU: 'SS121046',
     Brand: 'Snehalayaa',
-    Categories: '50,KANCHEEVARAM',
-    'Sub Categories': 'SILK SAREE',
+    Category: 'BANARAS',
+    'Sub Category': 'BANARAS PAITHANI SILK',
     Quantity: 1,
-    'Valuation based on MRP': 23647,
-    'Valuation based on Price': 23647,
-    'Valuation based on Cost': 10500
+    MRP: 1750,
+    Cost: 960
   }
 ]
 
@@ -73,7 +70,7 @@ const InventoryBulkUpdate: React.FC = () => {
       const workbook = XLSX.read(data, { type: 'binary' })
       const sheetName = workbook.SheetNames[0]
       const sheet = workbook.Sheets[sheetName]
-      const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' })
+      const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' })
 
       if (jsonData.length === 0) {
         showError('Uploaded file is empty.')
@@ -92,6 +89,7 @@ const InventoryBulkUpdate: React.FC = () => {
         return
       }
 
+      // Normalize and clean data
       const normalizedData = jsonData.map((row: any) => {
         const newRow: any = {}
         rawHeaders.forEach((key, index) => {
@@ -101,6 +99,7 @@ const InventoryBulkUpdate: React.FC = () => {
         return newRow
       })
 
+      // Detect duplicate SKUs
       const skuList = normalizedData.map((row: any) => row.SKU)
       const duplicateSKUs = skuList.filter((sku, index) => skuList.indexOf(sku) !== index)
       if (duplicateSKUs.length > 0) {
@@ -118,20 +117,14 @@ const InventoryBulkUpdate: React.FC = () => {
     fileInputRef.current?.click()
   }
 
-  // ✅ Updated to export the required Excel format
   const downloadSampleExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(SAMPLE_DATA)
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sample')
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array'
-    })
-    const blob = new Blob([excelBuffer], {
-      type: 'application/octet-stream'
-    })
-    saveAs(blob, 'sample_inventory.xlsx')
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
+    saveAs(blob, 'sample_inventory_bulk_update.xlsx')
   }
 
   const handleUpdate = () => {
@@ -208,27 +201,15 @@ const InventoryBulkUpdate: React.FC = () => {
           style={{ width: '80px', textAlign: 'center' }}
           frozen
         />
-
+        <Column field="Unit" header="Unit" style={{ minWidth: '7rem' }} />
         <Column field="Product Name" header="Product Name" style={{ minWidth: '14rem' }} frozen />
         <Column field="SKU" header="SKU" style={{ minWidth: '8rem' }} frozen sortable />
-        <Column field="GTIN" header="GTIN" style={{ minWidth: '14rem' }} />
         <Column field="Brand" header="Brand" style={{ minWidth: '10rem' }} />
-        <Column field="Categories" header="Categories" style={{ minWidth: '10rem' }} />
-        <Column field="Sub Categories" header="Sub Categories" style={{ minWidth: '14rem' }} />
+        <Column field="Category" header="Category" style={{ minWidth: '10rem' }} />
+        <Column field="Sub Category" header="Sub Category" style={{ minWidth: '14rem' }} />
         <Column field="Quantity" header="Quantity" sortable />
-        <Column field="Valuation based on MRP" header="MRP" style={{ minWidth: '7rem' }} sortable />
-        <Column
-          field="Valuation based on Price"
-          header="Price"
-          style={{ minWidth: '7rem' }}
-          sortable
-        />
-        <Column
-          field="Valuation based on Cost"
-          header="Cost"
-          style={{ minWidth: '7rem' }}
-          sortable
-        />
+        <Column field="MRP" header="MRP" style={{ minWidth: '7rem' }} sortable />
+        <Column field="Cost" header="Cost" style={{ minWidth: '7rem' }} sortable />
       </DataTable>
     </div>
   )

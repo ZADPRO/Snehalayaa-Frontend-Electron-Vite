@@ -27,3 +27,17 @@ export interface Option {
   label: string
   value: string | number
 }
+
+export interface Attribute {
+  column_label: string
+  column_name: string
+  createdAt: string
+  createdBy: string
+  data_type: string
+  id: number
+  isDelete: boolean
+  is_required: boolean
+  type: string
+  updatedAt: string
+  updatedBy: string
+}
