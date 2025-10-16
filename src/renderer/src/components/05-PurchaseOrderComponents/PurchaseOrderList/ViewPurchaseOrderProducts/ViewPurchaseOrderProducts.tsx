@@ -11,14 +11,14 @@ import {
   bulkAcceptDummyProducts,
   bulkRejectDummyProducts,
   fetchSubCategories,
-  fetchCategories,
+  fetchCategories
   // createPurchaseReturn
   // bulkUndoDummyProducts
 } from './ViewPurchaseOrderProducts.function'
 
 import {
   ViewPurchaseOrderProductsProps,
-  TableRow,
+  TableRow
   // PurchaseReturnPayload
 } from './ViewPurchaseOrderProducts.interface'
 import { InputNumber } from 'primereact/inputnumber'
@@ -26,7 +26,6 @@ import { Toast } from 'primereact/toast'
 import { MultiSelect } from 'primereact/multiselect'
 
 const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
-  console.log('rowData', rowData)
   const [categoryMap, setCategoryMap] = useState<Record<number, string>>({})
   const [subCategoryMap, setSubCategoryMap] = useState<Record<number, string>>({})
 
@@ -44,11 +43,8 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
 
   const [returnDialog, setReturnDialog] = useState(false)
   const [returnRow, setReturnRow] = useState<any | null>(null)
-  setReturnRow(3)
   const [returned, setReturned] = useState<number>(0)
-  setReturned(0)
   const [remaining, setRemaining] = useState<number>(0)
-  setRemaining(0)
   const [mismatchedCount, setMismatchedCount] = useState<number>(0)
   const [missedCount, setMissedCount] = useState<number>(0)
   // handle when user types returned qty
@@ -150,28 +146,52 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
     if (activeRowIndex !== null) {
       try {
         await updateDummyProductStatus(activeRowIndex, false, rejectionReason)
+
         setRows((prev) =>
           prev.map((row) =>
-            row.id === activeRowIndex ? { ...row, status: `Rejected - ${rejectionReason}` } : row
+            row.dummyproductId === activeRowIndex
+              ? { ...row, status: `Rejected - ${rejectionReason}` }
+              : row
           )
         )
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Product Rejected',
+          detail: `Marked as ${rejectionReason}`
+        })
       } catch (error) {
         console.error('Failed to reject product:', error)
       }
     }
+
+    // 4️⃣ Close dialog
     setActiveRowIndex(null)
     setRejectionDialog(false)
   }
+
   const undoAction = async (dummyProductId: number) => {
     try {
-      await updateDummyProductStatus(dummyProductId, 'undo')
+      // Call backend to reset product status to pending
+      await updateDummyProductStatus(dummyProductId, false, 'undo')
+
+      // Immediately update UI
       setRows((prev) =>
         prev.map((row) =>
           row.dummyproductId === dummyProductId ? { ...row, status: 'Pending' } : row
         )
       )
+      toast.current?.show({
+        severity: 'info',
+        summary: 'Action Undone',
+        detail: 'Status reverted to Pending'
+      })
     } catch (error) {
       console.error('Failed to undo product status:', error)
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Undo Failed',
+        detail: 'Could not revert product status'
+      })
     }
   }
 
@@ -209,14 +229,14 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
           tooltipOptions={{ position: 'bottom' }}
           style={{ padding: '0px' }}
           className="p-button-secondary"
-          onClick={() => undoAction(row.id)}
+          onClick={() => undoAction(row.dummyproductId)}
         />
       )
     }
   }
 
-  const openRejectionDialog = (id: number) => {
-    setActiveRowIndex(id)
+  const openRejectionDialog = (dummyProductId: number) => {
+    setActiveRowIndex(dummyProductId)
     setRejectionDialog(true)
   }
 

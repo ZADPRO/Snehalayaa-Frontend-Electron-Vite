@@ -224,6 +224,21 @@ const PurchaseOrderList: React.FC = () => {
       })
   }, [])
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '-'
+    const date = new Date(dateString)
+    if (isNaN(date)) return '-'
+
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })
+  }
+
   return (
     <div>
       <Toast ref={toast} />
@@ -276,8 +291,41 @@ const PurchaseOrderList: React.FC = () => {
           header="Status"
           body={(rowData) => (rowData.totalSummary.status === 1 ? 'Open' : 'Closed')}
         />
+        <Column
+          header="Credited Day"
+          body={(rowData) => {
+            const createdAt = new Date(rowData.totalSummary?.createdAt)
+            if (isNaN(createdAt)) return '-'
+
+            const creditedDay = new Date(createdAt)
+            creditedDay.setDate(createdAt.getDate() + 30)
+
+            const formatted = creditedDay.toISOString().split('T')[0]
+            return formatted
+          }}
+        />
         <Column field="totalSummary.createdBy" header="Created By" />
-        <Column field="totalSummary.createdAt" header="Created At" />
+
+        <Column
+          header="Created At"
+          body={(rowData) => formatDate(rowData.totalSummary?.createdAt)}
+        />
+
+        <Column
+          header="Credited Day"
+          body={(rowData) => {
+            const createdAt = new Date(rowData.totalSummary?.createdAt)
+            if (isNaN(createdAt)) return '-'
+
+            const creditedDay = new Date(createdAt)
+            creditedDay.setDate(createdAt.getDate() + 30)
+
+            return formatDate(creditedDay)
+          }}
+        />
+
+        <Column field="totalSummary.createdBy" header="Created By" />
+
         <Column header="Actions" body={actionColumn} />
       </DataTable>
 
@@ -293,7 +341,7 @@ const PurchaseOrderList: React.FC = () => {
           setVisibleRight(false)
           setSelectedPurchaseOrder([])
         }}
-        style={{ width: '65vw' }}
+        style={{ width: '75vw' }}
       >
         {/* <ViewPurchaseOrderProducts
           rowData={selectedRowData ?? { productDetails: [], totalSummary: {} }}

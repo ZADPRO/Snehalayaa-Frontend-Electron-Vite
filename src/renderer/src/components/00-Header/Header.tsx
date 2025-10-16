@@ -8,7 +8,6 @@ import {
   LogOut,
   PackageSearch,
   Settings,
-  ShoppingBag,
   ShoppingCart
 } from 'lucide-react'
 
@@ -31,11 +30,11 @@ const topRoutes = [
     name: 'Purchase Order',
     icon: <ShoppingCart />
   },
-  {
-    path: '/pos',
-    name: 'POS',
-    icon: <ShoppingBag />
-  },
+  // {
+  //   path: '/pos',
+  //   name: 'POS',
+  //   icon: <ShoppingBag />
+  // },
   // {
   //   path: '/notifications',
   //   name: 'Notifications',

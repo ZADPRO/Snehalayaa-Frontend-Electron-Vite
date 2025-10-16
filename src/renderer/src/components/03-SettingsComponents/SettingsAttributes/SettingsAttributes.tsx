@@ -109,12 +109,12 @@ const SettingsAttributes: React.FC = () => {
         selection={selectedAttributes[0] || null} // single selected attribute
         onSelectionChange={(e) => setSelectedAttributes(e.value ? [e.value] : [])}
         dataKey="id"
-        selectionMode="single" // ✅ only allow single selection
+        selectionMode="single"
         paginator
         showGridlines
         stripedRows
         rows={10}
-        rowsPerPageOptions={[5, 10, 20]}
+        rowsPerPageOptions={[10, 20, 50]}
         responsiveLayout="scroll"
       >
         <Column selectionMode="single" header="#" headerStyle={{ textAlign: 'center' }} />
