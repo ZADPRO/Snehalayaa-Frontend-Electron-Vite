@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { Option, CatalogFormData } from './CatalogAddEditForm.interface'
 import { baseURL } from '../../../../utils/helper'
+import api from '../../../../utils/api'
+import { Attribute } from '../../../03-SettingsComponents/SettingsAttribute/SettingsAttribute.interface'
 
 export const fetchCategories = async (): Promise<Option[]> => {
   const response = await axios.get(`${baseURL}/admin/settings/categories`, {
@@ -42,4 +44,14 @@ export const saveProduct = async (productData: CatalogFormData) => {
     }
   })
   return response.data
+}
+
+export const fetchAttribute = async (): Promise<Attribute[]> => {
+  const response = await api.get(`/admin/settings/product-fields`)
+  console.log('response', response)
+  if (response.data?.status) {
+    return response.data.data
+  } else {
+    throw new Error(response.data.message || 'Failed to fetch attributes')
+  }
 }

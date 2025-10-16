@@ -5,9 +5,15 @@ import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
 import { Toast } from 'primereact/toast'
 import { Category, SubCategory, Branch, Supplier } from '../AddNewPurchaseOrder.interface'
-import { Check } from 'lucide-react'
+import { Check, Plus } from 'lucide-react'
 import { formatINRCurrency } from './AddNewProductsForPurchaseOrder.function'
 import { Message } from 'primereact/message'
+import { InputNumber } from 'primereact/inputnumber'
+import { Sidebar } from 'primereact/sidebar'
+
+import SettingsAddEditCategories from '../../../../03-SettingsComponents/SettingsCategories/SettingsAddEditCategories/SettingsAddEditCategories'
+import { fetchCategories, fetchSubCategories } from '../AddNewPurchaseOrder.function'
+import SettingsAddEditSubCategories from '../../../../03-SettingsComponents/SettingsSubCategories/SettingsAddEditSubCategories/SettingsAddEditSubCategories'
 
 interface Props {
   categories: Category[]
@@ -36,9 +42,9 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
   const [existingMatch, setExistingMatch] = useState<any | null>(null)
   const [showInfoMessage, setShowInfoMessage] = useState(false)
 
-  const [_productName, setProductName] = useState('')
+  const [productDescription, setProductDescription] = useState('')
   const [quantity, setQuantity] = useState('')
-  const [purchasePrice, setPurchasePrice] = useState('')
+  const [purchasePrice, setPurchasePrice] = useState<any>()
   const [discount, setDiscount] = useState('')
   const [hsnCode, setHsnCode] = useState('') // Added HSN Code state
   const total =
@@ -48,9 +54,27 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
 
   const toast = useRef<Toast>(null)
 
+  const [categorySidebarVisible, setCategorySidebarVisible] = useState(false)
+  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null)
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>(categories)
+
+  const [subcategorySidebarVisible, setSubCategorySidebarVisible] = useState(false)
+  const [subCategoryToEdit, setSubCategoryToEdit] = useState<SubCategory | null>(null)
+  const [subCategoryOptions, setSubCategoriesOption] = useState<SubCategory[]>(subCategories)
+
   const filteredSubCategories = selectedCategory
-    ? subCategories.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
+    ? subCategoryOptions.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
     : []
+
+  const refreshCategories = async () => {
+    const updatedCategories = await fetchCategories()
+    setCategoryOptions(updatedCategories)
+  }
+
+  const refreshSubCategories = async () => {
+    const updatedSubCategories = await fetchSubCategories()
+    setSubCategoriesOption(updatedSubCategories)
+  }
 
   const handleAdd = () => {
     if (!fromAddress || !toAddress) {
@@ -70,7 +94,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     if (
       !selectedCategory ||
       !selectedSubCategory ||
-      // !productName.trim() ||
+      !productDescription.trim() ||
       !quantity ||
       !purchasePrice ||
       isNaN(quantityNum) ||
@@ -90,7 +114,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     }
 
     const newItem = {
-      productName: '-',
+      productDescription: productDescription,
       quantity: quantityNum,
       purchasePrice: priceNum,
       discount: discountNum,
@@ -107,7 +131,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
     onAdd(newItem)
 
     // Reset fields
-    setProductName('')
+    setProductDescription('')
     setQuantity('')
     setPurchasePrice('')
     setDiscount('')
@@ -123,7 +147,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       setSelectedSubCategory(
         subCategories.find((sub) => sub.refSubCategoryId === editItem.refSubCategoryId) || null
       )
-      // setProductName(editItem.productName || '')
+      // setProductDescription(editItem.productName || '')
       setQuantity(editItem.quantity?.toString() || '')
       setPurchasePrice(editItem.purchasePrice?.toString() || '')
       setDiscount(editItem.discount?.toString() || '')
@@ -160,13 +184,10 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       {/* From and To Details */}
       <div className="grid">
         {/* Branch Details */}
-        <div className="col-6 p-3 surface-100">
-          <p className="">Branch Details</p>
+        <div className="col-6 p-3 surface-100 text-sm">
+          <p className="font-bold uppercase underline">Branch Details</p>
           <div>
             <strong>Name:</strong> {fromAddress?.refBranchName || 'N/A'}
-          </div>
-          <div>
-            <strong>Email:</strong> {fromAddress?.refEmail || 'N/A'}
           </div>
           <div>
             <strong>Mobile:</strong> {fromAddress?.refMobile || 'N/A'}
@@ -177,21 +198,15 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
           <div>
             <strong>Branch Code:</strong> {fromAddress?.refBranchCode || 'N/A'}
           </div>
-          <div>
-            <strong>Type:</strong> {fromAddress?.isMainBranch ? 'Main Branch' : 'Sub Branch'}
-          </div>
         </div>
         {/* Supplier Details */}
-        <div className="col-6 p-3 surface-100">
-          <p className="">Supplier Details</p>
+        <div className="col-6 p-3 surface-100 text-sm">
+          <p className="font-bold uppercase underline">Supplier Details</p>
           <div>
             <strong>Company Name:</strong> {toAddress?.supplierCompanyName || 'N/A'}
           </div>
           <div>
             <strong>Contact Name:</strong> {toAddress?.supplierName || 'N/A'}
-          </div>
-          <div>
-            <strong>Email:</strong> {toAddress?.supplierEmail || 'N/A'}
           </div>
           <div>
             <strong>Mobile:</strong> {toAddress?.supplierContactNumber || 'N/A'}
@@ -200,20 +215,29 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             <strong>Address:</strong>
             {`${toAddress?.supplierDoorNumber || ''}, ${toAddress?.supplierStreet || ''}, ${toAddress?.supplierCity || ''}, ${toAddress?.supplierState || ''}, ${toAddress?.supplierCountry || ''}`}
           </div>
-          <div>
-            <strong>UPI:</strong> {toAddress?.supplierUPI || 'N/A'}
-          </div>
-          <div>
-            <strong>GST No:</strong> {toAddress?.supplierGSTNumber || 'N/A'}
-          </div>
-          <div>
-            <strong>Bank:</strong>{' '}
-            {`${toAddress?.supplierBankName || ''} - ${toAddress?.supplierBankACNumber || ''}`}
-          </div>
-          <div>
-            <strong>IFSC:</strong> {toAddress?.supplierIFSC || 'N/A'}
-          </div>
         </div>
+      </div>
+
+      <div className="flex gap-2 justify-content-end mb-3">
+        <Button
+          label="Add Category"
+          icon={<Plus size={16} />}
+          className="gap-2 p-button-primary"
+          onClick={() => {
+            setCategoryToEdit(null)
+            setCategorySidebarVisible(true)
+          }}
+        />
+        <Button
+          label="Add Sub Category"
+          icon={<Plus size={16} />}
+          className="gap-2 p-button-outlined custom-primary"
+          outlined
+          onClick={() => {
+            setSubCategoryToEdit(null)
+            setSubCategorySidebarVisible(true)
+          }}
+        />
       </div>
 
       {showInfoMessage && existingMatch && (
@@ -234,7 +258,7 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
                 setSelectedCategory(e.value)
                 setSelectedSubCategory(null)
               }}
-              options={categories}
+              options={categoryOptions}
               optionLabel="categoryName"
               placeholder="Select Category"
               className="w-full"
@@ -264,16 +288,24 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
             </small>
           )}
         </div>
+      </div>
+
+      <div className="flex">
         <div className="flex-1">
-          {/* <FloatLabel className="always-float">
+          <FloatLabel className="always-float">
             <InputText
-              id="productName"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              id="hsnCode"
+              value={productDescription}
+              onChange={(e) => {
+                const rawValue = e.target.value
+                console.log('rawValue', rawValue)
+                setProductDescription(rawValue)
+              }}
               className="w-full"
             />
-            <label htmlFor="productName">Product Name</label>
-          </FloatLabel> */}
+
+            <label htmlFor="hsnCode">Product Description</label>
+          </FloatLabel>
         </div>
       </div>
 
@@ -309,11 +341,17 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
         </div>
         <div className="flex-1">
           <FloatLabel className="always-float">
-            <InputText
+            <InputNumber
               id="purchasePrice"
-              keyfilter="num"
               value={purchasePrice}
-              onChange={(e) => setPurchasePrice(e.target.value)}
+              mode="currency"
+              currency="INR"
+              currencyDisplay="symbol"
+              locale="en-IN"
+              onValueChange={(e) => {
+                console.log('e', e)
+                setPurchasePrice(e.value)
+              }}
               className="w-full"
             />
             <label htmlFor="purchasePrice">Purchase Price</label>
@@ -375,8 +413,39 @@ const AddNewProductsForPurchaseOrder: React.FC<Props> = ({
       {/* Actions */}
       <div className="flex justify-content-end gap-2 mt-3">
         <Button label="Close" severity="secondary" onClick={onClose} />
-        <Button label="Add" icon={<Check size={20} />} className="gap-2" onClick={handleAdd} />
+        <Button
+          label="Add"
+          icon={<Check size={20} />}
+          className="gap-2 p-button-primary"
+          onClick={handleAdd}
+        />
       </div>
+
+      <Sidebar
+        visible={categorySidebarVisible}
+        onHide={() => setCategorySidebarVisible(false)}
+        position="right"
+        style={{ width: '50vw' }}
+      >
+        <SettingsAddEditCategories
+          selectedCategory={categoryToEdit}
+          onClose={() => setCategorySidebarVisible(false)}
+          reloadData={refreshCategories}
+        />
+      </Sidebar>
+
+      <Sidebar
+        visible={subcategorySidebarVisible}
+        onHide={() => setSubCategorySidebarVisible(false)}
+        position="right"
+        style={{ width: '50vw' }}
+      >
+        <SettingsAddEditSubCategories
+          selectedSubCategory={subCategoryToEdit}
+          onClose={() => setSubCategorySidebarVisible(false)}
+          reloadData={refreshSubCategories}
+        />
+      </Sidebar>
     </div>
   )
 }

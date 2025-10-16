@@ -1,3 +1,11 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+* {
+  font-size: 14px;
+}
+
 /* PASSWORD */
 .p-password-input.p-inputtext.p-component {
   width: 100%;
@@ -36,6 +44,10 @@
 }
 
 /* FLOAT LABEL COLORING */
+.p-float-label label {
+  color: #6f1f5f;
+}
+
 .p-float-label input:focus + label,
 .p-float-label input.p-filled + label {
   color: #6f1f5f;
@@ -74,6 +86,12 @@
   box-shadow: none;
   border-color: #6f1f5f;
 }
+
+/* .p-float-label input:focus + label, .p-float-label input.p-filled + label
+Specificity: (0,2,2)
+ {
+    color: #6f1f5f;
+} */
 
 .p-button {
   box-shadow: none;
@@ -164,6 +182,17 @@
 
 .p-button-primary {
   background-color: #6f1f5f;
+}
+
+.p-button-outlined.custom-primary {
+  border: 1px solid #6f1f5f; /* border color */
+  color: #6f1f5f; /* text color */
+  background-color: transparent; /* keep background transparent */
+}
+
+.p-button-outlined.custom-primary:hover {
+  background-color: #6f1f5f; /* fill background on hover */
+  color: #fff; /* text color on hover */
 }
 
 .p-dialog .p-dialog-header {

@@ -42,17 +42,7 @@ const SupplierPaymentDialog: React.FC<SupplierPaymentDialogProps> = ({
           <InputText
             id="creditDays"
             value={creditDays}
-            onChange={(e) => {
-              const value = e.target.value
-              onCreditDaysChange(value)
-
-              const days = parseInt(value)
-              if (!isNaN(days) && days >= 0) {
-                const today = new Date()
-                const expectedDate = new Date(today.setDate(today.getDate() + days))
-                onCreditDateChange(expectedDate)
-              }
-            }}
+            onChange={(e) => onCreditDaysChange(e.target.value)}
             className="w-full"
           />
           <label htmlFor="creditDays">Enter Credit Days</label>

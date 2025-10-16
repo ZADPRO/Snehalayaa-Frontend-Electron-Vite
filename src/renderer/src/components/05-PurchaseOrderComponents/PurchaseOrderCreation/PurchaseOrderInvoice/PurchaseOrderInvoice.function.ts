@@ -70,7 +70,7 @@ export const generateInvoicePdf = (
     theme: 'plain',
     head: [['S.No', 'Product', 'HSN', 'Qty', 'Price', 'Disc %', 'Disc Amt', 'Total']],
     body: props.items.map((item, i) => {
-      const product = `${item.category} - ${item.subCategory} - ${item.productName}`
+      const product = `${item.category} - ${item.subCategory} - ${item.productDescription}`
       const qty = item.quantity
       const price = Number(item.purchasePrice) || 0
       const discountPercent = Number(item.discount) || 0

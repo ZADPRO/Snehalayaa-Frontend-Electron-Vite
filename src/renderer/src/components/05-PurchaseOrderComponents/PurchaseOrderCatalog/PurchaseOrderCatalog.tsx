@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { FileSignature, FileSpreadsheet, FileText } from 'lucide-react'
+import { Check, FileSignature, FileSpreadsheet, FileText } from 'lucide-react'
 import { Button } from 'primereact/button'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
@@ -16,6 +16,7 @@ import {
 } from './PurchaseOrderCatalog.function'
 import { PurchaseOrderProduct, Category, SubCategory } from './PurchaseOrderCatalog.interface'
 import CatalogAddEditForm from './CatalogAddEditForm/CatalogAddEditForm'
+import BulkUpdateProductCatalog from './BulkUpdateProductCatalog/BulkUpdateProductCatalog'
 
 const PurchaseOrderCatalog: React.FC = () => {
   const toast = useRef<Toast>(null)
@@ -109,15 +110,14 @@ const PurchaseOrderCatalog: React.FC = () => {
         showClear
         disabled={!selectedCategory}
       />
-
-      {/* <Button
-        label="Bulk Edit"
-        icon="pi pi-pencil"
-        disabled={selectedProducts.length === 0}
+      <Button
+        label="Bulk Update"
+        icon={<Check />}
+        severity="info"
+        className="gap-2"
+        disabled={!isBulkUpdateEnabled}
         onClick={() => setMultiSidebarVisible(true)}
-        severity="warning"
-        tooltip="Edit selected items"
-      /> */}
+      />
     </div>
   )
 
@@ -126,6 +126,9 @@ const PurchaseOrderCatalog: React.FC = () => {
 
   const getSubCategoryName = (id: number) =>
     subCategories.find((s) => s.refSubCategoryId === id)?.subCategoryName || '-'
+
+  const isBulkUpdateEnabled =
+    selectedProducts.length >= 2 && new Set(selectedProducts.map((p) => p.RefCategoryID)).size === 1
 
   return (
     <div>
@@ -168,20 +171,18 @@ const PurchaseOrderCatalog: React.FC = () => {
         <Column field="HSNCode" header="HSN Code" />
         <Column field="DummySKU" header="SKU" />
         <Column field="Price" header="Price" />
-        <Column field="AcceptanceStatus" header="Status" />
       </DataTable>
 
-      {/* ✅ Single Product Edit Sidebar */}
       <Sidebar
         visible={visible}
         position="right"
         onHide={() => {
           setVisible(false)
-          // Reload to refresh the product view
           fetchAllPurchaseOrderProducts().then((data) => {
             setProducts(data)
             filterProducts(selectedCategory, selectedSubCategory)
           })
+          setSelectedProducts([])
         }}
         header={
           <span style={{ textTransform: 'uppercase', fontWeight: '600', fontSize: '1.2rem' }}>
@@ -193,7 +194,6 @@ const PurchaseOrderCatalog: React.FC = () => {
         <CatalogAddEditForm selectedProduct={selectedProduct} onSuccess={() => setVisible(false)} />
       </Sidebar>
 
-      {/* ✅ Multi Product Bulk Edit Sidebar */}
       <Sidebar
         visible={multiSidebarVisible}
         position="right"
@@ -205,12 +205,17 @@ const PurchaseOrderCatalog: React.FC = () => {
         }
         style={{ width: '50vw' }}
       >
-        <p className="mb-2 font-semibold">Selected Products:</p>
-        <ul className="pl-4 list-disc">
-          {selectedProducts.map((prod) => (
-            <li key={prod.DummyProductsID}>{prod.ProductName}</li>
-          ))}
-        </ul>
+        <BulkUpdateProductCatalog
+          selectedProducts={selectedProducts}
+          onSuccess={() => {
+            setMultiSidebarVisible(false)
+            fetchAllPurchaseOrderProducts().then((data) => {
+              setProducts(data)
+              filterProducts(selectedCategory, selectedSubCategory)
+            })
+            setSelectedProducts([])
+          }}
+        />
       </Sidebar>
     </div>
   )

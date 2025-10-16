@@ -122,7 +122,7 @@ export const fetchRoleType = async (): Promise<UserRoleTypes[]> => {
 
 export const saveUserRoles = async (payload: RolePermissionPayload): Promise<boolean> => {
   const response = await axios.post(
-    `${baseURL}/admin/user-roles/save`,   // <-- replace with actual backend endpoint
+    `${baseURL}/admin/settings/userRoles`,   
     payload,
     {
       headers: {

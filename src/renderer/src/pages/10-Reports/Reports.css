@@ -1,0 +1,41 @@
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.reportItem {
+  display: flex;
+  align-items: center;
+  padding: 15px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #6f1f5f;
+  font-weight: 600;
+  font-size: 16px;
+  border-left: 3px solid #6f1f5f;
+  border-bottom: 3px solid #6f1f5f;
+  /* background-color: #f0f0f0; */
+  border-top: 1px solid #6f1f5f;
+  border-right: 1px solid #6f1f5f;
+}
+
+.reportItemEMpty {
+  display: flex;
+  align-items: center;
+  padding: 15px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #6f1f5f;
+  font-weight: 600;
+  font-size: 16px;
+  border-left: 3px solid white;
+  border-bottom: 3px solid white;
+  /* background-color: #f0f0f0; */
+  border-top: 1px solid white;
+  border-right: 1px solid white;
+}

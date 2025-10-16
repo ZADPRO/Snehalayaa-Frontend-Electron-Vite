@@ -20,5 +20,5 @@ export interface AttributePayload {
 
 export interface dataType {
   AttributeGroupId: number
-  AttributeGroupName: string
+  attributeGroupName: string
 }

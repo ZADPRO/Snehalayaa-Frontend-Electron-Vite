@@ -1,4 +1,4 @@
-import axios from 'axios'
+import api from '../../../utils/api'
 import { Category } from './SettingsCategories.interface'
 import { baseURL } from '../../../utils/helper'
 import { saveAs } from 'file-saver'
@@ -6,13 +6,16 @@ import autoTable from 'jspdf-autotable'
 import jsPDF from 'jspdf'
 import * as XLSX from 'xlsx'
 
-export const fetchCategories = async (): Promise<Category[]> => {
-  const response = await axios.get(`${baseURL}/admin/settings/categories`, {
-    headers: {
-      Authorization: localStorage.getItem('token') || ''
-    }
-  })
+const getFormattedTimestamp = () => {
+  const now = new Date()
+  const date = now.toLocaleDateString('en-GB').replace(/\//g, '-') // 06-10-2025
+  const time = now.toTimeString().split(' ')[0].replace(/:/g, '-') // 17-23-45
+  return `${date}_${time}`
+}
 
+// Fetch all categories
+export const fetchCategories = async (): Promise<Category[]> => {
+  const response = await api.get(`${baseURL}/admin/settings/categories`)
   if (response.data?.status) {
     return response.data.data
   } else {
@@ -20,24 +23,39 @@ export const fetchCategories = async (): Promise<Category[]> => {
   }
 }
 
+// Delete a single category
 export const deleteCategory = async (
   categoryId: number,
   forceDelete: boolean = false
 ): Promise<any> => {
-  const token = localStorage.getItem('token') || ''
-  const url = `${baseURL}/admin/settings/categories/${categoryId}${forceDelete ? '?forceDelete=true' : ''}`
-
-  const response = await axios.delete(url, {
-    headers: { Authorization: token }
-  })
-  console.log('response', response)
+  const url = `${baseURL}/admin/settings/categories/${categoryId}${
+    forceDelete ? '?forceDelete=true' : ''
+  }`
+  const response = await api.delete(url)
   return response.data
 }
 
-export const exportCSV = (dtRef: React.RefObject<any>) => {
-  dtRef.current?.exportCSV()
+// Bulk delete categories
+export const bulkDeleteCategories = async (
+  categoryIds: number[],
+  forceDelete: boolean = false
+): Promise<any> => {
+  const response = await api.delete(`${baseURL}/admin/settings/categories`, {
+    data: {
+      categoryIds,
+      forceDelete
+    }
+  })
+  return response.data
 }
 
+// Export categories as CSV
+export const exportCSV = (dtRef: React.RefObject<any>) => {
+  const fileName = `categories_csv_${getFormattedTimestamp()}.csv`
+  dtRef.current?.exportCSV({ selectionOnly: false, filename: fileName })
+}
+
+// Export categories as PDF
 export const exportPdf = (categories: Category[]) => {
   const doc = new jsPDF()
   autoTable(doc, {
@@ -50,9 +68,12 @@ export const exportPdf = (categories: Category[]) => {
       item.isActive ? 'Active' : 'Inactive'
     ])
   })
-  doc.save('categories.pdf')
+
+  const fileName = `categories_pdf_${getFormattedTimestamp()}.pdf`
+  doc.save(fileName)
 }
 
+// Export categories as Excel
 export const exportExcel = (categories: Category[]) => {
   const worksheet = XLSX.utils.json_to_sheet(
     categories.map((item) => ({
@@ -69,21 +90,7 @@ export const exportExcel = (categories: Category[]) => {
   const blob = new Blob([excelBuffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
   })
-  saveAs(blob, `categories_export_${new Date().getTime()}.xlsx`)
-}
 
-export const bulkDeleteCategories = async (
-  categoryIds: number[],
-  forceDelete: boolean = false
-): Promise<any> => {
-  const token = localStorage.getItem('token') || ''
-  const response = await axios.delete(`${baseURL}/admin/settings/categories`, {
-    headers: { Authorization: token },
-    data: {
-      categoryIds,
-      forceDelete
-    }
-  })
-  console.log('response', response)
-  return response.data
+  const fileName = `categories_excel_${getFormattedTimestamp()}.xlsx`
+  saveAs(blob, fileName)
 }

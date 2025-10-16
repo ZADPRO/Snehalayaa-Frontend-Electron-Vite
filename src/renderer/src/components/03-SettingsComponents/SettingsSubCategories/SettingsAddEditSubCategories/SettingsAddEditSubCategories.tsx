@@ -131,10 +131,26 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
       onClose()
       reloadData()
     } catch (err: any) {
+      let errorMessage = 'Operation failed'
+
+      if (err.response) {
+        // Backend responded with a specific HTTP status
+        if (err.response.status === 409) {
+          errorMessage = 'Duplicate sub-category found. Please use a different name or code.'
+        } else if (err.response.status === 400) {
+          errorMessage = err.response.data?.message || 'Invalid request data.'
+        } else {
+          errorMessage = err.response.data?.message || err.message
+        }
+      } else {
+        // Network or unexpected error
+        errorMessage = err.message || 'Network error'
+      }
+
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: err.message || 'Operation failed',
+        detail: errorMessage,
         life: 3000
       })
     } finally {
@@ -205,7 +221,7 @@ const SettingsAddEditSubCategories: React.FC<SettingsAddEditSubCategoryProps> = 
           </div>
         </div>
 
-        <div className="flex justify-end mt-4">
+        <div className="fixed bottom-0 left-0 w-full shadow-md p-4 text-right z-10">
           <Button
             label={isEditMode ? 'Update' : 'Save'}
             icon={<Check />}

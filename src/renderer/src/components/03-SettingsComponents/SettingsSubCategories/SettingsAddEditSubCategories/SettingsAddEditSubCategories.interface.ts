@@ -7,8 +7,8 @@ export interface SubCategory {
   refSubCategoryId: number
   subCategoryCode: string
   subCategoryName: string
-  updatedAt: string 
-  updatedBy: string 
+  updatedAt: string
+  updatedBy: string
 }
 
 export interface Category {

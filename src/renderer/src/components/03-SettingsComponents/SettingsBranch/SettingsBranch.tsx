@@ -20,6 +20,7 @@ const SettingsBranch: React.FC = () => {
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
 
   const toast = useRef<Toast>(null)
   const dt = useRef<DataTable<Branch[]>>(null)
@@ -29,32 +30,27 @@ const SettingsBranch: React.FC = () => {
     pdf: false
   })
 
-  // const load = async () => {
-  //   try {
-  //     const data = await fetchBranch()
-  //     setBranch(data)
-  //   } catch (err: any) {
-  //     toast.current?.show({
-  //       severity: 'error',
-  //       summary: 'Error',
-  //       detail: err.message || 'Failed to load branch',
-  //       life: 3000
-  //     })
-  //   }
-  // }
-  // useEffect(() => {
-  //   load()
-  // }, [])
-
   const load = async () => {
-    const [branchData, categoryData, subCategoryData] = await Promise.all([
-      fetchBranch(),
-      fetchCategories(),
-      fetchSubCategories()
-    ])
-    setBranch(branchData)
-    setCategories(categoryData)
-    setSubCategories(subCategoryData)
+    setLoading(true)
+    try {
+      const [branchData, categoryData, subCategoryData] = await Promise.all([
+        fetchBranch(),
+        fetchCategories(),
+        fetchSubCategories()
+      ])
+      setBranch(branchData)
+      setCategories(categoryData)
+      setSubCategories(subCategoryData)
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message || 'Failed to load branches',
+        life: 3000
+      })
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => {
     load()
@@ -87,38 +83,6 @@ const SettingsBranch: React.FC = () => {
     }, 300)
   }
 
-  // const handleDelete = async () => {
-  //   if (!setSelectedBranch.length) return
-
-  //   const categoryToDelete = selectedBranch[0]
-  //   console.log('categoryToDelete', selectedBranch)
-  //   try {
-  //     const res = await deleteBranch(categoryToDelete.refBranchId)
-  //     if (res.status) {
-  //       toast.current?.show({
-  //         severity: 'success',
-  //         summary: 'Success',
-  //         detail: res.message
-  //       })
-  //       setSelectedBranch([])
-  //       load()
-  //     } else if (res.confirmationNeeded) {
-  //       toast.current?.show({
-  //         severity: 'warn',
-  //         summary: 'Needs Confirmation',
-  //         detail: res.message
-  //       })
-  //       // You can implement subcategory confirmation UI here if needed
-  //     }
-  //   } catch (err: any) {
-  //     toast.current?.show({
-  //       severity: 'error',
-  //       summary: 'Error',
-  //       detail: err.message || 'Failed to delete'
-  //     })
-  //   }
-  // }
-
   const isSingleSelected = selectedBranch.length === 1
   const isAnySelected = selectedBranch.length > 0
 
@@ -140,14 +104,6 @@ const SettingsBranch: React.FC = () => {
         disabled={!isSingleSelected}
         onClick={() => setVisibleRight(true)}
       />
-      {/* <Button
-        icon={<Trash2 size={16} strokeWidth={2} />}
-        severity="danger"
-        tooltip="Delete Branch"
-        tooltipOptions={{ position: 'left' }}
-        disabled={!isAnySelected}
-        onClick={handleDelete}
-      /> */}
     </div>
   )
 
@@ -201,6 +157,7 @@ const SettingsBranch: React.FC = () => {
         showGridlines
         stripedRows
         rows={10}
+        loading={loading}
         rowsPerPageOptions={[5, 10, 20]}
         responsiveLayout="scroll"
       >
@@ -233,7 +190,10 @@ const SettingsBranch: React.FC = () => {
           selectedBranches={selectedBranches}
           categories={categories}
           subCategories={subCategories}
-          onClose={() => setVisibleRight(false)}
+          onClose={() => {
+            setVisibleRight(false)
+            setSelectedBranch([])
+          }}
           reloadData={load}
         />
       </Sidebar>

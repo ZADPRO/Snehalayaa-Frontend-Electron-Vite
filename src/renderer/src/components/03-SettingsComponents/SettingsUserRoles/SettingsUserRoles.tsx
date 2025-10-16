@@ -1,6 +1,5 @@
-import { FileSpreadsheet, Pencil, Plus, Search } from 'lucide-react'
+import { FileSpreadsheet, Pencil, Plus } from 'lucide-react'
 import { Button } from 'primereact/button'
-import { InputText } from 'primereact/inputtext'
 import { Toolbar } from 'primereact/toolbar'
 import { Tooltip } from 'primereact/tooltip'
 import React, { useEffect, useRef, useState } from 'react'
@@ -14,7 +13,7 @@ import SettingsAddEditUserRoles from './SettingsAddEditUserRoles/SettingsAddEdit
 
 const SettingsUserRoles: React.FC = () => {
   const [userRoles, setUserRoles] = useState<UserRoles[]>([])
-  const [selectedUserRoles, setSelectedUserRoles] = useState<UserRoles[]>([])
+  const [_selectedUserRoles, setSelectedUserRoles] = useState<UserRoles[]>([])
   const [visibleRight, setVisibleRight] = useState(false)
 
   const [exportLoading, setExportLoading] = useState({
@@ -47,7 +46,10 @@ const SettingsUserRoles: React.FC = () => {
       <Button
         icon={<Pencil size={16} />}
         className="p-button-rounded p-button-text p-button-warning"
-        onClick={() => console.log('Edit', rowData)}
+   onClick={() => {
+          setSelectedUserRoles(rowData)   // set selected role
+          setVisibleRight(true)      // open sidebar
+        }}        
       />
     )
   }
@@ -63,8 +65,12 @@ const SettingsUserRoles: React.FC = () => {
   const leftToolbarTemplate = () => (
     <div className="flex gap-2">
       <div className="custom-icon-field">
-        <Search className="lucide-search-icon" size={18} />
-        <InputText placeholder="Search" className="search-input" />
+        <Button
+          icon={<Plus size={16} strokeWidth={2} />}
+          tooltip="Add New Role"
+          tooltipOptions={{ position: 'left' }}
+          onClick={() => setVisibleRight(true)}
+        />
       </div>
     </div>
   )
@@ -80,12 +86,6 @@ const SettingsUserRoles: React.FC = () => {
         loading={exportLoading.excel}
         disabled={exportLoading.excel}
       />
-      <Button
-        icon={<Plus size={16} strokeWidth={2} />}
-        tooltip="Add New Role"
-        tooltipOptions={{ position: 'left' }}
-        onClick={() => setVisibleRight(true)}
-      />{' '}
     </div>
   )
 
@@ -99,10 +99,10 @@ const SettingsUserRoles: React.FC = () => {
         ref={dt}
         id="Suppliers-table"
         value={userRoles}
-        selection={selectedUserRoles}
-        onSelectionChange={(e) => setSelectedUserRoles(e.value as UserRoles[])}
+        // selection={selectedUserRoles}
+        // onSelectionChange={(e) => setSelectedUserRoles(e.value as UserRoles[])}
         dataKey="supplierId"
-        selectionMode="multiple"
+        // selectionMode="multiple"
         paginator
         showGridlines
         stripedRows
@@ -127,7 +127,7 @@ const SettingsUserRoles: React.FC = () => {
         onHide={() => setVisibleRight(false)}
         style={{ width: '50%' }}
       >
-        <SettingsAddEditUserRoles/>
+        <SettingsAddEditUserRoles />
       </Sidebar>
     </div>
   )

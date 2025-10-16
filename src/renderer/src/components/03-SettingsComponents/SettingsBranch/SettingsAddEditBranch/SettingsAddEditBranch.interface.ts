@@ -36,10 +36,9 @@ export interface BranchFormData {
 export interface Section {
   sectionName: string
   sectionCode: string
-  categoryId: any
-  refSubCategoryId: any
+  categoryId: number
+  refSubCategoryId: number
 }
-
 
 export interface Floor {
   floorName: string

@@ -41,16 +41,31 @@ export interface Supplier {
   supplierUPI: string
   updatedAt: string
   updatedBy: string
+  creditedDays: number
 }
 
 export interface Category {
   refCategoryId: number
   categoryName: string
+  categoryCode: string
+  profitMargin: any
+  isActive: boolean
+  isDelete: boolean
+  createdAt: string
+  createdBy: string
+  updatedAt?: string
+  updatedBy?: string
 }
 
 export interface SubCategory {
-  refSubCategoryId: number
-  subCategoryName: string
-  refCategoryId: number
+  createdAt: string
+  createdBy: string
+  isActive: boolean
   isDelete: boolean
+  refCategoryId: any
+  refSubCategoryId: number
+  subCategoryCode: string
+  subCategoryName: string
+  updatedAt: string
+  updatedBy: string
 }

@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { PurchaseOrder } from './InventoryStockTransfer.interface'
 import { fetchCategories, generateInvoicePdf } from './InventoryStockTransfer.function'
 import { InvoiceProps } from '../../05-PurchaseOrderComponents/PurchaseOrderCreation/PurchaseOrderInvoice/PurchaseOrderInvoice.interface'
-import logo from '../../../assets/logo/invoice.png'
+import logo from '../../../assets/logo/transparentLogo01.png'
 import { Sidebar } from 'primereact/sidebar'
 import InventoryAddEditStockTransfer from './InventoryAddEditStockTransfer/InventoryAddEditStockTransfer'
 
@@ -72,7 +72,7 @@ const InventoryStockTransfer: React.FC = () => {
         .map((item) => ({
           category: `Category ${item.refCategoryid}`,
           subCategory: `SubCategory ${item.refSubCategoryId}`,
-          productName: item.productName,
+          productDescription: item.productName,
           hsnCode: item.HSNCode,
           quantity: Number(item.purchaseQuantity) || 0,
           purchasePrice: Number(item.purchasePrice) || 0,
@@ -138,33 +138,33 @@ const InventoryStockTransfer: React.FC = () => {
         })
       })
   }
-const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') => {
-  try {
-    if (action === 'print') {
-      setExportLoading((prev) => ({ ...prev, print: true }))
-    }
-    const invoiceProps = mapToInvoiceProps(po)
-    const logoBase64 = await getBase64FromImage(logo)
+  const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') => {
+    try {
+      if (action === 'print') {
+        setExportLoading((prev) => ({ ...prev, print: true }))
+      }
+      const invoiceProps = mapToInvoiceProps(po)
+      const logoBase64 = await getBase64FromImage(logo)
 
-    await generateInvoicePdf({
-      ...invoiceProps,
-      invoiceNo: po.totalSummary.poNumber,
-      action,
-      logoBase64
-    })
-  } catch (error) {
-    toast.current?.show({
-      severity: 'error',
-      summary: 'Error',
-      detail: (error as Error).message,
-      life: 3000
-    })
-  } finally {
-    if (action === 'print') {
-      setExportLoading((prev) => ({ ...prev, print: false }))
+      await generateInvoicePdf({
+        ...invoiceProps,
+        invoiceNo: po.totalSummary.poNumber,
+        action,
+        logoBase64
+      })
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: (error as Error).message,
+        life: 3000
+      })
+    } finally {
+      if (action === 'print') {
+        setExportLoading((prev) => ({ ...prev, print: false }))
+      }
     }
   }
-}
 
   const actionColumn = (rowData: PurchaseOrder) => {
     return (
@@ -218,7 +218,7 @@ const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') =>
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
         <Column
           field="totalSummary.poNumber"
-          header="PO Number"
+          header="Stock Transfer"
           body={(rowData) => (
             <span
               className="cursor-pointer font-bold underline"
@@ -242,7 +242,7 @@ const handleInvoice = async (po: PurchaseOrder, action: 'print' | 'download') =>
         <Column field="totalSummary.createdAt" header="Created At" />
         <Column header="Actions" body={actionColumn} />
       </DataTable>
-       <Sidebar
+      <Sidebar
         visible={visibleRight}
         position="right"
         header={

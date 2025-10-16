@@ -469,7 +469,7 @@ const AddNewStockProductOrder: React.FC = () => {
           <Column field="subTotal" header="Total" /> */}
         </DataTable>
       </div>
-      <Divider layout="vertical" />
+      <Divider layout="vertical" className="verticalDivider" />
       <div style={{ width: '17%' }} className="flex flex-column justify-content-between">
         <div className="flex flex-column gap-1">
           <Button

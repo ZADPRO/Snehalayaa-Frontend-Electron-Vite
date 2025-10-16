@@ -93,3 +93,13 @@ export interface TableRow extends Product {
 export interface ViewPurchaseOrderProductsProps {
   rowData: PurchaseOrder
 }
+
+
+export interface PurchaseReturnPayload {
+  refCategoryId: number
+  refsubCategoryId: number
+  returned: number
+  remaining:number
+  itemMisMatchedCount: number
+  itemMissedCount: number
+}

@@ -17,6 +17,14 @@ import { generateInvoicePdf } from '../PurchaseOrderCreation/PurchaseOrderInvoic
 import { InvoiceProps } from '../PurchaseOrderCreation/PurchaseOrderInvoice/PurchaseOrderInvoice.interface'
 
 import logo from '../../../assets/logo/invoice.png'
+import { Calendar } from 'primereact/calendar'
+import { Nullable } from 'primereact/ts-helpers'
+import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown'
+
+interface City {
+  name: string
+  code: string
+}
 
 const PurchaseOrderList: React.FC = () => {
   const toast = useRef<Toast>(null)
@@ -31,6 +39,14 @@ const PurchaseOrderList: React.FC = () => {
     excel: false,
     pdf: false
   })
+
+  const [fromDate, setFromDate] = useState<Nullable<Date>>(null)
+  const [toDate, setToDate] = useState<Nullable<Date>>(null)
+  const [selectedCity, setSelectedCity] = useState<City | null>(null)
+  const cities: City[] = [
+    { name: 'Open', code: 'open' },
+    { name: 'Closed', code: 'close' }
+  ]
 
   const handleExportCSV = () => {
     setExportLoading((prev) => ({ ...prev, csv: true }))
@@ -58,29 +74,34 @@ const PurchaseOrderList: React.FC = () => {
 
   const leftToolbarTemplate = () => (
     <div className="flex gap-2">
-      {/* <Button
-        icon={<Plus size={16} strokeWidth={2} />}
-        severity="success"
-        tooltip="Add Category"
-        tooltipOptions={{ position: 'left' }}
-        onClick={() => setVisibleRight(true)}
+      <div className="flex-auto">
+        <Calendar
+          id="buttondisplay"
+          placeholder="From date"
+          value={fromDate}
+          dateFormat="dd/mm/yy"
+          onChange={(e) => setFromDate(e.value)}
+          showIcon
+        />
+      </div>
+      <div className="flex-auto">
+        <Calendar
+          id="buttondisplay"
+          placeholder="To date"
+          value={toDate}
+          dateFormat="dd/mm/yy"
+          onChange={(e) => setToDate(e.value)}
+          showIcon
+        />
+      </div>
+      <Dropdown
+        value={selectedCity}
+        onChange={(e: DropdownChangeEvent) => setSelectedCity(e.value)}
+        options={cities}
+        optionLabel="name"
+        placeholder="Select Status"
+        className="w-full md:w-14rem"
       />
-      <Button
-        icon={<Pencil size={16} strokeWidth={2} />}
-        severity="info"
-        tooltip="Edit Category"
-        tooltipOptions={{ position: 'left' }}
-        disabled={!isSingleSelected}
-        onClick={() => setVisibleRight(true)}
-      />
-      <Button
-        icon={<Trash2 size={16} strokeWidth={2} />}
-        severity="danger"
-        tooltip="Delete Categories"
-        tooltipOptions={{ position: 'left' }}
-        disabled={!isAnySelected}
-        // onClick={handleDelete}
-      /> */}
     </div>
   )
 
@@ -104,7 +125,7 @@ const PurchaseOrderList: React.FC = () => {
         .map((item) => ({
           category: `Category ${item.refCategoryid}`,
           subCategory: `SubCategory ${item.refSubCategoryId}`,
-          productName: item.productName,
+          productDescription: item.productDescription,
           hsnCode: item.HSNCode,
           quantity: Number(item.purchaseQuantity) || 0,
           purchasePrice: Number(item.purchasePrice) || 0,
@@ -248,7 +269,7 @@ const PurchaseOrderList: React.FC = () => {
             </span>
           )}
         />
-        <Column field="supplierDetails.supplierName" header="Supplier" sortable />
+        <Column field="supplierDetails.supplierName" header="Supplier" filter sortable />
         <Column field="branchDetails.branchName" header="Branch" sortable />
         <Column
           field="totalSummary.status"

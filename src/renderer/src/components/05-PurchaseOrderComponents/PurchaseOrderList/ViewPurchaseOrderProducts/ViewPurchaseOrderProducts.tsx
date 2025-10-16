@@ -4,7 +4,6 @@ import { Column } from 'primereact/column'
 import { Button } from 'primereact/button'
 import { Dialog } from 'primereact/dialog'
 import { RadioButton } from 'primereact/radiobutton'
-import { Dropdown } from 'primereact/dropdown'
 import { Check, X, Undo2 } from 'lucide-react'
 import {
   fetchDummyProductsByPOId,
@@ -12,13 +11,22 @@ import {
   bulkAcceptDummyProducts,
   bulkRejectDummyProducts,
   fetchSubCategories,
-  fetchCategories
+  fetchCategories,
+  // createPurchaseReturn
   // bulkUndoDummyProducts
 } from './ViewPurchaseOrderProducts.function'
 
-import { ViewPurchaseOrderProductsProps, TableRow } from './ViewPurchaseOrderProducts.interface'
+import {
+  ViewPurchaseOrderProductsProps,
+  TableRow,
+  // PurchaseReturnPayload
+} from './ViewPurchaseOrderProducts.interface'
+import { InputNumber } from 'primereact/inputnumber'
+import { Toast } from 'primereact/toast'
+import { MultiSelect } from 'primereact/multiselect'
 
 const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ rowData }) => {
+  console.log('rowData', rowData)
   const [categoryMap, setCategoryMap] = useState<Record<number, string>>({})
   const [subCategoryMap, setSubCategoryMap] = useState<Record<number, string>>({})
 
@@ -27,11 +35,28 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
   const [rejectionDialog, setRejectionDialog] = useState(false)
   const [rejectionReason, setRejectionReason] = useState<'Mismatch' | 'Missing'>('Mismatch')
   const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null)
+  const toast = React.useRef<Toast>(null)
 
   const [isDropdownDataLoaded, setIsDropdownDataLoaded] = useState(false)
 
-  const [filterCategory, setFilterCategory] = useState<number | null>(null)
-  const [filterSubcategory, setFilterSubcategory] = useState<number | null>(null)
+  const [filterCategory, setFilterCategory] = useState<number[]>([])
+  const [filterSubcategory, setFilterSubcategory] = useState<number[]>([])
+
+  const [returnDialog, setReturnDialog] = useState(false)
+  const [returnRow, setReturnRow] = useState<any | null>(null)
+  setReturnRow(3)
+  const [returned, setReturned] = useState<number>(0)
+  setReturned(0)
+  const [remaining, setRemaining] = useState<number>(0)
+  setRemaining(0)
+  const [mismatchedCount, setMismatchedCount] = useState<number>(0)
+  const [missedCount, setMissedCount] = useState<number>(0)
+  // handle when user types returned qty
+  // const handleReturnedChange = (value: string, purchaseQuantity: number) => {
+  //   const num = parseInt(value) || 0
+  //   setReturned(num)
+  //   setRemaining(Math.max(purchaseQuantity - num, 0)) // prevent negative
+  // }
 
   // Construct rows on mount/update
   useEffect(() => {
@@ -228,37 +253,44 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
   // Filters
   const filterDropdown = () => (
     <div className="flex gap-3 mb-1">
-      <Dropdown
+      <MultiSelect
         value={filterCategory}
         options={Object.entries(categoryMap).map(([value, label]) => ({
           label,
           value: Number(value)
         }))}
         placeholder="Filter by Category"
-        onChange={(e) => setFilterCategory(e.value)}
+        onChange={(e) => setFilterCategory(e.value || [])}
+        display="chip"
         showClear
+        filter
+        className="w-20rem"
       />
-      <Dropdown
+      <MultiSelect
         value={filterSubcategory}
         options={Object.entries(subCategoryMap).map(([value, label]) => ({
           label,
           value: Number(value)
         }))}
         placeholder="Filter by Subcategory"
-        onChange={(e) => setFilterSubcategory(e.value)}
+        onChange={(e) => setFilterSubcategory(e.value || [])}
+        display="chip"
         showClear
+        filter
+        className="w-20rem"
       />
     </div>
   )
-
   // Filtered rows
-  const filteredRows = rows.filter((row) => {
-    console.log('row', row)
-    const categoryMatch = filterCategory === null || row.refCategoryid === filterCategory
-    const subcategoryMatch =
-      filterSubcategory === null || row.refSubCategoryId === filterSubcategory
-    return categoryMatch && subcategoryMatch
-  })
+  const filteredRows = React.useMemo(() => {
+    return rows.filter((row) => {
+      const categoryMatch =
+        filterCategory.length === 0 || filterCategory.includes(Number(row.refCategoryid))
+      const subcategoryMatch =
+        filterSubcategory.length === 0 || filterSubcategory.includes(Number(row.refSubCategoryId))
+      return categoryMatch && subcategoryMatch
+    })
+  }, [rows, filterCategory, filterSubcategory])
 
   const summaryHeader = () => {
     const totalQuantity = rowData.productDetails.reduce(
@@ -288,9 +320,37 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
     )
   }
 
+  // const handleSubmit = async () => {
+  //   const payload: PurchaseReturnPayload = {
+  //     refCategoryId: rowData.productDetails[0].refCategoryid,
+  //     refsubCategoryId: rowData.productDetails[0].refSubCategoryId,
+  //     remaining: remaining,
+  //     returned: returned,
+  //     itemMisMatchedCount: mismatchedCount,
+  //     itemMissedCount: missedCount
+  //   }
+
+  //   try {
+  //     const res = await createPurchaseReturn(payload)
+  //     console.log('Purchase return created successfully:', res)
+  //     toast.current?.show({
+  //       severity: 'success',
+  //       summary: 'Success',
+  //       detail: 'Purchase return created successfully'
+  //     })
+  //   } catch (err: any) {
+  //     toast.current?.show({
+  //       severity: 'error',
+  //       summary: 'Error',
+  //       detail: err.message || 'Failed to create purchase return'
+  //     })
+  //   }
+  // }
   return (
     <div className="card">
       {summaryHeader()}
+      <Toast ref={toast} />
+
       <div className="flex gap-2 align-items-center justify-content-between">
         {filterDropdown()}
 
@@ -385,6 +445,77 @@ const ViewPurchaseOrderProducts: React.FC<ViewPurchaseOrderProductsProps> = ({ r
             <label htmlFor="missing" className="ml-2">
               Item Missed
             </label>
+          </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        header="Return Details"
+        visible={returnDialog}
+        onHide={() => setReturnDialog(false)}
+        footer={
+          <div>
+            <Button
+              label="Cancel"
+              style={{ backgroundColor: 'gray', borderColor: 'gray' }}
+              onClick={() => setReturnDialog(false)}
+            />
+            <Button
+              label="Confirm"
+              onClick={() => {
+                if (mismatchedCount + missedCount !== returned) {
+                  toast.current?.show({
+                    severity: 'error',
+                    summary: 'Validation Error',
+                    detail: `Total must equal ${returned}`
+                  })
+                  return
+                }
+
+                console.log('Confirmed Return:', {
+                  category: returnRow?.categoryName,
+                  subCategory: returnRow?.subCategoryName,
+                  returned,
+                  remaining,
+                  mismatchedCount,
+                  missedCount
+                })
+                setReturnDialog(false)
+              }}
+            />
+          </div>
+        }
+      >
+        <p>
+          You are returning <strong>{returned}</strong> of <strong>{returnRow?.productName}</strong>
+          . Remaining: <strong>{remaining}</strong>
+        </p>
+
+        {/* Item Mismatched Count */}
+        <div className="flex gap-2 mt-3">
+          <div className="flex-1">
+            <strong>Item Mismatched Count:</strong>
+          </div>
+          <div className="flex-1">
+            <InputNumber
+              value={mismatchedCount}
+              onValueChange={(e) => setMismatchedCount(e.value || 0)}
+              inputClassName="square-input"
+            />
+          </div>
+        </div>
+
+        {/* Item Missed Count */}
+        <div className="flex gap-2 mt-3">
+          <div className="flex-1">
+            <strong>Item Missed Count:</strong>
+          </div>
+          <div className="flex-1">
+            <InputNumber
+              value={missedCount}
+              onValueChange={(e) => setMissedCount(e.value || 0)}
+              inputClassName="square-input"
+            />
           </div>
         </div>
       </Dialog>

@@ -1,19 +1,28 @@
 export interface Employee {
   RefUserId: number
-  designation: string
-  doorNumber: string
-  email: string
-  firstName: string
-  lastName: string
-  mobile: string
-  refUserStatus: any // keep this as string, e.g. "Active" or "Inactive"
-  roleTypeId: number
-  state: string
-  streetName: string
-  username: string
-  branchId: number
-  city: string
   RefUserCustId: string
+  RefUserFName: string
+  RefUserLName: string
+  RefUserDesignation: string
+  RefUserStatus: string
+  RefRTId: number
+  RefUserBranchId: number
+  username: string
+  email: string
+  mobile: string
+  role: string
+
+  doorNumber: string
+  streetName: string
+  city: string
+  state: string
+  branch: string
+
+  CreatedAt: string
+  CreatedBy: string
+  UpdatedAt: string
+  UpdatedBy: string
+  isDelete: boolean
 }
 
 export interface EmployeeStatusOptions {

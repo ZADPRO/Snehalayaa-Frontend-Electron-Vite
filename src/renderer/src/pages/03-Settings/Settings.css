@@ -35,7 +35,7 @@
   transition: all 0.2s ease-in-out;
   color: #444;
   font-weight: 500;
-  border-right: 3px solid transparent;
+  border-left: 3px solid transparent;
 }
 
 .sidebarItem:hover {
@@ -46,7 +46,7 @@
   background-color: #f0d6eb; /* light shade blend of #6f1f5f */
   color: #6f1f5f;
   margin: 0;
-  border-right: 3px solid #6f1f5f;
+  border-left: 3px solid #6f1f5f;
 }
 
 /* Icon styling */

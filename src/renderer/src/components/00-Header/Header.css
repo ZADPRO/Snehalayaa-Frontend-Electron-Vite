@@ -60,7 +60,7 @@
 }
 
 .icon {
-  font-size: 1.4rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
 }
@@ -92,7 +92,7 @@
 .p-password.p-component.p-inputwrapper.p-input-icon-right
   .p-icon-field.p-icon-field-right
   .p-input-icon {
-  margin-top: -13px !important;
+  /* margin-top: -13px !important; */
 }
 
 .logo_image {

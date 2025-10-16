@@ -1,4 +1,4 @@
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { EyeClosed, Pencil, Plus } from 'lucide-react'
 import { Button } from 'primereact/button'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
@@ -13,7 +13,12 @@ import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { InputSwitch } from 'primereact/inputswitch'
-import { fetchAttribute, fetchDataType, saveAttributeAPI } from './SettingsAttribute.function'
+import {
+  deleteAttributeAPI,
+  fetchAttribute,
+  fetchDataType,
+  saveAttributeAPI
+} from './SettingsAttribute.function'
 import { FileUpload } from 'primereact/fileupload'
 
 const SettingsAttribute: React.FC = () => {
@@ -80,8 +85,9 @@ const SettingsAttribute: React.FC = () => {
 
   // Render input based on selected data type
   const renderPreviewInput = () => {
-    console.log('selectedDataType?.dataType', selectedDataType?.AttributeGroupName)
-    switch (selectedDataType?.AttributeGroupName) {
+    console.log('selectedDataType', selectedDataType)
+    console.log('selectedDataType?.dataType', selectedDataType?.attributeGroupName)
+    switch (selectedDataType?.attributeGroupName) {
       case 'NUMBER':
         return (
           <InputText
@@ -152,17 +158,32 @@ const SettingsAttribute: React.FC = () => {
     }
   }
 
-  const onDeleteClick = () => {
+  const onDeleteClick = async () => {
     if (isAnySelected) {
-      const idsToDelete = selectedAttributes.map((a) => a.AttributeId)
-      setAttributes((prev) => prev.filter((a) => !idsToDelete.includes(a.AttributeId)))
-      setSelectedAttributes([])
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Deleted',
-        detail: 'Selected attribute(s) deleted',
-        life: 3000
-      })
+      try {
+        const attributeToDelete = selectedAttributes[0]
+
+        const res = await deleteAttributeAPI(attributeToDelete.AttributeId)
+
+        setAttributes((prev) => prev.filter((a) => a.AttributeId !== attributeToDelete.AttributeId))
+        setSelectedAttributes([])
+
+        if (res.status) {
+          toast.current?.show({
+            severity: 'success',
+            summary: 'Success',
+            detail: res.message || 'Attribute deleted successfully',
+            life: 3000
+          })
+        }
+      } catch (error: any) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: error.message || 'Failed to delete attribute',
+          life: 3000
+        })
+      }
     }
   }
 
@@ -237,6 +258,11 @@ const SettingsAttribute: React.FC = () => {
   }
 
   useEffect(() => {
+    if (isSingleSelected) {
+      console.log('selectedAttributes', selectedAttributes)
+      setSelectedDataType(selectedAttributes[0])
+    }
+
     if (nameInput && selectedDataType) {
       setPreviewVisible(true)
     } else {
@@ -247,7 +273,7 @@ const SettingsAttribute: React.FC = () => {
   return (
     <div>
       <div className="mt-0">
-        <h3 className="mt-0 font-semibold">Products</h3>
+        <h3 className="mt-0 font-semibold">Product Attributes</h3>
       </div>
       <Toast ref={toast} />
       <Toolbar
@@ -271,8 +297,8 @@ const SettingsAttribute: React.FC = () => {
               onClick={onEditClick}
             />
             <Button
-              icon={<Trash2 size={16} strokeWidth={2} />}
-              severity="danger"
+              icon={<EyeClosed size={16} strokeWidth={2} />}
+              // severity="danger"
               tooltip="Delete Attribute"
               tooltipOptions={{ position: 'left' }}
               disabled={!isAnySelected}
@@ -303,6 +329,18 @@ const SettingsAttribute: React.FC = () => {
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
         <Column field="AttributeValue" header="Name" sortable />
         <Column field="attributeGroupName" header="Data Type" sortable />
+        {/* <Column
+          field="isDelete"
+          header="Visibility"
+          body={(rowData) => {
+            console.log('rowData', rowData)
+            rowData.isDelete ? (
+              <span className="text-red-500">Hidden</span>
+            ) : (
+              <span className="text-green-500">Visible</span>
+            )
+          }}
+        /> */}
       </DataTable>
       <Sidebar
         visible={visibleRight}
@@ -317,7 +355,7 @@ const SettingsAttribute: React.FC = () => {
         }}
         style={{ width: '50vw' }}
       >
-        <div className="p-4 gap-4">
+        <div className="py-2 gap-4">
           <div className="flex gap-3">
             <div className="flex-1">
               <FloatLabel className="always-float">

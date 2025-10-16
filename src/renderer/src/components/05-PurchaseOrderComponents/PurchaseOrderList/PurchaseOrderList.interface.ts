@@ -18,6 +18,7 @@ export interface BranchDetails {
 
 export interface ProductDetails {
   productName: string
+  productDescription: string
   refCategoryid: number
   refSubCategoryId: number
   HSNCode: string

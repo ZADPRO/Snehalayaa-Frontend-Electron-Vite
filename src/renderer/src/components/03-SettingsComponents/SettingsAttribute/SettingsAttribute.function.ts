@@ -1,16 +1,8 @@
-import axios from 'axios'
-import { baseURL } from '../../../utils/helper'
+import api from '../../../utils/api'
 import { Attribute, AttributePayload, dataType } from './SettingsAttribute.interface'
 
-
-
 export const saveAttributeAPI = async (payload: AttributePayload) => {
-  const response = await axios.post(`${baseURL}/admin/settings/attributes`, payload, {
-    headers: {
-      Authorization: localStorage.getItem('token') || ''
-    }
-  })
-
+  const response = await api.post(`/admin/settings/attributes`, payload)
   if (response.data?.status) {
     return response.data.data
   } else {
@@ -18,14 +10,8 @@ export const saveAttributeAPI = async (payload: AttributePayload) => {
   }
 }
 
-
 export const fetchDataType = async (): Promise<dataType[]> => {
-  const response = await axios.get(`${baseURL}/admin/settings/attributesDataType`, {
-    headers: {
-      Authorization: localStorage.getItem('token') || ''
-    }
-  })
-
+  const response = await api.get(`/admin/settings/attributesDataType`)
   console.log('response', response)
   if (response.data?.status) {
     return response.data.data
@@ -35,32 +21,36 @@ export const fetchDataType = async (): Promise<dataType[]> => {
 }
 
 export const fetchAttribute = async (): Promise<Attribute[]> => {
-  const response = await axios.get(`${baseURL}/admin/settings/attributes`, {
-    headers: {
-      Authorization: localStorage.getItem('token') || ''
-    }
-  })
-
+  const response = await api.get(`/admin/settings/attributes`)
   console.log('response', response)
   if (response.data?.status) {
+    console.log('response', response)
     return response.data.data
   } else {
-    throw new Error(response.data.message || 'Failed to fetch dataType')
+    throw new Error(response.data.message || 'Failed to fetch attributes')
   }
 }
 
 export const updateAttributeAPI = async (payload: AttributePayload) => {
   try {
-    const response = await axios.put(`${baseURL}/admin/settings/attributes`, payload, {
-      headers: {
-        Authorization: localStorage.getItem('token') || ''
-      }
-    })
-
+    const response = await api.put(`/admin/settings/attributes`, payload)
     if (response.data?.status) {
       return response.data.data
     } else {
       throw new Error(response.data.message || 'Failed to update attribute')
+    }
+  } catch (error: any) {
+    throw new Error(error.message || 'API request failed')
+  }
+}
+
+export const deleteAttributeAPI = async (attributeId: number) => {
+  try {
+    const response = await api.post(`/admin/settings/attributesHide`, { attributeId })
+    if (response.data?.status) {
+      return response.data.data
+    } else {
+      throw new Error(response.data.message || 'Failed to delete attribute')
     }
   } catch (error: any) {
     throw new Error(error.message || 'API request failed')

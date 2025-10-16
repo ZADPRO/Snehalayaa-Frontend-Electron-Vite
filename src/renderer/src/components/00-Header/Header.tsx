@@ -2,8 +2,8 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import './Header.css'
 
 import {
-  BellRing,
   CircleUserRound,
+  FileStack,
   LayoutGrid,
   LogOut,
   PackageSearch,
@@ -36,10 +36,15 @@ const topRoutes = [
     name: 'POS',
     icon: <ShoppingBag />
   },
+  // {
+  //   path: '/notifications',
+  //   name: 'Notifications',
+  //   icon: <BellRing />
+  // },
   {
-    path: '/notifications',
-    name: 'Notifications',
-    icon: <BellRing />
+    path: '/reports',
+    name: 'Reports',
+    icon: <FileStack />
   }
 ]
 
@@ -138,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
               </div>
             </div>
 
-            <main style={{ width: isOpen ? '85vw' : '97vw', marginLeft: '75px' }}>{children}</main>
+            <main style={{ width: isOpen ? '85vw' : '95vw', marginLeft: '75px' }}>{children}</main>
           </>
         )}
         {hideSidebarPaths.includes(location.pathname) && (
