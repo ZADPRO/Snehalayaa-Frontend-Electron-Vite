@@ -5,11 +5,10 @@ import { Tooltip } from 'primereact/tooltip'
 import { Toast } from 'primereact/toast'
 import { Button } from 'primereact/button'
 import bwipjs from 'bwip-js'
-import jsPDF from 'jspdf'
 import { ProgressSpinner } from 'primereact/progressspinner'
 
-const LABEL_WIDTH = 60
-const LABEL_HEIGHT = 30
+const LABEL_WIDTH = 60 // mm
+const LABEL_HEIGHT = 30 // mm
 
 interface SimplifiedPurchaseOrderProduct {
   DummyProductsID: number
@@ -33,85 +32,118 @@ const BarcodeCreation: React.FC = () => {
     },
     {
       DummyProductsID: 2,
-      name: 'Red Saree',
-      hsnCode: '987654',
+      name: 'Blue Saree',
+      hsnCode: '987655',
       sku: 'SS102500002',
-      price: '3000',
+      price: '3500',
       status: 'Created'
     },
     {
       DummyProductsID: 3,
-      name: 'Red Saree',
-      hsnCode: '987654',
+      name: 'Green Saree',
+      hsnCode: '987656',
       sku: 'SS102500003',
-      price: '3000',
+      price: '3200',
       status: 'Created'
     }
-    // You can add more static products here
   ])
   const [selectedRows, setSelectedRows] = useState<SimplifiedPurchaseOrderProduct[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
 
-  const handlePrint = async () => {
-    if (!selectedRows.length) return
-    setIsGenerating(true)
-
-    try {
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: [LABEL_WIDTH, LABEL_HEIGHT]
-      })
-
-      for (let i = 0; i < selectedRows.length; i++) {
-        const p = selectedRows[i]
-        const canvas = document.createElement('canvas')
-
-        await (bwipjs as any).toCanvas(canvas, {
+  // Generate Barcode DataURL
+  const generateBarcodeDataURL = async (sku: string) => {
+    return new Promise<string>((resolve, reject) => {
+      const canvas = document.createElement('canvas')
+      try {
+        ;(bwipjs as any).toCanvas(canvas, {
           bcid: 'code128',
-          text: p.sku,
+          text: sku,
           scale: 2,
           height: 15,
           includetext: false,
           backgroundcolor: 'FFFFFF'
         })
+        resolve(canvas.toDataURL('image/png'))
+      } catch (err) {
+        reject(err)
+      }
+    })
+  }
 
-        const imgData = canvas.toDataURL('image/png')
-        const centerX = LABEL_WIDTH / 2
-
-        pdf.setFontSize(8)
-        pdf.text(p.name, centerX, 6, { align: 'center' })
-
-        const barcodeWidth = 50
-        const barcodeHeight = 15
-        pdf.addImage(imgData, 'PNG', centerX - barcodeWidth / 2, 10, barcodeWidth, barcodeHeight)
-
-        pdf.setFontSize(7)
-        pdf.text(`SKU: ${p.sku}`, centerX, 27, { align: 'center' })
-
-        const formattedPrice = `₹ ${parseFloat(p.price).toFixed(2)}`
-        pdf.setFontSize(7)
-        pdf.text(formattedPrice, centerX, 29, { align: 'center' })
-
-        if (i !== selectedRows.length - 1) {
-          pdf.addPage([LABEL_WIDTH, LABEL_HEIGHT], 'portrait')
-        }
+  const printLabels = async () => {
+    if (!selectedRows.length) return
+    setIsGenerating(true)
+    try {
+      // Generate barcode images
+      const barcodeImages: Record<string, string> = {}
+      for (const p of selectedRows) {
+        barcodeImages[p.sku] = await generateBarcodeDataURL(p.sku)
       }
 
-      const blob = pdf.output('blob')
-      const url = URL.createObjectURL(blob)
-      const iframe = document.createElement('iframe')
-      iframe.style.display = 'none'
-      iframe.src = url
-      document.body.appendChild(iframe)
-      iframe.onload = () => {
-        iframe.contentWindow?.focus()
-        iframe.contentWindow?.print()
+      // Open new window for printing
+      const printWindow = window.open('', '', 'width=800,height=600')
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Print Labels</title>
+              <style>
+                @media print {
+                  body * { visibility: hidden; }
+                  #print-area, #print-area * { visibility: visible; }
+                  #print-area { position: absolute; left: 0; top: 0; }
+                  .barcode-label {
+                    width: ${LABEL_WIDTH}mm;
+                    height: ${LABEL_HEIGHT}mm;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    margin: 0;
+                    page-break-inside: avoid;
+                  }
+                }
+                .barcode-label {
+                  width: ${LABEL_WIDTH}mm;
+                  height: ${LABEL_HEIGHT}mm;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 12px;
+                  border: 1px solid #ccc;
+                  margin: 5px;
+                }
+              </style>
+            </head>
+            <body>
+              <div id="print-area">
+                ${selectedRows
+                  .map(
+                    (p) => `
+                  <div class="barcode-label">
+                    <strong>${p.name}</strong>
+                    <img src="${barcodeImages[p.sku]}" alt="${p.sku}" />
+                    <div>SKU: ${p.sku}</div>
+                    <div>₹ ${parseFloat(p.price).toFixed(2)}</div>
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+            </body>
+          </html>
+        `)
+        printWindow.document.close()
+        printWindow.focus()
+        printWindow.print()
+        printWindow.close()
       }
     } catch (err: any) {
       toast.current?.show({
         severity: 'error',
-        summary: 'PDF Generation Failed',
+        summary: 'Print Failed',
         detail: err.message,
         life: 4000
       })
@@ -129,7 +161,7 @@ const BarcodeCreation: React.FC = () => {
           <div className="text-center">
             <ProgressSpinner />
             <p className="mt-3 text-lg font-medium text-purple-800">
-              Generating PDF, please wait...
+              Generating Barcode Labels, please wait...
             </p>
           </div>
         </div>
@@ -139,10 +171,10 @@ const BarcodeCreation: React.FC = () => {
         <h2 className="text-2xl font-bold text-purple-800 m-0">Product Barcode Selection</h2>
         <div className="ml-auto">
           <Button
-            label="Generate Barcode PDF"
+            label="Print Barcode Labels"
             className="p-button-sm p-button-success"
             disabled={!selectedRows.length || isGenerating}
-            onClick={handlePrint}
+            onClick={printLabels}
           />
         </div>
       </div>
