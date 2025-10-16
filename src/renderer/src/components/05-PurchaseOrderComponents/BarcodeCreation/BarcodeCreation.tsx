@@ -163,7 +163,8 @@ const BarcodeCreation: React.FC = () => {
       </DataTable>
 
       {/* Render Barcodes for Printing */}
-      <div id="print-area" style={{ display: 'flex', flexWrap: 'wrap' }}>
+      {/* Render Barcodes for Printing */}
+      <div id="print-area">
         {selectedRows.map((p) => (
           <div key={p.sku} className="barcode-label">
             <strong>{p.name}</strong>
@@ -172,6 +173,36 @@ const BarcodeCreation: React.FC = () => {
             <div>₹ {parseFloat(p.price).toFixed(2)}</div>
           </div>
         ))}
+
+        <style>
+          {`
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #print-area, #print-area * {
+          visibility: visible;
+        }
+        #print-area {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 5mm;
+          padding: 0;
+          margin: 0;
+        }
+        .barcode-label {
+          width: auto !important;
+          height: auto !important;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          page-break-inside: avoid;
+          border: none !important; /* remove border */
+        }
+      }
+    `}
+        </style>
       </div>
     </div>
   )
