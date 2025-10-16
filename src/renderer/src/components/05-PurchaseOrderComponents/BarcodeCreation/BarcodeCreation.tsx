@@ -1,114 +1,109 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { Tooltip } from 'primereact/tooltip'
 import { Toast } from 'primereact/toast'
-import { SimplifiedPurchaseOrderProduct } from './BarcodeCreation.interface'
-import { fetchAllPurchaseOrderProducts } from './BarcodeCreation.function'
 import { Button } from 'primereact/button'
-import Barcode from 'react-barcode'
-import jsPDF from 'jspdf'
 import bwipjs from 'bwip-js'
-
+import jsPDF from 'jspdf'
 import { ProgressSpinner } from 'primereact/progressspinner'
+
+const LABEL_WIDTH = 60
+const LABEL_HEIGHT = 30
+
+interface SimplifiedPurchaseOrderProduct {
+  DummyProductsID: number
+  name: string
+  hsnCode: string
+  sku: string
+  price: string
+  status: string
+}
 
 const BarcodeCreation: React.FC = () => {
   const toast = useRef<Toast>(null)
-  const [products, setProducts] = useState<SimplifiedPurchaseOrderProduct[]>([])
+  const [products] = useState<SimplifiedPurchaseOrderProduct[]>([
+    {
+      DummyProductsID: 1,
+      name: 'Red Saree',
+      hsnCode: '987654',
+      sku: 'SS102500001',
+      price: '3000',
+      status: 'Created'
+    },
+    {
+      DummyProductsID: 2,
+      name: 'Red Saree',
+      hsnCode: '987654',
+      sku: 'SS102500002',
+      price: '3000',
+      status: 'Created'
+    },
+    {
+      DummyProductsID: 3,
+      name: 'Red Saree',
+      hsnCode: '987654',
+      sku: 'SS102500003',
+      price: '3000',
+      status: 'Created'
+    }
+    // You can add more static products here
+  ])
   const [selectedRows, setSelectedRows] = useState<SimplifiedPurchaseOrderProduct[]>([])
-
   const [isGenerating, setIsGenerating] = useState(false)
-
-  useEffect(() => {
-    fetchAllPurchaseOrderProducts()
-      .then((data) => setProducts(data))
-      .catch((err) =>
-        toast.current?.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.message,
-          life: 3000
-        })
-      )
-  }, [])
 
   const handlePrint = async () => {
     if (!selectedRows.length) return
     setIsGenerating(true)
 
     try {
-      const pdf = new jsPDF('portrait', 'mm', 'a4')
-      const pageWidth = pdf.internal.pageSize.getWidth()
-      const pageHeight = pdf.internal.pageSize.getHeight()
-      const margin = 10
-      const cardWidth = 60
-      const cardHeight = 40
-      const gap = 5
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [LABEL_WIDTH, LABEL_HEIGHT]
+      })
 
-      let x = margin
-      let y = margin
-
-      for (const p of selectedRows) {
+      for (let i = 0; i < selectedRows.length; i++) {
+        const p = selectedRows[i]
         const canvas = document.createElement('canvas')
 
         await (bwipjs as any).toCanvas(canvas, {
           bcid: 'code128',
-          text: 'SS072500001',
+          text: p.sku,
           scale: 2,
-          height: 10,
-          includetext: false
+          height: 15,
+          includetext: false,
+          backgroundcolor: 'FFFFFF'
         })
 
         const imgData = canvas.toDataURL('image/png')
+        const centerX = LABEL_WIDTH / 2
 
-        // Calculate center alignment
-        const centerX = x + cardWidth / 2
-
-        // Add Product Name centered
-        pdf.setFontSize(9)
-        pdf.text(p.name, centerX, y + 6, { align: 'center' })
-
-        // Add Barcode centered
-        const barcodeWidth = 40
-        const barcodeHeight = 12
-        pdf.addImage(
-          imgData,
-          'PNG',
-          centerX - barcodeWidth / 2,
-          y + 10,
-          barcodeWidth,
-          barcodeHeight
-        )
-
-        // Add SKU centered
         pdf.setFontSize(8)
-        pdf.text(`SKU: ${p.sku}`, centerX, y + 26, { align: 'center' })
+        pdf.text(p.name, centerX, 6, { align: 'center' })
 
-        // Add Price with ₹ symbol centered
-        pdf.setFontSize(8)
-        const formattedPrice = `INR ${parseFloat(p.price).toFixed(2)}`
-        pdf.text(formattedPrice, centerX, y + 30, { align: 'center' })
+        const barcodeWidth = 50
+        const barcodeHeight = 15
+        pdf.addImage(imgData, 'PNG', centerX - barcodeWidth / 2, 10, barcodeWidth, barcodeHeight)
 
-        // Move to next card position
-        x += cardWidth + gap
-        if (x + cardWidth > pageWidth - margin) {
-          x = margin
-          y += cardHeight + gap
-          if (y + cardHeight > pageHeight - margin) {
-            pdf.addPage()
-            y = margin
-          }
+        pdf.setFontSize(7)
+        pdf.text(`SKU: ${p.sku}`, centerX, 27, { align: 'center' })
+
+        const formattedPrice = `₹ ${parseFloat(p.price).toFixed(2)}`
+        pdf.setFontSize(7)
+        pdf.text(formattedPrice, centerX, 29, { align: 'center' })
+
+        if (i !== selectedRows.length - 1) {
+          pdf.addPage([LABEL_WIDTH, LABEL_HEIGHT], 'portrait')
         }
       }
 
-      // ✅ Print instead of download
       const blob = pdf.output('blob')
       const url = URL.createObjectURL(blob)
       const iframe = document.createElement('iframe')
       iframe.style.display = 'none'
       iframe.src = url
       document.body.appendChild(iframe)
-
       iframe.onload = () => {
         iframe.contentWindow?.focus()
         iframe.contentWindow?.print()
@@ -128,36 +123,35 @@ const BarcodeCreation: React.FC = () => {
   return (
     <div>
       <Toast ref={toast} />
-      <Tooltip target=".p-button" position="left" />{' '}
+      <Tooltip target=".p-button" position="left" />
       {isGenerating && (
         <div className="fixed inset-0 flex justify-center items-center bg-white bg-opacity-70 z-50">
-          {' '}
           <div className="text-center">
-            <ProgressSpinner />{' '}
+            <ProgressSpinner />
             <p className="mt-3 text-lg font-medium text-purple-800">
               Generating PDF, please wait...
-            </p>{' '}
-          </div>{' '}
+            </p>
+          </div>
         </div>
-      )}{' '}
+      )}
+
       <div className="flex items-center mb-3">
-        {' '}
-        <h2 className="text-2xl font-bold text-purple-800 m-0">Product Barcode Selection</h2>{' '}
+        <h2 className="text-2xl font-bold text-purple-800 m-0">Product Barcode Selection</h2>
         <div className="ml-auto">
-          {' '}
           <Button
             label="Generate Barcode PDF"
             className="p-button-sm p-button-success"
             disabled={!selectedRows.length || isGenerating}
             onClick={handlePrint}
-          />{' '}
-        </div>{' '}
-      </div>{' '}
+          />
+        </div>
+      </div>
+
       <DataTable
         value={products}
         selection={selectedRows}
         onSelectionChange={(e) => setSelectedRows(e.value)}
-        dataKey="DummySKU"
+        dataKey="sku"
         selectionMode="multiple"
         stripedRows
         showGridlines
@@ -177,34 +171,7 @@ const BarcodeCreation: React.FC = () => {
         <Column field="sku" header="SKU" />
         <Column field="price" header="Price" />
         <Column field="status" header="Status" />
-      </DataTable>{' '}
-      <div id="print-area" className="hidden-for-print">
-        {' '}
-        <div className="barcode-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-          {' '}
-          {selectedRows.map((p) => (
-            <div
-              key={p.sku}
-              id={`barcode-card-${p.sku}`}
-              style={{
-                width: '180px', // Approx. 50mm
-                height: '125px', // Approx. 35mm
-                padding: '10px',
-                // border: '1px solid #ccc',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px'
-              }}
-            >
-              <strong>{p.name}</strong>{' '}
-              <Barcode value={p.sku} height={40} width={1} displayValue={false} />{' '}
-              <div>{p.sku}</div> <div>₹ {parseFloat(p.price).toFixed(2)}</div>{' '}
-            </div>
-          ))}{' '}
-        </div>{' '}
-      </div>{' '}
+      </DataTable>
     </div>
   )
 }
