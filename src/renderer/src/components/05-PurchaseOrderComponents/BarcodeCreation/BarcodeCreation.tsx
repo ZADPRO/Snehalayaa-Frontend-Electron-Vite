@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
-import { Tooltip } from 'primereact/tooltip'
 import { Toast } from 'primereact/toast'
+import { Tooltip } from 'primereact/tooltip'
 import { Button } from 'primereact/button'
-import bwipjs from 'bwip-js'
+import Barcode from 'react-barcode'
 import { ProgressSpinner } from 'primereact/progressspinner'
 
 const LABEL_WIDTH = 60 // mm
@@ -50,60 +50,26 @@ const BarcodeCreation: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<SimplifiedPurchaseOrderProduct[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
 
-  // Generate Barcode DataURL
-  const generateBarcodeDataURL = async (sku: string) => {
-    return new Promise<string>((resolve, reject) => {
-      const canvas = document.createElement('canvas')
-      try {
-        ;(bwipjs as any).toCanvas(canvas, {
-          bcid: 'code128',
-          text: sku,
-          scale: 2,
-          height: 15,
-          includetext: false,
-          backgroundcolor: 'FFFFFF'
-        })
-        resolve(canvas.toDataURL('image/png'))
-      } catch (err) {
-        reject(err)
-      }
-    })
-  }
-
-  const printLabels = async () => {
+  const printLabels = () => {
     if (!selectedRows.length) return
     setIsGenerating(true)
-    try {
-      // Generate barcode images
-      const barcodeImages: Record<string, string> = {}
-      for (const p of selectedRows) {
-        barcodeImages[p.sku] = await generateBarcodeDataURL(p.sku)
-      }
 
-      // Open new window for printing
+    setTimeout(() => {
+      const printContents = document.getElementById('print-area')?.innerHTML
+      if (!printContents) return
+
       const printWindow = window.open('', '', 'width=800,height=600')
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Print Labels</title>
-              <style>
-                @media print {
-                  body * { visibility: hidden; }
-                  #print-area, #print-area * { visibility: visible; }
-                  #print-area { position: absolute; left: 0; top: 0; }
-                  .barcode-label {
-                    width: ${LABEL_WIDTH}mm;
-                    height: ${LABEL_HEIGHT}mm;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 12px;
-                    margin: 0;
-                    page-break-inside: avoid;
-                  }
-                }
+      if (!printWindow) return
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Labels</title>
+            <style>
+              @media print {
+                body * { visibility: hidden; }
+                #print-area, #print-area * { visibility: visible; }
+                #print-area { position: absolute; left: 0; top: 0; }
                 .barcode-label {
                   width: ${LABEL_WIDTH}mm;
                   height: ${LABEL_HEIGHT}mm;
@@ -112,44 +78,35 @@ const BarcodeCreation: React.FC = () => {
                   align-items: center;
                   justify-content: center;
                   font-size: 12px;
-                  border: 1px solid #ccc;
-                  margin: 5px;
+                  page-break-inside: avoid;
+                  margin: 0;
                 }
-              </style>
-            </head>
-            <body>
-              <div id="print-area">
-                ${selectedRows
-                  .map(
-                    (p) => `
-                  <div class="barcode-label">
-                    <strong>${p.name}</strong>
-                    <img src="${barcodeImages[p.sku]}" alt="${p.sku}" />
-                    <div>SKU: ${p.sku}</div>
-                    <div>₹ ${parseFloat(p.price).toFixed(2)}</div>
-                  </div>
-                `
-                  )
-                  .join('')}
-              </div>
-            </body>
-          </html>
-        `)
-        printWindow.document.close()
-        printWindow.focus()
-        printWindow.print()
-        printWindow.close()
-      }
-    } catch (err: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Print Failed',
-        detail: err.message,
-        life: 4000
-      })
-    } finally {
+              }
+              .barcode-label {
+                width: ${LABEL_WIDTH}mm;
+                height: ${LABEL_HEIGHT}mm;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                border: 1px solid #ccc;
+                margin: 5px;
+              }
+            </style>
+          </head>
+          <body>
+            <div id="print-area">${printContents}</div>
+          </body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.focus()
+      printWindow.print()
+      printWindow.close()
+
       setIsGenerating(false)
-    }
+    }, 100) // allow React to render first
   }
 
   return (
@@ -204,6 +161,18 @@ const BarcodeCreation: React.FC = () => {
         <Column field="price" header="Price" />
         <Column field="status" header="Status" />
       </DataTable>
+
+      {/* Render Barcodes for Printing */}
+      <div id="print-area" style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {selectedRows.map((p) => (
+          <div key={p.sku} className="barcode-label">
+            <strong>{p.name}</strong>
+            <Barcode value={p.sku} height={40} width={1} displayValue={false} />
+            <div>SKU: {p.sku}</div>
+            <div>₹ {parseFloat(p.price).toFixed(2)}</div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
