@@ -57,4 +57,5 @@ export interface DialogRow {
   productDescription: string
   price: number
   margin: number
+  totalAmount: any
 }

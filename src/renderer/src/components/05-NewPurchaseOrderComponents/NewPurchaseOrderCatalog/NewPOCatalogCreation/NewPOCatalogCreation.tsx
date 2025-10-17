@@ -10,9 +10,11 @@ import { Toast } from 'primereact/toast'
 import { FloatLabel } from 'primereact/floatlabel'
 import { fetchCategories, fetchSubCategories } from './NewPOCatalogCreation.function'
 import { Category, SubCategory, Props, DialogRow } from './NewPOCatalogCreation.interface'
+import { Plus, Check } from 'lucide-react'
 
 interface TableRow {
   id: number
+  sNo: number
   category: Category | null
   subCategory: SubCategory | null
   lineNumber: number
@@ -25,6 +27,7 @@ interface TableRow {
   cost: number
   profitMargin: number
   sellingPrice: number
+  dialogRows: DialogRow[]
 }
 
 const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
@@ -68,7 +71,6 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
     loadOptions()
   }, [])
 
-  // Calculate selling price based on cost + profit margin %
   useEffect(() => {
     const sp = cost + (cost * profitMargin) / 100
     setSellingPrice(Number(sp.toFixed(2)))
@@ -82,12 +84,30 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
     setLineNumber(rows.length + 1)
     setQuantity(1)
     setProductName('')
-    setBrand('')
+    setBrand('Snehalayaa')
     setTaxClass('')
     setPrice(0)
     setCost(0)
     setProfitMargin(0)
     setSellingPrice(0)
+    setDialogRows([])
+    setDialogVisible(true)
+  }
+
+  const openEditDialog = (row: TableRow) => {
+    setEditingRow(row)
+    setSelectedCategory(row.category)
+    setSelectedSubCategory(row.subCategory)
+    setLineNumber(row.lineNumber)
+    setQuantity(row.quantity)
+    setProductName(row.productName)
+    setBrand(row.brand)
+    setTaxClass(row.taxClass)
+    setPrice(row.price)
+    setCost(row.cost)
+    setProfitMargin(row.profitMargin)
+    setSellingPrice(row.sellingPrice)
+    setDialogRows(row.dialogRows)
     setDialogVisible(true)
   }
 
@@ -111,6 +131,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
 
     const newRow: TableRow = {
       id: editingRow ? editingRow.id : Date.now(),
+      sNo: editingRow ? editingRow.sNo : rows.length + 1,
       category: selectedCategory,
       subCategory: selectedSubCategory,
       lineNumber,
@@ -122,74 +143,84 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
       mrp,
       cost,
       profitMargin,
-      sellingPrice
+      sellingPrice,
+      dialogRows
     }
 
-    let updatedRows: TableRow[]
-    if (editingRow) {
-      updatedRows = rows.map((r) => (r.id === editingRow.id ? newRow : r))
-    } else {
-      updatedRows = [...rows, newRow]
-    }
+    const updatedRows = editingRow
+      ? rows.map((r) => (r.id === editingRow.id ? newRow : r))
+      : [...rows, newRow]
+
     setRows(updatedRows)
     setDialogVisible(false)
     toast.current?.show({ severity: 'success', summary: 'Saved', detail: 'Row saved successfully' })
   }
 
-  const editRow = (row: TableRow) => {
-    setEditingRow(row)
-    setSelectedCategory(row.category)
-    setSelectedSubCategory(row.subCategory)
-    setLineNumber(row.lineNumber)
-    setQuantity(row.quantity)
-    setProductName(row.productName)
-    setBrand(row.brand)
-    setTaxClass(row.taxClass)
-    setPrice(row.price)
-    setCost(row.cost)
-    setProfitMargin(row.profitMargin)
-    setSellingPrice(row.sellingPrice)
-    setDialogVisible(true)
-  }
-
-  const usedQuantity = rows.length
-
-  const remainingQuantity = acceptedTotal - usedQuantity
+  const remainingQuantity =
+    acceptedTotal - rows.reduce((sum, r) => sum + r.quantity, 0) + (editingRow?.quantity || 0)
 
   const handleQuantityChange = (value: number) => {
-    if (value > remainingQuantity) {
-      toast.current?.show({
-        severity: 'warn',
-        summary: 'Validation',
-        detail: `Max allowed quantity: ${remainingQuantity}`
-      })
-      value = remainingQuantity
-    }
+    if (value > remainingQuantity) value = remainingQuantity
     setQuantity(value)
     generateDialogRows(value)
   }
 
   const generateDialogRows = (qty: number) => {
+    const baseSNo = editingRow ? editingRow.dialogRows[0]?.sNo || 1 : rows.length + 1
     const newRows: DialogRow[] = []
     for (let i = 0; i < qty; i++) {
       newRows.push({
         id: Date.now() + i,
-        sNo: rows.length + i + 1,
-        referenceNumber: `${purchaseOrder.invoice_number}-${rows.length + i + 1}`,
-        productDescription: '',
-        price: cost,
-        margin: profitMargin
+        sNo: baseSNo + i,
+        referenceNumber: `${purchaseOrder.invoice_number}-${baseSNo + i}`,
+        productDescription: editingRow?.dialogRows[i]?.productDescription || '',
+        price: editingRow?.dialogRows[i]?.price || cost,
+        margin: editingRow?.dialogRows[i]?.margin || profitMargin,
+        totalAmount: (
+          (editingRow?.dialogRows[i]?.price || cost) *
+          (1 + (editingRow?.dialogRows[i]?.margin || profitMargin) / 100)
+        ).toFixed(2)
       })
     }
     setDialogRows(newRows)
+  }
+
+  const handleDialogRowChange = (index: number, field: keyof DialogRow, value: string | number) => {
+    const updated = [...dialogRows]
+    updated[index] = {
+      ...updated[index],
+      [field]: value
+    } as DialogRow // <-- type cast
+    if (field === 'price' || field === 'margin') {
+      updated[index].totalAmount = (
+        Number(updated[index].price) *
+        (1 + Number(updated[index].margin) / 100)
+      ).toFixed(2)
+    }
+    setDialogRows(updated)
   }
 
   return (
     <div>
       <Toast ref={toast} />
       <h3>PO: {purchaseOrder.invoice_number}</h3>
-      <Button label="Add Product" icon="pi pi-plus" className="mb-3" onClick={openAddDialog} />
-      <DataTable value={rows} responsiveLayout="scroll" showGridlines>
+      <div className="flex gap-3 justify-content-end">
+        <Button
+          label="Add Product"
+          icon={<Plus size={18} />}
+          className="mb-3 flex gap-3 items-center"
+          onClick={openAddDialog}
+        />
+        <Button label="Save" icon={<Check size={18} />} className="mb-3 flex gap-3 items-center" />
+      </div>
+      <DataTable
+        value={rows}
+        responsiveLayout="scroll"
+        showGridlines
+        rowHover
+        onRowClick={(e) => openEditDialog(e.data as TableRow)} // <-- cast
+      >
+        <Column field="sNo" header="S.No." />
         <Column field="lineNumber" header="Line No." />
         <Column field="category.categoryName" header="Category" />
         <Column field="subCategory.subCategoryName" header="Sub Category" />
@@ -198,25 +229,16 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
         <Column field="cost" header="Cost" />
         <Column field="profitMargin" header="Profit %" />
         <Column field="sellingPrice" header="Selling Price" />
-        <Column
-          header="Actions"
-          body={(rowData) => (
-            <Button
-              label="Edit"
-              icon="pi pi-pencil"
-              className="p-button-sm p-button-warning"
-              onClick={() => editRow(rowData)}
-            />
-          )}
-        />
       </DataTable>
 
       <Dialog
         header={editingRow ? 'Edit Product' : 'Add Product'}
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        style={{ width: '75vw' }}
+        style={{ width: '80vw', maxHeight: '80vh' }}
+        breakpoints={{ '960px': '95vw', '640px': '100vw' }}
       >
+        {/* Category, SubCategory, LineNumber */}
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
@@ -261,6 +283,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
           </div>
         </div>
 
+        {/* Product, Brand, Tax */}
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
@@ -294,6 +317,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
           </div>
         </div>
 
+        {/* Cost, Profit, Selling */}
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
@@ -326,6 +350,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
           </div>
         </div>
 
+        {/* Quantity */}
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
@@ -342,52 +367,61 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
           </div>
         </div>
 
-        {dialogRows.map((row, index) => (
-          <div key={row.id} className="flex gap-3 mb-2 mt-3">
-            <div className="flex-1">
-              <InputNumber value={row.sNo} disabled className="w-full" />
-            </div>
-            <div className="flex-1">
-              <InputText value={row.referenceNumber} disabled className="w-full" />
-            </div>
-            <div className="flex-1">
-              <InputText
-                value={row.productDescription}
-                onChange={(e) => {
-                  const newRows = [...dialogRows]
-                  newRows[index].productDescription = e.target.value
-                  setDialogRows(newRows)
-                }}
-                className="w-full"
-              />
-            </div>
-            <div className="flex-1">
-              <InputNumber
-                value={row.price}
-                onValueChange={(e) => {
-                  const newRows = [...dialogRows]
-                  newRows[index].price = e.value || 0
-                  setDialogRows(newRows)
-                }}
-                className="w-full"
-              />
-            </div>
-            <div className="flex-1">
-              <InputNumber
-                value={row.margin}
-                onValueChange={(e) => {
-                  const newRows = [...dialogRows]
-                  newRows[index].margin = e.value || 0
-                  setDialogRows(newRows)
-                }}
-                className="w-full"
-              />
-            </div>
+        {/* Dialog Rows */}
+        <div className="mt-3 overflow-auto" style={{ maxHeight: '300px' }}>
+          <div className="flex gap-3 font-bold border-b pb-1">
+            <div className="flex-1">S.No</div>
+            <div className="flex-1">Reference No</div>
+            <div className="flex-1">Description</div>
+            <div className="flex-1">Amount</div>
+            <div className="flex-1">Profit %</div>
+            <div className="flex-1">Total Amount</div>
           </div>
-        ))}
+          {dialogRows.map((row, index) => (
+            <div key={row.id} className="flex gap-3 mt-2 items-center">
+              <div className="flex-1">
+                <InputNumber value={row.sNo} disabled className="w-full" />
+              </div>
+              <div className="flex-1">
+                <InputText
+                  value={row.referenceNumber}
+                  onChange={(e) => handleDialogRowChange(index, 'referenceNumber', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="flex-1">
+                <InputText
+                  value={row.productDescription}
+                  onChange={(e) =>
+                    handleDialogRowChange(index, 'productDescription', e.target.value)
+                  }
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1">
+                <InputNumber
+                  value={row.price}
+                  onValueChange={(e) => handleDialogRowChange(index, 'price', e.value || 0)}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1">
+                <InputNumber
+                  value={row.margin}
+                  onValueChange={(e) => handleDialogRowChange(index, 'margin', e.value || 0)}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1">
+                <InputNumber value={Number(row.totalAmount)} disabled className="w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className="mt-3 flex justify-end">
-          <Button label="Save" icon="pi pi-check" onClick={saveRow} />
+          <Button label="Save" icon={<Check size={18} />} onClick={saveRow} />
         </div>
       </Dialog>
     </div>
