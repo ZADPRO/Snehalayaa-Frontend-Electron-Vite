@@ -251,3 +251,12 @@ Specificity: (0,2,2)
 .verticalDivider.p-divider.p-divider-vertical {
   margin: 0rem 1rem !important;
 }
+
+.p-sidebar-header.p-sidebar-custom-header {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.p-button-primary.p-button.p-component .p-button-label.p-c {
+  text-align: center;
+}

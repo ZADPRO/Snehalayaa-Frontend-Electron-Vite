@@ -18,17 +18,22 @@ const topRoutes = [
   {
     path: '/dashboard',
     name: 'DashBoard',
-    icon: <LayoutGrid />
+    icon: <LayoutGrid size={20} />
   },
   {
     path: '/inventory',
     name: 'Inventory',
-    icon: <PackageSearch />
+    icon: <PackageSearch size={20} />
   },
   {
     path: '/pomgmt',
+    name: 'Purchase Orders',
+    icon: <ShoppingCart size={20} />
+  },
+  {
+    path: '/purchaseOrder',
     name: 'Purchase Order',
-    icon: <ShoppingCart />
+    icon: <ShoppingCart size={20} />
   },
   // {
   //   path: '/pos',
@@ -43,7 +48,7 @@ const topRoutes = [
   {
     path: '/reports',
     name: 'Reports',
-    icon: <FileStack />
+    icon: <FileStack size={20} />
   }
 ]
 
@@ -51,17 +56,17 @@ const bottomRoutes = [
   {
     path: '/settings',
     name: 'Settings',
-    icon: <Settings />
+    icon: <Settings size={20} />
   },
   {
     path: '/profile',
     name: 'Profile',
-    icon: <CircleUserRound />
+    icon: <CircleUserRound size={20} />
   },
   {
     path: '#',
     name: 'Logout',
-    icon: <LogOut />
+    icon: <LogOut size={20} />
   }
 ]
 

@@ -9,7 +9,8 @@ import {
   // SlidersVertical,
   LayoutDashboard,
   // UsersRound,
-  SlidersVertical
+  SlidersVertical,
+  GalleryHorizontalEnd
 } from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
@@ -24,6 +25,7 @@ import SettingsEmployees from '../../components/03-SettingsComponents/SettingsEm
 // import SettingsAttribute from '../../components/03-SettingsComponents/SettingsAttribute/SettingsAttribute'
 import SettingsAttributes from '../../components/03-SettingsComponents/SettingsAttributes/SettingsAttributes'
 import SettingsOnlineAttributes from '../../components/03-SettingsComponents/SettingsOnlineAttributes/SettingsOnlineAttributes'
+import SettingsInitialCategories from '../../components/03-SettingsComponents/SettingsInitialCategories/SettingsInitialCategories'
 // import SettingsUserRoles from '../../components/03-SettingsComponents/SettingsUserRoles/SettingsUserRoles'
 
 // Sidebar items config
@@ -33,6 +35,12 @@ const sidebarItems = [
     label: 'Overview',
     icon: <LayoutDashboard size={20} className="sidebar-icon" />,
     component: <SettingsOverview />
+  },
+  {
+    key: 'initialCategories',
+    label: 'Initial Categories',
+    icon: <GalleryHorizontalEnd size={20} className="sidebar-icon" />,
+    component: <SettingsInitialCategories />
   },
   {
     key: 'categories',
@@ -85,7 +93,7 @@ const sidebarItems = [
 ]
 
 const Settings: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('categories')
+  const [activeKey, setActiveKey] = useState('initialCategories')
 
   return (
     <div className="settingsContainer">

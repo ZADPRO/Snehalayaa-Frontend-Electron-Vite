@@ -204,7 +204,15 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
                 value={formData.category}
                 options={categories}
                 className="w-full"
-                disabled
+                optionLabel="label"
+                optionValue="value"
+                onChange={(e) => {
+                  handleInputChange('category', e.value)
+                  // When category changes, fetch subcategories for the new category
+                  fetchSubcategories(e.value).then(setSubCategories).catch(console.error)
+                  // Reset subcategory selection
+                  handleInputChange('subcategory', 0)
+                }}
               />
               <label htmlFor="category">Category</label>
             </FloatLabel>
@@ -215,7 +223,9 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
                 value={formData.subcategory}
                 options={subCategories}
                 className="w-full"
-                disabled
+                optionLabel="label"
+                optionValue="value"
+                onChange={(e) => handleInputChange('subcategory', e.value)}
               />
               <label htmlFor="subcategory">Subcategory</label>
             </FloatLabel>

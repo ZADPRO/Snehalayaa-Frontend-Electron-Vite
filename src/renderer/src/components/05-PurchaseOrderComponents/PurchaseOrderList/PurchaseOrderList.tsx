@@ -227,7 +227,7 @@ const PurchaseOrderList: React.FC = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '-'
     const date = new Date(dateString)
-    if (isNaN(date)) return '-'
+    // if (isNaN(date)) return '-'
 
     return date.toLocaleString('en-US', {
       year: 'numeric',
@@ -261,6 +261,7 @@ const PurchaseOrderList: React.FC = () => {
         // dataKey="refCategoryId"
         selectionMode="multiple"
         paginator
+        scrollable
         showGridlines
         stripedRows
         rows={10}
@@ -268,10 +269,11 @@ const PurchaseOrderList: React.FC = () => {
         responsiveLayout="scroll"
       >
         {/* <Column selectionMode="multiple" headerStyle={{ textAlign: 'center' }} /> */}
-        <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
+        <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} frozen />
         <Column
           field="totalSummary.poNumber"
           header="PO Number"
+          frozen
           body={(rowData) => (
             <span
               className="cursor-pointer font-bold underline"
@@ -283,19 +285,32 @@ const PurchaseOrderList: React.FC = () => {
               {rowData.totalSummary.poNumber}
             </span>
           )}
+          style={{ minWidth: '12rem' }}
         />
-        <Column field="supplierDetails.supplierName" header="Supplier" filter sortable />
-        <Column field="branchDetails.branchName" header="Branch" sortable />
+        <Column
+          field="supplierDetails.supplierName"
+          header="Supplier"
+          filter
+          sortable
+          style={{ minWidth: '12rem' }}
+        />
+        <Column
+          field="branchDetails.branchName"
+          header="Branch"
+          sortable
+          style={{ minWidth: '12rem' }}
+        />
         <Column
           field="totalSummary.status"
           header="Status"
           body={(rowData) => (rowData.totalSummary.status === 1 ? 'Open' : 'Closed')}
+          style={{ minWidth: '12rem' }}
         />
         <Column
           header="Credited Day"
           body={(rowData) => {
             const createdAt = new Date(rowData.totalSummary?.createdAt)
-            if (isNaN(createdAt)) return '-'
+            // if (isNaN(createdAt)) return '-'
 
             const creditedDay = new Date(createdAt)
             creditedDay.setDate(createdAt.getDate() + 30)
@@ -303,19 +318,22 @@ const PurchaseOrderList: React.FC = () => {
             const formatted = creditedDay.toISOString().split('T')[0]
             return formatted
           }}
+          style={{ minWidth: '12rem' }}
         />
-        <Column field="totalSummary.createdBy" header="Created By" />
+        <Column field="totalSummary.createdBy" header="Created By" style={{ minWidth: '12rem' }} />
 
         <Column
           header="Created At"
           body={(rowData) => formatDate(rowData.totalSummary?.createdAt)}
+          style={{ minWidth: '12rem' }}
         />
 
         <Column
+          style={{ minWidth: '12rem' }}
           header="Credited Day"
           body={(rowData) => {
             const createdAt = new Date(rowData.totalSummary?.createdAt)
-            if (isNaN(createdAt)) return '-'
+            // if (isNaN(createdAt)) return '-'
 
             const creditedDay = new Date(createdAt)
             creditedDay.setDate(createdAt.getDate() + 30)
@@ -324,7 +342,7 @@ const PurchaseOrderList: React.FC = () => {
           }}
         />
 
-        <Column field="totalSummary.createdBy" header="Created By" />
+        <Column field="totalSummary.createdBy" header="Created By" style={{ minWidth: '12rem' }} />
 
         <Column header="Actions" body={actionColumn} />
       </DataTable>
@@ -346,7 +364,8 @@ const PurchaseOrderList: React.FC = () => {
         {/* <ViewPurchaseOrderProducts
           rowData={selectedRowData ?? { productDetails: [], totalSummary: {} }}
         /> */}
-        {selectedRowData && <ViewPurchaseOrderProducts rowData={selectedRowData} />}
+        {/* {selectedRowData && <ViewPurchaseOrderProducts rowData={selectedRowData} />} */}
+        {selectedRowData && <ViewPurchaseOrderProducts />}
       </Sidebar>
     </div>
   )

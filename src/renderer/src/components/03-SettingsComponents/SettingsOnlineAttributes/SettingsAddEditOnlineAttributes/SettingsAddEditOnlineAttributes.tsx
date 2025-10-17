@@ -6,6 +6,9 @@ const SettingsAddEditOnlineAttributes: React.FC<SettingsAddEditOnlineAttributesP
   onClose,
   reloadData
 }) => {
+  console.log('onClose', onClose)
+  console.log('reloadData', reloadData)
+  console.log('selectedAttribute', selectedAttribute)
     return (
         <div>
 

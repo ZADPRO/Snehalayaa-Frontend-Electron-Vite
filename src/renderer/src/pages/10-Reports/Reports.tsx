@@ -6,11 +6,12 @@ import { Divider } from 'primereact/divider'
 import './Reports.css'
 // import ReportsOverview from '../../components/10-Reports/ReportsOverview/ReportsOverview'
 // import ReportsProducts from '../../components/10-Reports/ReportsProducts/ReportsProducts'
-import ReportsSupplier from '../../components/10-Reports/ReportsSupplier/ReportsSupplier'
+// import ReportsSupplier from '../../components/10-Reports/ReportsSupplier/ReportsSupplier'
 import ReportsInventory from '../../components/10-Reports/04-ReportsInventory/ReportsInventory'
 import ReportsSales from '../../components/10-Reports/02-ReportsSalesPurchase/ReportsSales'
 import ReportsSuppliers from '../../components/10-Reports/03-ReportsSupplier/ReportsSuppliers'
 import ReportsPOS from '../../components/10-Reports/06-ReportsPOS/ReportsPOS'
+import ReportsAccounts from '../../components/10-Reports/05-ReportsAccounts/ReportsAccounts'
 
 // Sidebar items config
 const sidebarItems = [
@@ -42,20 +43,20 @@ const sidebarItems = [
     key: 'accountsReport',
     label: 'Accounts Reports',
     icon: <FolderClosed size={20} className="sidebar-icon" />,
-    component: <ReportsSupplier />
+    component: <ReportsAccounts />
   },
   {
     key: 'posReports',
     label: 'POS Reports',
     icon: <FolderClosed size={20} className="sidebar-icon" />,
     component: <ReportsPOS />
-  },
-  {
-    key: 'miscellaneousReports',
-    label: 'Miscellaneous Reports',
-    icon: <FolderClosed size={20} className="sidebar-icon" />,
-    component: <ReportsSupplier />
   }
+  // {
+  //   key: 'miscellaneousReports',
+  //   label: 'Miscellaneous Reports',
+  //   icon: <FolderClosed size={20} className="sidebar-icon" />,
+  //   component: <ReportsSupplier />
+  // }
 ]
 
 const Reports: React.FC = () => {

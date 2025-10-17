@@ -1,5 +1,5 @@
 import api from '../../../utils/api'
-import { Attribute, AttributePayload, dataType } from './SettingsAttributes.interface'
+import { Attribute, AttributePayload, dataType } from './SettingsOnlineAttributes.interface'
 
 export const saveAttributeAPI = async (payload: AttributePayload) => {
   const response = await api.post(`/admin/settings/attributes`, payload)
