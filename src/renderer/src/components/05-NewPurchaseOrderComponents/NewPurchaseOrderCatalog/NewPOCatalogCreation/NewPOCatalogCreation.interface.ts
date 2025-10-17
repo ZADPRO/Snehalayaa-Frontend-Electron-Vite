@@ -53,6 +53,7 @@ export interface Props {
 export interface DialogRow {
   id: number
   sNo: number
+  lineNumber: any
   referenceNumber: string
   productDescription: string
   price: number

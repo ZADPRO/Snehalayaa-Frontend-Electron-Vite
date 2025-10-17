@@ -175,15 +175,16 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
     setQuantity(value)
     generateDialogRows(value)
   }
-
   const generateDialogRows = (qty: number) => {
     const baseSNo = editingRow ? editingRow.dialogRows[0]?.sNo || 1 : rows.length + 1
     const newRows: DialogRow[] = []
+
     for (let i = 0; i < qty; i++) {
       newRows.push({
         id: Date.now() + i,
         sNo: baseSNo + i,
-        referenceNumber: '', // <-- leave empty
+        lineNumber: lineNumber,
+        referenceNumber: '',
         productDescription: editingRow?.dialogRows[i]?.productDescription || '',
         price: editingRow?.dialogRows[i]?.price || cost,
         margin: editingRow?.dialogRows[i]?.margin || profitMargin,
@@ -193,6 +194,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
         ).toFixed(2)
       })
     }
+
     setDialogRows(newRows)
   }
 
@@ -381,18 +383,29 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
         {/* Dialog Rows */}
         <div className="mt-3 overflow-auto" style={{ maxHeight: '300px' }}>
           <div className="flex gap-3 font-bold border-b pb-1">
-            <div className="flex-1">S.No</div>
+            <div>S.No</div> {/* fixed width for S.No */}
+            <div className="flex-1">Line Item</div>
             <div className="flex-1">Reference No</div>
             <div className="flex-1">Description</div>
             <div className="flex-1">Amount</div>
             <div className="flex-1">Profit %</div>
             <div className="flex-1">Total Amount</div>
           </div>
+
           {dialogRows.map((row, index) => (
-            <div key={row.id} className="flex gap-3 mt-2 items-center">
+            <div key={row.id} className="flex gap-3 mt-2 align-items-center">
+              {/* S.No */}
+              <div style={{ width: '40px', textAlign: 'center' }}>{row.sNo}</div>
+              {/* Line Item */}
               <div className="flex-1">
-                <InputNumber value={row.sNo} disabled className="w-full" />
+                <InputNumber
+                  value={row.lineNumber}
+                  onValueChange={(e) => handleDialogRowChange(index, 'lineNumber', e.value || 1)}
+                  className="w-full"
+                />
               </div>
+
+              {/* Reference No */}
               <div className="flex-1">
                 <InputText
                   value={row.referenceNumber}
@@ -401,6 +414,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
                 />
               </div>
 
+              {/* Description */}
               <div className="flex-1">
                 <InputText
                   value={row.productDescription}
@@ -410,6 +424,8 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
                   className="w-full"
                 />
               </div>
+
+              {/* Amount */}
               <div className="flex-1">
                 <InputNumber
                   value={row.price}
@@ -417,6 +433,8 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
                   className="w-full"
                 />
               </div>
+
+              {/* Profit % */}
               <div className="flex-1">
                 <InputNumber
                   value={row.margin}
@@ -424,6 +442,8 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
                   className="w-full"
                 />
               </div>
+
+              {/* Total Amount */}
               <div className="flex-1">
                 <InputNumber value={Number(row.totalAmount)} disabled className="w-full" />
               </div>
@@ -431,8 +451,8 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
           ))}
         </div>
 
-        <div className="mt-3 flex justify-end">
-          <Button label="Save" icon={<Check size={18} />} onClick={saveRow} />
+        <div className="mt-3 flex justify-content-end">
+          <Button label="Save" icon={<Check size={18} />} className="gap-3" onClick={saveRow} />
         </div>
       </Dialog>
     </div>
