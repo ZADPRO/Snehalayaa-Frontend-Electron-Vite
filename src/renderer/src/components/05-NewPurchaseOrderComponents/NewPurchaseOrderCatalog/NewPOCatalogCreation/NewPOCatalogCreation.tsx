@@ -78,6 +78,17 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
   }, [cost, profitMargin])
 
   const openAddDialog = () => {
+    const remainingQty = acceptedTotal - rows.reduce((sum, r) => sum + r.quantity, 0)
+
+    if (remainingQty <= 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'No Quantity Left',
+        detail: 'No quantity left for GRN'
+      })
+      return
+    }
+
     setEditingRow(null)
     setSelectedCategory(null)
     setSelectedSubCategory(null)
@@ -90,7 +101,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
     setCost(0)
     setProfitMargin(0)
     setSellingPrice(0)
-    setDialogRows([])
+    setDialogRows([]) // no referenceNumber
     setDialogVisible(true)
   }
 
@@ -172,7 +183,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
       newRows.push({
         id: Date.now() + i,
         sNo: baseSNo + i,
-        referenceNumber: `${purchaseOrder.invoice_number}-${baseSNo + i}`,
+        referenceNumber: '', // <-- leave empty
         productDescription: editingRow?.dialogRows[i]?.productDescription || '',
         price: editingRow?.dialogRows[i]?.price || cost,
         margin: editingRow?.dialogRows[i]?.margin || profitMargin,
@@ -235,7 +246,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
         header={editingRow ? 'Edit Product' : 'Add Product'}
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        style={{ width: '80vw', maxHeight: '80vh' }}
+        style={{ width: '80vw', height: '90vh' }}
         breakpoints={{ '960px': '95vw', '640px': '100vw' }}
       >
         {/* Category, SubCategory, LineNumber */}
