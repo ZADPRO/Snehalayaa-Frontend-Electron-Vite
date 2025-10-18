@@ -37,14 +37,6 @@ const BarcodeCreation: React.FC = () => {
       sku: 'SS102500002',
       price: '3500',
       status: 'Created'
-    },
-    {
-      DummyProductsID: 3,
-      name: 'Green Saree',
-      hsnCode: '987656',
-      sku: 'SS102500003',
-      price: '3200',
-      status: 'Created'
     }
   ])
   const [selectedRows, setSelectedRows] = useState<SimplifiedPurchaseOrderProduct[]>([])
@@ -162,45 +154,50 @@ const BarcodeCreation: React.FC = () => {
         <Column field="status" header="Status" />
       </DataTable>
 
-      {/* Render Barcodes for Printing */}
-      {/* Render Barcodes for Printing */}
       <div id="print-area">
         {selectedRows.map((p) => (
           <div key={p.sku} className="barcode-label">
-            <strong>{p.name}</strong>
-            <Barcode value={p.sku} height={40} width={1} displayValue={false} />
+            <p className="font-bold uppercase">{p.name}</p>
+            <div style={{ marginTop: '-4px' }}>
+              <Barcode value={p.sku} height={40} width={1} displayValue={false} />
+            </div>
             <div>SKU: {p.sku}</div>
             <div>₹ {parseFloat(p.price).toFixed(2)}</div>
+            <div>P-INV-1025-10001 | SI1001</div>
           </div>
         ))}
 
         <style>
           {`
-      @media print {
-        body * {
-          visibility: hidden;
-        }
-        #print-area, #print-area * {
-          visibility: visible;
-        }
-        #print-area {
-          display: grid !important;
-          grid-template-columns: repeat(2, 1fr) !important;
-          gap: 5mm;
-          padding: 0;
-          margin: 0;
-        }
-        .barcode-label {
-          width: auto !important;
-          height: auto !important;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          page-break-inside: avoid;
-          border: none !important; /* remove border */
-        }
-      }
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            #print-area, #print-area * {
+              visibility: visible;
+            }
+            #print-area {
+              display: grid !important;
+              grid-template-columns: repeat(2, 1fr) !important;
+              gap: 5mm;
+              padding-left: 10mm; /* <-- add left padding to shift right */
+              padding-top: 5mm;   /* optional, shift down a little */
+              margin: 0;
+            }
+            .barcode-label {
+              width: auto !important;
+              height: auto !important;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              page-break-inside: avoid;
+              border: none !important;
+            }
+            .barcode-label{
+              text-transform: uppercase;
+            }
+          }
     `}
         </style>
       </div>

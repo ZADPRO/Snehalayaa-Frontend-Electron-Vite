@@ -20,6 +20,7 @@ import StockAgeing from '../components/10-Reports/04-ReportsInventory/StockAgein
 import ReportsSupplier from '../components/10-Reports/03-ReportsSupplier/ReportsSupplier/ReportsSupplier'
 import ReportsSupplierPurchase from '../components/10-Reports/03-ReportsSupplier/ReportsSupplierPurchase/ReportsSupplierPurchase'
 import ReportsSupplierDetails from '../components/10-Reports/03-ReportsSupplier/ReportsSupplierDetails/ReportsSupplierDetails'
+import PurchaseOrderManagement from '../pages/05-PurchaseOrderManagement/PurchaseOrderManagement'
 
 const MainAppRoutes: React.FC = () => {
   return (
@@ -37,6 +38,7 @@ const MainAppRoutes: React.FC = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/pomgmt" element={<PurchaseOrder />} />
+                <Route path="/purchaseOrder" element={<PurchaseOrderManagement />} />
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/pos" element={<POSmanagement />} />

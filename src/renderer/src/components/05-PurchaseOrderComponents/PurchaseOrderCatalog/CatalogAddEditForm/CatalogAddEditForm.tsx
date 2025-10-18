@@ -1,107 +1,81 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FloatLabel } from 'primereact/floatlabel'
 import { InputText } from 'primereact/inputtext'
-import { InputTextarea } from 'primereact/inputtextarea'
-import { InputNumber } from 'primereact/inputnumber'
 import { Dropdown } from 'primereact/dropdown'
 import { Calendar } from 'primereact/calendar'
 import { FileUpload } from 'primereact/fileupload'
 import { Button } from 'primereact/button'
-import { Toast } from 'primereact/toast'
 import { Check } from 'lucide-react'
+import { InputSwitch } from 'primereact/inputswitch'
+import { Toast } from 'primereact/toast'
+import { useRef } from 'react'
 
-import {
-  fetchAttribute,
-  fetchCategories,
-  fetchSubcategories,
-  saveProduct
-} from './CatalogAddEditForm.function'
-import {
-  CatalogAddEditFormProps,
-  Attribute,
-  Option,
-  CatalogFormData
-} from './CatalogAddEditForm.interface'
+import { fetchCategories, fetchSubcategories, saveProduct } from './CatalogAddEditForm.function'
+
+import { CatalogAddEditFormProps, CatalogFormData, Option } from './CatalogAddEditForm.interface'
 
 const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct, onSuccess }) => {
   const toast = useRef<Toast>(null)
 
-  const [attributes, setAttributes] = useState<Attribute[]>([])
-  const [formData, setFormData] = useState<Partial<CatalogFormData>>({})
+  const [formData, setFormData] = useState<CatalogFormData>({
+    name: '',
+    sku: '',
+    gtin: '',
+    brand: '',
+    category: 0,
+    subcategory: 0,
+    description: '',
+    detailedDescription: '',
+    price: '',
+    mrp: '',
+    cost: '',
+    splPrice: '',
+    startDate: null,
+    endDate: null,
+    taxClass: '',
+    productImage: null,
+    featured: false
+  })
 
   const [categories, setCategories] = useState<Option[]>([])
   const [subCategories, setSubCategories] = useState<Option[]>([])
 
-  const loadAttributes = async () => {
-    try {
-      const data = (await fetchAttribute()) as unknown as Attribute[]
-      setAttributes(data)
-
-      const initialData: { [key: string]: any } = {}
-      data.forEach((attr) => {
-        if (attr.data_type === 'IMAGE') initialData[attr.column_name] = []
-        else initialData[attr.column_name] = ''
-      })
-
-      if (selectedProduct) {
-        data.forEach((attr) => {
-          const key = attr.column_name
-          if (selectedProduct[key] !== undefined) {
-            initialData[key] = selectedProduct[key]
-          }
-        })
-      }
-
-      setFormData(initialData)
-    } catch (err: any) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Error',
-        detail: err.message || 'Failed to load attributes',
-        life: 3000
-      })
-    }
-  }
-
   useEffect(() => {
-    loadAttributes()
+    if (!selectedProduct) return
+
+    const price = parseFloat(selectedProduct.Price || '0')
+    const discount = parseFloat(selectedProduct.DiscountAmount || '0')
+    const cost = price + discount
+    const mrp = (cost + cost * 0.1).toFixed(2)
+
+    setFormData((prev) => ({
+      ...prev,
+      name: selectedProduct.ProductName,
+      sku: selectedProduct.DummySKU,
+      category: selectedProduct.RefCategoryID,
+      subcategory: selectedProduct.RefSubCategoryID,
+      price: selectedProduct.Price,
+      mrp: mrp,
+      cost: cost.toString()
+    }))
+
     fetchCategories().then(setCategories).catch(console.error)
-    if (selectedProduct?.category) {
-      fetchSubcategories(selectedProduct.category).then(setSubCategories).catch(console.error)
-    }
+    fetchSubcategories(selectedProduct.RefCategoryID).then(setSubCategories).catch(console.error)
   }, [selectedProduct])
 
-  // Handle input change
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: keyof CatalogFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Handle image upload (multiple)
-  const handleImageUpload = (field: string, files: File[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: [...(prev[field] || []), ...files]
-    }))
-  }
-
-  // Validation
-  const validateForm = () => {
-    const errors: { [key: string]: string } = {}
-    attributes.forEach((attr) => {
-      const value = formData[attr.column_name]
-      if (attr.is_required) {
-        if (!value || (Array.isArray(value) && value.length === 0)) {
-          errors[attr.column_name] = `${attr.column_label} is required`
-        }
-      }
-    })
-    return errors
+  const handleImageUpload = (e: any) => {
+    handleInputChange('productImage', e.files?.[0] ?? null)
   }
 
   const handleSave = async () => {
-    const errors = validateForm()
-    if (Object.keys(errors).length > 0) {
-      Object.values(errors).forEach((err) => {
+    const validationErrors = validateForm(formData)
+
+    if (Object.keys(validationErrors).length > 0) {
+      Object.values(validationErrors).forEach((err) => {
         toast.current?.show({
           severity: 'error',
           summary: 'Validation Error',
@@ -112,30 +86,14 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
       return
     }
 
-    // Fill missing fields with default values
-    const completeFormData: CatalogFormData = {
-      name: formData.name || '',
-      sku: formData.sku || '',
-      gtin: formData.gtin || '',
-      brand: formData.brand || '',
-      category: formData.category || 0,
-      subcategory: formData.subcategory || 0,
-      description: formData.description || '',
-      detailedDescription: formData.detailedDescription || '',
-      price: formData.price || '',
-      mrp: formData.mrp || '',
-      cost: formData.cost || '',
-      splPrice: formData.splPrice || '',
-      startDate: formData.startDate || null,
-      endDate: formData.endDate || null,
-      taxClass: formData.taxClass || '',
-      productImage: formData.productImage || null,
-      featured: formData.featured ?? false
-    }
-
     try {
-      const response = await saveProduct(completeFormData)
-      // ... rest of code
+      const payload = {
+        ...formData,
+        category: Number(formData.category),
+        subcategory: Number(formData.subcategory)
+      }
+
+      const response = await saveProduct(payload)
 
       if (response.status) {
         toast.current?.show({
@@ -144,8 +102,12 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
           detail: response.message || 'Product saved successfully!',
           life: 2000
         })
+
+        // 👇 Call onSuccess to close sidebar after short delay
         setTimeout(() => {
-          if (onSuccess) onSuccess()
+          if (typeof onSuccess === 'function') {
+            onSuccess()
+          }
         }, 1000)
       } else {
         toast.current?.show({
@@ -155,103 +117,245 @@ const CatalogAddEditForm: React.FC<CatalogAddEditFormProps> = ({ selectedProduct
           life: 3000
         })
       }
-    } catch (err: any) {
+    } catch (error: any) {
       toast.current?.show({
         severity: 'error',
         summary: 'API Error',
-        detail: err.response?.data?.message || 'Something went wrong',
+        detail: error.response?.data?.message || 'Something went wrong',
         life: 4000
       })
     }
   }
 
-  // Helper to get dropdown options dynamically
-  const getDropdownOptions = (field: string) => {
-    if (field === 'category') return categories
-    if (field === 'sub_category') return subCategories
-    return []
+  const validateForm = (data: CatalogFormData) => {
+    const errors: { [key: string]: string } = {}
+
+    if (!data.name.trim()) errors.name = 'Product Name is required'
+    if (!data.price || isNaN(Number(data.price))) errors.price = 'Valid Selling Price is required'
+    if (!data.taxClass) errors.taxClass = 'Tax Class is required'
+
+    if (data.featured) {
+      if (!data.splPrice || isNaN(Number(data.splPrice)))
+        errors.splPrice = 'Special Price is required'
+      if (!data.startDate) errors.startDate = 'Start Date is required'
+      if (!data.endDate) errors.endDate = 'End Date is required'
+    }
+
+    return errors
   }
 
   return (
     <div className="px-2">
       <Toast ref={toast} />
 
-      {attributes.map((attr) => (
-        <div key={attr.id} className="flex gap-3 mb-3">
-          {attr.data_type === 'TEXT' && (
+      {/* 1️⃣ Basic Product Information */}
+      <section>
+        {/* <h3 className="text-lg font-semibold text-gray-700 mb-3">1. Basic Product Information</h3> */}
+
+        <div className="flex gap-3 mb-3 mt-3">
+          <div className="flex-1">
             <FloatLabel className="always-float">
               <InputText
-                value={formData[attr.column_name]}
+                id="name"
+                value={formData.name}
                 className="w-full"
-                onChange={(e) => handleInputChange(attr.column_name, e.target.value)}
+                onChange={(e) => handleInputChange('name', e.target.value)}
               />
-              <label>{attr.column_label}</label>
+              <label htmlFor="name">Product Name</label>
             </FloatLabel>
-          )}
-
-          {attr.data_type === 'TEXTAREA' && (
+          </div>
+          <div className="flex-1">
             <FloatLabel className="always-float">
-              <InputTextarea
-                value={formData[attr.column_name]}
-                className="w-full"
-                onChange={(e) => handleInputChange(attr.column_name, e.target.value)}
-              />
-              <label>{attr.column_label}</label>
+              <InputText id="sku" value={formData.sku} className="w-full" disabled />
+              <label htmlFor="sku">SKU</label>
             </FloatLabel>
-          )}
+          </div>
+        </div>
 
-          {attr.data_type === 'INT' && (
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1">
             <FloatLabel className="always-float">
-              <InputNumber
-                value={formData[attr.column_name]}
-                onValueChange={(e) => handleInputChange(attr.column_name, e.value)}
+              <InputText
+                id="gtin"
+                value={formData.gtin}
                 className="w-full"
+                onChange={(e) => handleInputChange('gtin', e.target.value)}
               />
-              <label>{attr.column_label}</label>
+              <label htmlFor="gtin">GTIN</label>
             </FloatLabel>
-          )}
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="brand"
+                value={formData.brand}
+                className="w-full"
+                onChange={(e) => handleInputChange('brand', e.target.value)}
+              />
+              <label htmlFor="brand">Brand</label>
+            </FloatLabel>
+          </div>
+        </div>
 
-          {attr.data_type === 'DATE' && (
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <Dropdown
+                value={formData.category}
+                options={categories}
+                className="w-full"
+                optionLabel="label"
+                optionValue="value"
+                onChange={(e) => {
+                  handleInputChange('category', e.value)
+                  // When category changes, fetch subcategories for the new category
+                  fetchSubcategories(e.value).then(setSubCategories).catch(console.error)
+                  // Reset subcategory selection
+                  handleInputChange('subcategory', 0)
+                }}
+              />
+              <label htmlFor="category">Category</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <Dropdown
+                value={formData.subcategory}
+                options={subCategories}
+                className="w-full"
+                optionLabel="label"
+                optionValue="value"
+                onChange={(e) => handleInputChange('subcategory', e.value)}
+              />
+              <label htmlFor="subcategory">Subcategory</label>
+            </FloatLabel>
+          </div>
+        </div>
+      </section>
+
+      {/* 2️⃣ Pricing & Tax Information */}
+      <section className="mt-2">
+        {/* <h3 className="text-lg font-semibold text-gray-700 mb-3">2. Pricing & Tax Information</h3> */}
+
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="price"
+                value={formData.price}
+                className="w-full"
+                onChange={(e) => handleInputChange('price', e.target.value)}
+              />
+              <label htmlFor="price">Selling Price</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText id="mrp" value={formData.mrp} className="w-full" disabled />
+              <label htmlFor="mrp">MRP (auto-calculated)</label>
+            </FloatLabel>
+          </div>
+        </div>
+
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText id="cost" value={formData.cost} className="w-full" disabled />
+              <label htmlFor="cost">Cost Price</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1 flex align-items-center gap-3">
+            <span>Enable Special Price</span>
+            <InputSwitch
+              checked={formData.featured}
+              onChange={(e) => handleInputChange('featured', e.value)}
+            />
+          </div>
+        </div>
+
+        {/* <Divider className="" /> */}
+
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <Dropdown
+                id="taxClass"
+                value={formData.taxClass}
+                options={[
+                  { label: 'GST 0%', value: 'GST_0' },
+                  { label: 'GST 2%', value: 'GST_2' },
+                  { label: 'GST 5%', value: 'GST_5' },
+                  { label: 'GST 12%', value: 'GST_12' },
+                  { label: 'GST 18%', value: 'GST_18' }
+                ]}
+                onChange={(e) => handleInputChange('taxClass', e.value)}
+                className="w-full"
+                placeholder="Select Tax Class"
+              />
+              <label htmlFor="taxClass">Tax Class</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="splPrice"
+                value={formData.splPrice}
+                className="w-full"
+                disabled={!formData.featured}
+                onChange={(e) => handleInputChange('splPrice', e.target.value)}
+              />
+              <label htmlFor="splPrice">Special Price</label>
+            </FloatLabel>
+          </div>
+        </div>
+        <div className="flex gap-3 mb-3">
+          <div className="flex-1">
             <FloatLabel className="always-float">
               <Calendar
-                value={formData[attr.column_name]}
-                onChange={(e) => handleInputChange(attr.column_name, e.value)}
+                id="startDate"
+                value={formData.startDate}
+                onChange={(e) => handleInputChange('startDate', e.value)}
+                dateFormat="yy-mm-dd"
+                disabled={!formData.featured}
+                className="w-full"
+                showIcon
+              />
+              <label htmlFor="startDate">Start Date</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <Calendar
+                id="endDate"
+                value={formData.endDate}
+                disabled={!formData.featured}
+                onChange={(e) => handleInputChange('endDate', e.value)}
                 dateFormat="yy-mm-dd"
                 className="w-full"
                 showIcon
               />
-              <label>{attr.column_label}</label>
+              <label htmlFor="endDate">End Date</label>
             </FloatLabel>
-          )}
-
-          {attr.data_type === 'DROPDOWN' && (
-            <FloatLabel className="always-float">
-              <Dropdown
-                value={formData[attr.column_name]}
-                options={getDropdownOptions(attr.column_name)}
-                onChange={(e) => handleInputChange(attr.column_name, e.value)}
-                className="w-full"
-                placeholder={`Select ${attr.column_label}`}
-              />
-              <label>{attr.column_label}</label>
-            </FloatLabel>
-          )}
-
-          {attr.data_type === 'IMAGE' && (
-            <FileUpload
-              name={attr.column_name}
-              mode="basic"
-              accept="image/*"
-              maxFileSize={2000000}
-              customUpload
-              multiple
-              chooseLabel={`Upload ${attr.column_label}`}
-              uploadHandler={(e) => handleImageUpload(attr.column_name, e.files)}
-            />
-          )}
+          </div>
         </div>
-      ))}
+      </section>
 
+      {/* Media Upload */}
+      <section className="mt-3">
+        <h3 className="text-lg font-semibold text-gray-700 mb-2">3. Media / Uploads</h3>
+        <FileUpload
+          name="productImage"
+          mode="basic"
+          accept="image/*"
+          maxFileSize={1000000}
+          auto
+          chooseLabel="Upload Product Image (Optional)"
+          customUpload
+          uploadHandler={handleImageUpload}
+        />
+      </section>
+
+      {/* Save Button */}
       <div className="mt-3 flex justify-content-end">
         <Button
           label="Save Product"

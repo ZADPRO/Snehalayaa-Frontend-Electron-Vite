@@ -8,7 +8,6 @@ import {
   LogOut,
   PackageSearch,
   Settings,
-  ShoppingBag,
   ShoppingCart
 } from 'lucide-react'
 
@@ -19,23 +18,28 @@ const topRoutes = [
   {
     path: '/dashboard',
     name: 'DashBoard',
-    icon: <LayoutGrid />
+    icon: <LayoutGrid size={20} />
   },
   {
     path: '/inventory',
     name: 'Inventory',
-    icon: <PackageSearch />
+    icon: <PackageSearch size={20} />
   },
   {
     path: '/pomgmt',
-    name: 'Purchase Order',
-    icon: <ShoppingCart />
+    name: 'Purchase Orders',
+    icon: <ShoppingCart size={20} />
   },
   {
-    path: '/pos',
-    name: 'POS',
-    icon: <ShoppingBag />
+    path: '/purchaseOrder',
+    name: 'Purchase Order',
+    icon: <ShoppingCart size={20} />
   },
+  // {
+  //   path: '/pos',
+  //   name: 'POS',
+  //   icon: <ShoppingBag />
+  // },
   // {
   //   path: '/notifications',
   //   name: 'Notifications',
@@ -44,7 +48,7 @@ const topRoutes = [
   {
     path: '/reports',
     name: 'Reports',
-    icon: <FileStack />
+    icon: <FileStack size={20} />
   }
 ]
 
@@ -52,17 +56,17 @@ const bottomRoutes = [
   {
     path: '/settings',
     name: 'Settings',
-    icon: <Settings />
+    icon: <Settings size={20} />
   },
   {
     path: '/profile',
     name: 'Profile',
-    icon: <CircleUserRound />
+    icon: <CircleUserRound size={20} />
   },
   {
     path: '#',
     name: 'Logout',
-    icon: <LogOut />
+    icon: <LogOut size={20} />
   }
 ]
 

@@ -30,7 +30,8 @@ const SettingsAddEditAttributes: React.FC<SettingsAddEditAttributesProps> = ({
     { label: 'Date', value: 'DATE' },
     { label: 'Image', value: 'IMAGE' },
     { label: 'Boolean', value: 'BOOLEAN' },
-    { label: 'Dropdown', value: 'DROPDOWN' }
+    { label: 'Dropdown', value: 'DROPDOWN' },
+    { label: 'MultiSelect', value: 'MULTISELECT' }
   ]
 
   useEffect(() => {
