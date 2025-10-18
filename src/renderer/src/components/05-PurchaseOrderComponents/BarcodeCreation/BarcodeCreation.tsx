@@ -8,7 +8,7 @@ import Barcode from 'react-barcode'
 import { ProgressSpinner } from 'primereact/progressspinner'
 
 const LABEL_WIDTH = 60 // mm
-const LABEL_HEIGHT = 30 // mm
+const LABEL_HEIGHT = 20 // mm
 
 interface SimplifiedPurchaseOrderProduct {
   DummyProductsID: number
@@ -156,48 +156,80 @@ const BarcodeCreation: React.FC = () => {
 
       <div id="print-area">
         {selectedRows.map((p) => (
-          <div key={p.sku} className="barcode-label">
-            <p className="font-bold uppercase">{p.name}</p>
-            <div style={{ marginTop: '-4px' }}>
+          <div key={p.sku} className="barcode-label hidden">
+            <p className="product-name">{p.name}</p>
+            <div className="barcode-wrapper">
               <Barcode value={p.sku} height={35} width={1} displayValue={false} />
             </div>
-            <div>SKU: {p.sku}</div>
-            <div>₹ {parseFloat(p.price).toFixed(2)}</div>
-            <div>P-INV-1025-10001 | 1 | SI1001</div>
+            <div className="sku">SKU: {p.sku}</div>
+            <div className="price">₹ {parseFloat(p.price).toFixed(2)}</div>
+            <div className="pinv">P-INV-1025-10001 | 1 | SI1001</div>
           </div>
         ))}
 
         <style>
           {`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #print-area, #print-area * {
-              visibility: visible;
-            }
-            #print-area {
-              display: grid !important;
-              grid-template-columns: repeat(2, 1fr) !important;
-              gap: 5mm;
-              padding-left: 10mm; /* <-- add left padding to shift right */
-              padding-top: 5mm;   /* optional, shift down a little */
-              margin: 0;
-            }
-            .barcode-label {
-              width: auto !important;
-              height: auto !important;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              page-break-inside: avoid;
-              border: none !important;
-            }
-            .barcode-label{
-              text-transform: uppercase;
-            }
-          }
+      .barcode-label {
+        width: ${LABEL_WIDTH}mm;
+        height: ${LABEL_HEIGHT}mm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        margin: 5px;
+      }
+      .product-name {
+        font-weight: bold;
+        margin: 0;
+        margin-bottom: 2px; /* reduce gap below name */
+      }
+      .barcode-wrapper {
+        margin-top: -2px; /* move barcode closer to name */
+        margin-bottom: 2px;
+      }
+      .pinv {
+        font-size: 9px; /* smaller font for P-INV text */
+      }
+
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #print-area, #print-area * {
+          visibility: visible;
+          font-weight: bold; /* ensure bold carries in print */
+        }
+        #print-area {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 5mm;
+          padding-left: 10mm;
+          padding-top: 5mm;
+          margin: 0;
+        }
+        .barcode-label {
+          width: auto !important;
+          height: auto !important;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          page-break-inside: avoid;
+          border: none !important;
+          text-transform: uppercase;
+        }
+        .product-name {
+          font-weight: bold;
+        }
+        .pinv {
+          font-size: 7pt !important;
+        }
+        .barcode-wrapper {
+          margin-top: -1mm !important;
+          margin-bottom: 1mm !important;
+        }
+      }
     `}
         </style>
       </div>

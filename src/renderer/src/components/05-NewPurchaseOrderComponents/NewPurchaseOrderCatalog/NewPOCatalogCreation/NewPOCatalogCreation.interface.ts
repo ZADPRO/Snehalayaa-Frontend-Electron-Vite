@@ -31,6 +31,8 @@ export interface AcceptedProduct {
   unit_price: string
   accepted_quantity: string
   accepted_total: string
+  ordered_quantity: string
+  ordered_total: string
   status: string
   updated_at: string
   updated_by: string
@@ -47,7 +49,7 @@ export interface PurchaseOrder {
 }
 
 export interface Props {
-  purchaseOrder: PurchaseOrder
+  purchaseOrder: any
 }
 
 export interface DialogRow {
@@ -57,6 +59,26 @@ export interface DialogRow {
   referenceNumber: string
   productDescription: string
   price: number
+  discount: any
+  discountPrice: any
   margin: number
   totalAmount: any
+}
+
+export interface TableRow {
+  id: number
+  sNo: number
+  category: Category | null
+  subCategory: SubCategory | null
+  lineNumber: number
+  quantity: number
+  productName: string
+  brand: string
+  taxClass: string
+  price: number
+  mrp: number
+  cost: number
+  profitMargin: number
+  sellingPrice: number
+  dialogRows: DialogRow[]
 }
