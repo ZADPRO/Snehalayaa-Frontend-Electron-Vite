@@ -134,16 +134,9 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     generateDialogRows(value)
   }
 
-  // const handleKeyDown = (
-  //   e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
-  //   index: number
-  // ) => {
-  //   if (e.key === 'Enter') {
-  //     e.preventDefault()
-  //     const next = inputRefs.current[index + 1]
-  //     if (next) next.focus()
-  //   }
-  // }
+  useEffect(() => {
+    inputRefs.current = dialogRows.flatMap(() => Array.from({ length: 8 }, () => null))
+  }, [dialogRows])
 
   const generateDialogRows = (qty: number) => {
     const baseSNo = editingRow ? editingRow.dialogRows[0]?.sNo || 1 : rows.length + 1
@@ -419,8 +412,9 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
           </div>
 
           {dialogRows.map((row, rowIndex) => {
-            const inputRefs: React.RefObject<HTMLInputElement>[] = Array.from({ length: 8 }, () =>
-              React.createRef<HTMLInputElement>()
+            const inputRefs: React.RefObject<HTMLInputElement | null>[] = Array.from(
+              { length: 8 },
+              () => React.createRef<HTMLInputElement | null>()
             )
 
             const handleKeyDown = (e: React.KeyboardEvent, colIndex: number) => {
@@ -443,8 +437,11 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                       handleDialogRowChange(rowIndex, 'lineNumber', e.value || 1)
                     }
                     className="w-full"
-                    inputRef={inputRefs[0]}
-                    onKeyDown={(e) => handleKeyDown(e, 0)}
+                    inputRef={(el) => {
+                      console.log('el', el)
+                      // inputRefs.current[rowIndex * 8 + 0] = el
+                    }}
+                    onKeyDown={(e) => handleKeyDown(e, rowIndex * 8 + 0)}
                   />
                 </div>
 
