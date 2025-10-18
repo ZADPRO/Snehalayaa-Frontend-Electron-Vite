@@ -159,11 +159,11 @@ const BarcodeCreation: React.FC = () => {
           <div key={p.sku} className="barcode-label">
             <p className="font-bold uppercase">{p.name}</p>
             <div style={{ marginTop: '-4px' }}>
-              <Barcode value={p.sku} height={40} width={1} displayValue={false} />
+              <Barcode value={p.sku} height={35} width={1} displayValue={false} />
             </div>
             <div>SKU: {p.sku}</div>
             <div>₹ {parseFloat(p.price).toFixed(2)}</div>
-            <div>P-INV-1025-10001 | SI1001</div>
+            <div>P-INV-1025-10001 | 1 | SI1001</div>
           </div>
         ))}
 
