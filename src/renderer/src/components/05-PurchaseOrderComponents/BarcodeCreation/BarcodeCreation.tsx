@@ -54,44 +54,68 @@ const BarcodeCreation: React.FC = () => {
       if (!printWindow) return
 
       printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print Labels</title>
-            <style>
-              @media print {
-                body * { visibility: hidden; }
-                #print-area, #print-area * { visibility: visible; }
-                #print-area { position: absolute; left: 0; top: 0; }
-                .barcode-label {
-                  width: ${LABEL_WIDTH}mm;
-                  height: ${LABEL_HEIGHT}mm;
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                  justify-content: center;
-                  font-size: 12px;
-                  page-break-inside: avoid;
-                  margin: 0;
-                }
-              }
-              .barcode-label {
-                width: ${LABEL_WIDTH}mm;
-                height: ${LABEL_HEIGHT}mm;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                font-size: 12px;
-                border: 1px solid #ccc;
-                margin: 5px;
-              }
-            </style>
-          </head>
-          <body>
-            <div id="print-area">${printContents}</div>
-          </body>
-        </html>
-      `)
+  <html>
+    <head>
+      <title>Print Labels</title>
+      <!-- Import Roboto with weight 500 -->
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+      <style>
+        /* Apply Roboto Medium to all labels */
+        .barcode-label {
+          font-family: 'Roboto', sans-serif;
+          font-weight: 500;
+        }
+      </style>
+      <style>
+        @media print {
+          body * { visibility: hidden; }
+          #print-area, #print-area * {
+            visibility: visible;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500; /* ensure medium weight for print */
+          }
+          #print-area {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 5mm;
+            padding-left: 3mm;
+            padding-top: 5mm;
+            margin: 0;
+          }
+          .barcode-label {
+            width: auto !important;
+            height: auto !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            page-break-inside: avoid;
+            border: none !important;
+            text-transform: uppercase;
+            font-family: 'Roboto', sans-serif !important;
+            font-weight: 500 !important;
+          }
+        }
+        .barcode-label {
+          width: ${LABEL_WIDTH}mm;
+          height: ${LABEL_HEIGHT}mm;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          margin: 5px;
+          font-family: 'Roboto', sans-serif;
+          font-weight: 500;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="print-area">${printContents}</div>
+    </body>
+  </html>
+`)
+
       printWindow.document.close()
       printWindow.focus()
       printWindow.print()
@@ -204,7 +228,7 @@ const BarcodeCreation: React.FC = () => {
           display: grid !important;
           grid-template-columns: repeat(2, 1fr) !important;
           gap: 5mm;
-          padding-left: 10mm;
+          padding-left: 3mm;
           padding-top: 5mm;
           margin: 0;
         }
