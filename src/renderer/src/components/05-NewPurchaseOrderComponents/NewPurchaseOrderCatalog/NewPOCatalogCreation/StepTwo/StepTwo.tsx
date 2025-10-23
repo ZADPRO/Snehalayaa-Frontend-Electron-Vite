@@ -8,9 +8,10 @@ import { InputNumber } from 'primereact/inputnumber'
 import { Dropdown } from 'primereact/dropdown'
 import { Toast } from 'primereact/toast'
 import { FloatLabel } from 'primereact/floatlabel'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, Trash2 } from 'lucide-react'
 import { fetchCategories, fetchSubCategories } from '../NewPOCatalogCreation.function'
 import { Category, SubCategory, TableRow, DialogRow } from '../NewPOCatalogCreation.interface'
+import { Divider } from 'primereact/divider'
 
 interface StepTwoProps {
   purchaseOrder: any
@@ -144,22 +145,25 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   }
 
   const generateDialogRows = (qty: number) => {
-    const newRows: DialogRow[] = []
-    for (let i = 0; i < qty; i++) {
-      newRows.push({
-        id: Date.now() + i,
-        sNo: i + 1,
-        lineNumber,
-        referenceNumber: '',
-        productDescription: '',
-        discount: discountPercent,
-        price: cost,
-        discountPrice: discountPrice,
-        margin: profitMargin,
-        totalAmount: ((discountPrice || cost) * (1 + profitMargin / 100)).toFixed(2)
-      })
-    }
-    setDialogRows(newRows)
+    setDialogRows((prevRows) => {
+      const newRows: DialogRow[] = []
+      for (let i = 0; i < qty; i++) {
+        const existing = prevRows[i]
+        newRows.push({
+          id: existing?.id || Date.now() + i,
+          sNo: i + 1,
+          lineNumber,
+          referenceNumber: existing?.referenceNumber || '',
+          productDescription: existing?.productDescription || '',
+          discount: discountPercent,
+          price: cost,
+          discountPrice: discountPrice,
+          margin: profitMargin,
+          totalAmount: ((discountPrice || cost) * (1 + profitMargin / 100)).toFixed(2)
+        })
+      }
+      return newRows
+    })
   }
 
   const handleDialogRowChange = (index: number, field: keyof DialogRow, value: number | string) => {
@@ -184,7 +188,20 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     setDialogRows(updated)
   }
 
+  const canGenerateRows = () => {
+    return (
+      lineNumber > 0 &&
+      productName.trim() !== '' &&
+      selectedCategory &&
+      selectedSubCategory &&
+      cost > 0 &&
+      quantity > 0
+    )
+  }
+
   const handleQuantityChange = (value: number) => {
+    if (!canGenerateRows()) return
+
     if (value > remainingQuantity) value = remainingQuantity
     setQuantity(value)
     generateDialogRows(value)
@@ -229,22 +246,43 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     toast.current?.show({ severity: 'success', summary: 'Saved', detail: 'Row saved successfully' })
   }
 
-  // Enter key navigation (→, ↓ next row)
-  const handleEnterKey = (
+  const focusNextInput = (
     e: React.KeyboardEvent<HTMLInputElement>,
     rowIndex: number,
-    colIndex: number
+    field: keyof DialogRow
   ) => {
-    console.log('colIndex', colIndex)
+    console.log('field', field)
     console.log('rowIndex', rowIndex)
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      const inputs = document.querySelectorAll('input, .p-inputnumber-input')
-      const currentIndex = Array.from(inputs).indexOf(e.currentTarget)
-      const nextInput = inputs[currentIndex + 1]
-      if (nextInput) (nextInput as HTMLElement).focus()
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+
+    const table = e.currentTarget.closest('.p-datatable-wrapper')
+    if (!table) return
+
+    const inputs = table.querySelectorAll<HTMLInputElement>('.p-inputtext, .p-inputnumber-input')
+    const currentIndex = Array.from(inputs).indexOf(e.currentTarget as HTMLInputElement)
+
+    const nextInput = inputs[currentIndex + 1]
+    if (nextInput) {
+      nextInput.focus()
+      if ((nextInput as HTMLInputElement).select) (nextInput as HTMLInputElement).select()
     }
   }
+
+  useEffect(() => {
+    if (dialogRows.length === 0) return
+    setDialogRows((prevRows) =>
+      prevRows.map((row) => ({
+        ...row,
+        lineNumber,
+        discount: discountPercent,
+        price: cost,
+        discountPrice: discountPrice,
+        margin: profitMargin,
+        totalAmount: ((discountPrice || cost) * (1 + profitMargin / 100)).toFixed(2)
+      }))
+    )
+  }, [lineNumber, cost, discountPercent, discountPrice, profitMargin])
 
   return (
     <div>
@@ -267,7 +305,18 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
 
       <DataTable value={rows} responsiveLayout="scroll" showGridlines rowHover>
         <Column field="sNo" header="S.No." />
-        <Column field="lineNumber" header="Line No." />
+        <Column
+          field="lineNumber"
+          header="Line No."
+          body={(rowData) => (
+            <span
+              className="cursor-pointer text-blue-600 hover:underline"
+              onClick={() => openEditDialog(rowData)}
+            >
+              {rowData.lineNumber}
+            </span>
+          )}
+        />
         <Column field="category.categoryName" header="Category" />
         <Column field="subCategory.subCategoryName" header="Sub Category" />
         <Column field="productName" header="Product" />
@@ -283,7 +332,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
         onHide={() => setDialogVisible(false)}
         style={{ width: '95vw', height: '95vh' }}
         footer={
-          <div className="flex justify-end">
+          <div className="flex justify-content-end">
             <Button label="Save" icon={<Check size={18} />} className="gap-3" onClick={saveRow} />
           </div>
         }
@@ -421,67 +470,121 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
         </div>
 
         {/* Dialog Table */}
-        <div className="mt-4 px-3" style={{ maxHeight: '400px' }}>
-          <div className="grid grid-cols-8 gap-3 font-bold border-b pb-2 text-center">
-            <div>S.No</div>
-            <div>Line Item</div>
-            <div>Ref No</div>
-            <div>Description</div>
-            <div>Discount %</div>
-            <div>Discount Price</div>
-            <div>Price</div>
-            <div>Total</div>
-          </div>
-          {dialogRows.map((row, i) => (
-            <div key={row.id} className="grid grid-cols-8 gap-3 mt-2 align-items-center">
-              <div className="text-center">{row.sNo}</div>
-
+        <Divider />
+        <div className="mb-2 font-medium">
+          {dialogRows.length} product{dialogRows.length !== 1 ? 's' : ''} generated
+        </div>
+        <DataTable
+          value={dialogRows}
+          responsiveLayout="scroll"
+          showGridlines
+          rowHover
+          className="p-datatable-sm"
+        >
+          <Column
+            header="S.No"
+            body={(rowData) => <span className="p-text-center">{rowData.sNo}</span>}
+            style={{ width: '4rem', textAlign: 'center' }}
+          />
+          <Column
+            header="Line Item"
+            body={(rowData, { rowIndex }) => (
               <InputNumber
-                value={row.lineNumber}
-                onValueChange={(e) => handleDialogRowChange(i, 'lineNumber', e.value || 0)}
-                onKeyDown={(e) => handleEnterKey(e, i, 1)}
+                value={rowData.lineNumber}
+                onValueChange={(e) => handleDialogRowChange(rowIndex, 'lineNumber', e.value || 0)}
+                className="w-full"
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
               />
-
+            )}
+            style={{ textAlign: 'center' }}
+          />
+          <Column
+            header="Ref No"
+            body={(rowData, { rowIndex }) => (
               <InputText
-                value={row.referenceNumber}
-                onChange={(e) => handleDialogRowChange(i, 'referenceNumber', e.target.value)}
-                onKeyDown={(e) => handleEnterKey(e, i, 2)}
+                value={rowData.referenceNumber}
+                onChange={(e) => handleDialogRowChange(rowIndex, 'referenceNumber', e.target.value)}
+                className="w-full"
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'referenceNumber')}
               />
-
+            )}
+          />
+          <Column
+            header="Description"
+            body={(rowData, { rowIndex }) => (
               <InputText
-                value={row.productDescription}
-                onChange={(e) => handleDialogRowChange(i, 'productDescription', e.target.value)}
-                onKeyDown={(e) => handleEnterKey(e, i, 3)}
+                value={rowData.productDescription}
+                onChange={(e) =>
+                  handleDialogRowChange(rowIndex, 'productDescription', e.target.value)
+                }
+                className="w-full"
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'referenceNumber')}
               />
-
+            )}
+          />
+          <Column
+            header="Discount %"
+            body={(rowData, { rowIndex }) => (
               <InputNumber
-                value={row.discount}
-                onValueChange={(e) => handleDialogRowChange(i, 'discount', e.value || 0)}
+                value={rowData.discount}
+                onValueChange={(e) => handleDialogRowChange(rowIndex, 'discount', e.value || 0)}
                 min={0}
                 max={100}
-                onKeyDown={(e) => handleEnterKey(e, i, 4)}
+                className="w-full"
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
               />
-
+            )}
+          />
+          <Column
+            header="Discount Price"
+            body={(rowData, { rowIndex }) => (
               <InputNumber
-                value={row.discountPrice}
-                onValueChange={(e) => handleDialogRowChange(i, 'discountPrice', e.value || 0)}
-                onKeyDown={(e) => handleEnterKey(e, i, 5)}
+                value={rowData.discountPrice}
+                onValueChange={(e) =>
+                  handleDialogRowChange(rowIndex, 'discountPrice', e.value || 0)
+                }
+                className="w-full"
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
               />
-
+            )}
+          />
+          <Column
+            header="Price"
+            body={(rowData, { rowIndex }) => (
               <InputNumber
-                value={row.price}
-                onValueChange={(e) => handleDialogRowChange(i, 'price', e.value || 0)}
-                onKeyDown={(e) => handleEnterKey(e, i, 6)}
+                value={rowData.price}
+                onValueChange={(e) => handleDialogRowChange(rowIndex, 'price', e.value || 0)}
+                className="w-full"
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
               />
-
+            )}
+          />
+          <Column
+            header="Total"
+            body={(rowData, { rowIndex }) => (
               <InputNumber
-                value={Number(row.totalAmount)}
-                onValueChange={(e) => handleDialogRowChange(i, 'totalAmount', e.value || 0)}
-                onKeyDown={(e) => handleEnterKey(e, i, 7)}
+                value={Number(rowData.totalAmount)}
+                onValueChange={(e) => handleDialogRowChange(rowIndex, 'totalAmount', e.value || 0)}
+                className="w-full"
               />
-            </div>
-          ))}
-        </div>
+            )}
+          />
+          <Column
+            header="Action"
+            body={(_rowData, { rowIndex }) => (
+              <Button
+                icon={<Trash2 />}
+                className="p-button-danger"
+                onClick={() => {
+                  const updatedRows = [...dialogRows]
+                  updatedRows.splice(rowIndex, 1)
+                  setDialogRows(updatedRows)
+                  setQuantity(updatedRows.length)
+                }}
+              />
+            )}
+          />
+        </DataTable>
       </Dialog>
     </div>
   )

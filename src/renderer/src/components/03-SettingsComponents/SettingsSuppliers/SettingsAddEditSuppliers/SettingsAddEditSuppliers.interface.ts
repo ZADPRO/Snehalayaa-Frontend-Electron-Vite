@@ -29,7 +29,6 @@ export interface SupplierStatusOptions {
 }
 
 export interface SupplierFormData {
-  // supplierId: number
   supplierName: string
   supplierCompanyName: string
   supplierCode: string
@@ -48,8 +47,8 @@ export interface SupplierFormData {
   supplierStreet: string
   supplierCity: string
   supplierState: string
-  creditedDays: number
   supplierCountry: string
+  creditedDays: number
   pincode: string
 }
 

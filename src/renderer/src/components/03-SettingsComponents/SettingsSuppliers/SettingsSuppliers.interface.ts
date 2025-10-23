@@ -20,4 +20,5 @@ export interface Supplier {
   supplierState: string
   supplierCountry: string
   creditedDays: number
+  pincode: string
 }
