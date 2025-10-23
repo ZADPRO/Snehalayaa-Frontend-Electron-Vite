@@ -44,7 +44,7 @@ const sidebarItems = [
 ]
 
 const PurchaseOrderManagement: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('goodsReceivedNotes')
+  const [activeKey, setActiveKey] = useState('createPurchaseOrder')
 
   return (
     <div>

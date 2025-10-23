@@ -20,7 +20,7 @@ interface AcceptedProduct {
 
 interface PurchaseOrder {
   purchase_order_id: number
-  invoice_number: string
+  purchaseOrderNumber: string
   branch_id: number
   supplier_id: number
   total_amount: string
@@ -31,7 +31,7 @@ interface PurchaseOrder {
 // Flatten data for row grouping
 interface RowData {
   serial: number
-  invoice_number: string
+  purchaseOrderNumber: string
   total_amount: string
   product_description: string
   unit_price: string
@@ -54,7 +54,7 @@ const NewPurchaseOrderCatalog: React.FC = () => {
         po.accepted_products.forEach((prod) => {
           tempRows.push({
             serial: index + 1,
-            invoice_number: po.invoice_number,
+            purchaseOrderNumber: po.purchaseOrderNumber,
             total_amount: po.total_amount,
             product_description: prod.product_description,
             unit_price: prod.unit_price,
@@ -66,6 +66,7 @@ const NewPurchaseOrderCatalog: React.FC = () => {
         })
       })
       setRows(tempRows)
+      console.log('tempRows', tempRows)
     }
   }
 
@@ -83,7 +84,7 @@ const NewPurchaseOrderCatalog: React.FC = () => {
       style={{ color: 'blue', cursor: 'pointer', textDecoration: 'underline' }}
       onClick={() => handleInvoiceClick(rowData)}
     >
-      {rowData.invoice_number}
+      {rowData.purchaseOrderNumber}
     </span>
   )
 
@@ -93,12 +94,12 @@ const NewPurchaseOrderCatalog: React.FC = () => {
       <DataTable
         value={rows}
         rowGroupMode="rowspan"
-        groupRowsBy="invoice_number"
+        groupRowsBy="purchaseOrderNumber"
         responsiveLayout="scroll"
         showGridlines
       >
         <Column header="#" body={(_, options) => options.rowIndex + 1}></Column>
-        <Column field="invoice_number" header="Invoice" body={invoiceTemplate}></Column>
+        <Column field="purchaseOrderNumber" header="Invoice" body={invoiceTemplate}></Column>
         <Column field="product_description" header="Product"></Column>
         <Column field="unit_price" header="Unit Price"></Column>
         <Column field="accepted_quantity" header="Accepted Qty"></Column>

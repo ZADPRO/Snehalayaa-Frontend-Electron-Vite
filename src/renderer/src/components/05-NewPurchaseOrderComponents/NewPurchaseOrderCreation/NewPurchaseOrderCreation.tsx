@@ -260,13 +260,13 @@ const NewPurchaseOrderCreation: React.FC = () => {
             label="Download"
             icon={<Download size={16} />}
             className="p-button-outlined gap-2"
-            disabled={!isSaved}
+            // disabled={!isSaved}
           />
           <Button
             label="Print"
             icon={<Printer size={16} />}
             className="p-button-outlined gap-2"
-            disabled={!isSaved}
+            // disabled={!isSaved}
           />
         </div>
       </div>

@@ -20,6 +20,7 @@ export interface Supplier {
   supplierState: string
   supplierCountry: string
   creditedDays: number
+  pincode: string
 }
 
 export interface SupplierStatusOptions {
@@ -49,6 +50,7 @@ export interface SupplierFormData {
   supplierState: string
   creditedDays: number
   supplierCountry: string
+  pincode: string
 }
 
 export interface SettingsAddEditSupplierProps {

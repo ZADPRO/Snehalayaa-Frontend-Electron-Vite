@@ -13,7 +13,7 @@ const NewPOCatalogCreation: React.FC<Props> = ({ purchaseOrder }) => {
   return (
     <div>
       <Toast ref={toast} />
-      <h3 className="m-0">PO: {purchaseOrder.invoice_number}</h3>
+      <h3 className="m-0">PO: {purchaseOrder.purchaseOrderNumber}</h3>
       <div className="flex align-items-center gap-5">
         <h4 className="m-0">
           Total Ordered Quantity: {purchaseOrder.accepted_products[0].ordered_quantity}

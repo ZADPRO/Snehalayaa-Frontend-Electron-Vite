@@ -40,7 +40,7 @@ export interface AcceptedProduct {
 
 export interface PurchaseOrder {
   purchase_order_id: number
-  invoice_number: string
+  purchaseOrderNumber: string
   branch_id: number
   supplier_id: number
   total_amount: string

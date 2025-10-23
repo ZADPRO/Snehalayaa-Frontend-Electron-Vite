@@ -18,8 +18,6 @@ interface StepTwoProps {
 
 const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   const toast = useRef<Toast>(null)
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
-
   const [rows, setRows] = useState<TableRow[]>([])
   const [dialogVisible, setDialogVisible] = useState(false)
   const [editingRow, setEditingRow] = useState<TableRow | null>(null)
@@ -39,22 +37,11 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   const [cost, setCost] = useState<number>(0)
   const [profitMargin, setProfitMargin] = useState<number>(0)
   const [sellingPrice, setSellingPrice] = useState<number>(0)
+  const [discountPercent, setDiscountPercent] = useState<number>(0)
+  const [discountPrice, setDiscountPrice] = useState<number>(0)
   const [dialogRows, setDialogRows] = useState<DialogRow[]>([])
 
   const acceptedTotal = Number(purchaseOrder.accepted_products[0]?.accepted_total || 0)
-
-  const filteredSubCategories = selectedCategory
-    ? subCategoryOptions.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
-    : []
-
-  const generateSKU = (index: number): string => {
-    const now = new Date()
-    const datePart = `${String(now.getMonth() + 1).padStart(2, '0')}${String(
-      now.getDate()
-    ).padStart(2, '0')}${String(now.getFullYear()).slice(-2)}`
-    const serial = String(index + 1).padStart(3, '0')
-    return `SS${datePart}${serial}`
-  }
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -66,14 +53,27 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     loadOptions()
   }, [])
 
-  // Calculate selling price automatically
   useEffect(() => {
     const sp = cost + (cost * profitMargin) / 100
     setSellingPrice(Number(sp.toFixed(2)))
     setMrp(Number(sp.toFixed(2)))
   }, [cost, profitMargin])
 
-  // Restore rows from localStorage if exists
+  // Discount price auto-calculation both ways
+  useEffect(() => {
+    if (discountPercent > 0 && cost > 0) {
+      const discounted = cost - (cost * discountPercent) / 100
+      setDiscountPrice(Number(discounted.toFixed(2)))
+    }
+  }, [discountPercent])
+
+  useEffect(() => {
+    if (discountPrice > 0 && cost > 0 && discountPrice < cost) {
+      const percent = ((cost - discountPrice) / cost) * 100
+      setDiscountPercent(Number(percent.toFixed(2)))
+    }
+  }, [discountPrice])
+
   useEffect(() => {
     const storedData = localStorage.getItem(`po_${purchaseOrder.purchase_order_id}`)
     if (storedData) {
@@ -81,8 +81,21 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     }
   }, [purchaseOrder.purchase_order_id])
 
+  const filteredSubCategories = selectedCategory
+    ? subCategoryOptions.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
+    : []
+
   const remainingQuantity =
     acceptedTotal - rows.reduce((sum, r) => sum + r.quantity, 0) + (editingRow?.quantity || 0)
+
+  const generateSKU = (index: number): string => {
+    const now = new Date()
+    const datePart = `${String(now.getMonth() + 1).padStart(2, '0')}${String(
+      now.getDate()
+    ).padStart(2, '0')}${String(now.getFullYear()).slice(-2)}`
+    const serial = String(index + 1).padStart(3, '0')
+    return `SS${datePart}${serial}`
+  }
 
   const openAddDialog = () => {
     const remainingQty = acceptedTotal - rows.reduce((sum, r) => sum + r.quantity, 0)
@@ -107,6 +120,8 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     setCost(0)
     setProfitMargin(0)
     setSellingPrice(0)
+    setDiscountPercent(0)
+    setDiscountPrice(0)
     setDialogRows([])
     setDialogVisible(true)
   }
@@ -128,50 +143,51 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     setDialogVisible(true)
   }
 
-  const handleQuantityChange = (value: number) => {
-    if (value > remainingQuantity) value = remainingQuantity
-    setQuantity(value)
-    generateDialogRows(value)
-  }
-
-  useEffect(() => {
-    inputRefs.current = dialogRows.flatMap(() => Array.from({ length: 8 }, () => null))
-  }, [dialogRows])
-
   const generateDialogRows = (qty: number) => {
-    const baseSNo = editingRow ? editingRow.dialogRows[0]?.sNo || 1 : rows.length + 1
     const newRows: DialogRow[] = []
-
     for (let i = 0; i < qty; i++) {
       newRows.push({
         id: Date.now() + i,
-        sNo: baseSNo + i,
-        lineNumber: lineNumber,
+        sNo: i + 1,
+        lineNumber,
         referenceNumber: '',
         productDescription: '',
-        discount: 0,
+        discount: discountPercent,
         price: cost,
+        discountPrice: discountPrice,
         margin: profitMargin,
-        discountPrice: cost, // NEW FIELD
-        totalAmount: (cost * (1 + profitMargin / 100)).toFixed(2)
+        totalAmount: ((discountPrice || cost) * (1 + profitMargin / 100)).toFixed(2)
       })
     }
     setDialogRows(newRows)
   }
 
-  const handleDialogRowChange = (index: number, field: keyof DialogRow, value: string | number) => {
+  const handleDialogRowChange = (index: number, field: keyof DialogRow, value: number | string) => {
     const updated = [...dialogRows]
-    updated[index] = { ...updated[index], [field]: value } as DialogRow
+    const row = { ...updated[index], [field]: value }
 
-    const price = Number(updated[index].price)
-    const discount = Number(updated[index].discount || 0)
-    const margin = Number(updated[index].margin || 0)
+    let price = Number(row.price)
+    let discount = Number(row.discount)
+    let dPrice = Number(row.discountPrice)
+    let margin = Number(row.margin)
 
-    const discountedPrice = price - (price * discount) / 100
-    updated[index].discountPrice = Number(discountedPrice.toFixed(2)) // ✅ update discount price
-    updated[index].totalAmount = (discountedPrice * (1 + margin / 100)).toFixed(2)
+    if (field === 'discount') {
+      dPrice = price - (price * discount) / 100
+      row.discountPrice = Number(dPrice.toFixed(2))
+    } else if (field === 'discountPrice') {
+      discount = ((price - dPrice) / price) * 100
+      row.discount = Number(discount.toFixed(2))
+    }
 
+    row.totalAmount = ((dPrice || price) * (1 + margin / 100)).toFixed(2)
+    updated[index] = row
     setDialogRows(updated)
+  }
+
+  const handleQuantityChange = (value: number) => {
+    if (value > remainingQuantity) value = remainingQuantity
+    setQuantity(value)
+    generateDialogRows(value)
   }
 
   const saveRow = () => {
@@ -184,12 +200,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
       return
     }
 
-    // ✅ Add SKU for each dialog row before saving
-    const dialogRowsWithSKU = dialogRows.map((row, index) => ({
-      ...row,
-      sku: generateSKU(index)
-    }))
-
+    const dialogRowsWithSKU = dialogRows.map((r, i) => ({ ...r, sku: generateSKU(i) }))
     const newRow: TableRow = {
       id: editingRow ? editingRow.id : Date.now(),
       sNo: editingRow ? editingRow.sNo : rows.length + 1,
@@ -205,7 +216,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
       cost,
       profitMargin,
       sellingPrice,
-      dialogRows: dialogRowsWithSKU // ✅ updated rows with SKU
+      dialogRows: dialogRowsWithSKU
     }
 
     const updatedRows = editingRow
@@ -215,25 +226,35 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     setRows(updatedRows)
     localStorage.setItem(`po_${purchaseOrder.purchase_order_id}`, JSON.stringify(updatedRows))
     setDialogVisible(false)
-
     toast.current?.show({ severity: 'success', summary: 'Saved', detail: 'Row saved successfully' })
+  }
+
+  // Enter key navigation (→, ↓ next row)
+  const handleEnterKey = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    rowIndex: number,
+    colIndex: number
+  ) => {
+    console.log('colIndex', colIndex)
+    console.log('rowIndex', rowIndex)
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      const inputs = document.querySelectorAll('input, .p-inputnumber-input')
+      const currentIndex = Array.from(inputs).indexOf(e.currentTarget)
+      const nextInput = inputs[currentIndex + 1]
+      if (nextInput) (nextInput as HTMLElement).focus()
+    }
   }
 
   return (
     <div>
       <Toast ref={toast} />
 
-      <div className="flex gap-3 justify-content-end">
+      <div className="flex gap-3 justify-end mb-3">
+        <Button label="Add Product" icon={<Plus size={18} />} onClick={openAddDialog} />
         <Button
-          label="Add Product"
-          icon={<Plus size={18} />}
-          className="mb-3 flex gap-3 items-center"
-          onClick={openAddDialog}
-        />
-        <Button
-          label="Save"
+          label="Save All"
           icon={<Check size={18} />}
-          className="mb-3 flex gap-3 items-center"
           onClick={() =>
             toast.current?.show({
               severity: 'success',
@@ -244,13 +265,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
         />
       </div>
 
-      <DataTable
-        value={rows}
-        responsiveLayout="scroll"
-        showGridlines
-        rowHover
-        onRowClick={(e) => openEditDialog(e.data as TableRow)}
-      >
+      <DataTable value={rows} responsiveLayout="scroll" showGridlines rowHover>
         <Column field="sNo" header="S.No." />
         <Column field="lineNumber" header="Line No." />
         <Column field="category.categoryName" header="Category" />
@@ -267,271 +282,205 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
         style={{ width: '95vw', height: '95vh' }}
+        footer={
+          <div className="flex justify-end">
+            <Button label="Save" icon={<Check size={18} />} className="gap-3" onClick={saveRow} />
+          </div>
+        }
       >
-        {/* CATEGORY + SUBCATEGORY */}
+        {/* Category Row */}
         <div className="flex gap-3 mt-3">
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <Dropdown
-                value={selectedCategory}
-                options={categoryOptions}
-                optionLabel="categoryName"
-                onChange={(e) => {
-                  setSelectedCategory(e.value)
-                  setSelectedSubCategory(null)
-                }}
-                placeholder="Select Category"
-                className="w-full"
-              />
-              <label>Category</label>
-            </FloatLabel>
-          </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <Dropdown
-                value={selectedSubCategory}
-                options={filteredSubCategories}
-                optionLabel="subCategoryName"
-                onChange={(e) => setSelectedSubCategory(e.value)}
-                placeholder={selectedCategory ? 'Select Sub Category' : 'Select Category First'}
-                className="w-full"
-                disabled={!selectedCategory}
-              />
-              <label>Sub Category</label>
-            </FloatLabel>
-          </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputNumber
-                value={lineNumber}
-                onValueChange={(e) => setLineNumber(e.value || 1)}
-                min={1}
-                className="w-full"
-              />
-              <label>Line Number</label>
-            </FloatLabel>
-          </div>
+          <FloatLabel className="flex-1 always-float">
+            <Dropdown
+              value={selectedCategory}
+              options={categoryOptions}
+              optionLabel="categoryName"
+              onChange={(e) => {
+                setSelectedCategory(e.value)
+                setSelectedSubCategory(null)
+              }}
+              className="w-full"
+            />
+            <label>Category</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <Dropdown
+              value={selectedSubCategory}
+              options={filteredSubCategories}
+              optionLabel="subCategoryName"
+              onChange={(e) => setSelectedSubCategory(e.value)}
+              className="w-full"
+              disabled={!selectedCategory}
+            />
+            <label>Sub Category</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <InputNumber
+              value={lineNumber}
+              onValueChange={(e) => setLineNumber(e.value || 1)}
+              className="w-full"
+            />
+            <label>Line No.</label>
+          </FloatLabel>
         </div>
 
-        {/* Product, Brand, Tax */}
+        {/* Product Info */}
         <div className="flex gap-3 mt-3">
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputText
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                className="w-full"
-              />
-              <label>Product Name</label>
-            </FloatLabel>
-          </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputText
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                className="w-full"
-              />
-              <label>Brand</label>
-            </FloatLabel>
-          </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputText
-                value={taxClass}
-                onChange={(e) => setTaxClass(e.target.value)}
-                className="w-full"
-              />
-              <label>Tax Class</label>
-            </FloatLabel>
-          </div>
+          <FloatLabel className="flex-1 always-float">
+            <InputText
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              className="w-full"
+            />
+            <label>Product</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <InputText
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              className="w-full"
+            />
+            <label>Brand</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <InputText
+              value={taxClass}
+              onChange={(e) => setTaxClass(e.target.value)}
+              className="w-full"
+            />
+            <label>Tax Class</label>
+          </FloatLabel>
         </div>
 
-        {/* Cost, Profit, Selling */}
+        {/* Pricing Row */}
         <div className="flex gap-3 mt-3">
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputNumber
-                value={cost}
-                onValueChange={(e) => setCost(e.value || 0)}
-                min={0}
-                className="w-full"
-              />
-              <label>Cost</label>
-            </FloatLabel>
+          <FloatLabel className="flex-1 always-float">
+            <InputNumber
+              value={cost}
+              onValueChange={(e) => setCost(e.value || 0)}
+              min={0}
+              className="w-full"
+            />
+            <label>Cost</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <InputNumber
+              value={profitMargin}
+              onValueChange={(e) => setProfitMargin(e.value || 0)}
+              min={0}
+              max={100}
+              className="w-full"
+            />
+            <label>Profit %</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <InputNumber value={sellingPrice} disabled className="w-full" />
+            <label>Selling Price</label>
+          </FloatLabel>
+        </div>
+
+        {/* Quantity + Discount */}
+        <div className="flex gap-3 mt-3">
+          <FloatLabel className="flex-1 always-float">
+            <InputNumber
+              value={quantity}
+              className="w-full"
+              onValueChange={(e) => handleQuantityChange(e.value || 0)}
+              min={0}
+              max={remainingQuantity}
+            />
+            <label>Quantity</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <InputNumber
+              value={discountPercent}
+              className="w-full"
+              onValueChange={(e) => setDiscountPercent(e.value || 0)}
+              min={0}
+              max={100}
+            />
+            <label>Discount %</label>
+          </FloatLabel>
+
+          <FloatLabel className="flex-1 always-float">
+            <InputNumber
+              value={discountPrice}
+              className="w-full"
+              onValueChange={(e) => setDiscountPrice(e.value || 0)}
+              min={0}
+            />
+            <label>Discount Price</label>
+          </FloatLabel>
+        </div>
+
+        {/* Dialog Table */}
+        <div className="mt-4 px-3" style={{ maxHeight: '400px' }}>
+          <div className="grid grid-cols-8 gap-3 font-bold border-b pb-2 text-center">
+            <div>S.No</div>
+            <div>Line Item</div>
+            <div>Ref No</div>
+            <div>Description</div>
+            <div>Discount %</div>
+            <div>Discount Price</div>
+            <div>Price</div>
+            <div>Total</div>
           </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
+          {dialogRows.map((row, i) => (
+            <div key={row.id} className="grid grid-cols-8 gap-3 mt-2 align-items-center">
+              <div className="text-center">{row.sNo}</div>
+
               <InputNumber
-                value={profitMargin}
-                onValueChange={(e) => setProfitMargin(e.value || 0)}
+                value={row.lineNumber}
+                onValueChange={(e) => handleDialogRowChange(i, 'lineNumber', e.value || 0)}
+                onKeyDown={(e) => handleEnterKey(e, i, 1)}
+              />
+
+              <InputText
+                value={row.referenceNumber}
+                onChange={(e) => handleDialogRowChange(i, 'referenceNumber', e.target.value)}
+                onKeyDown={(e) => handleEnterKey(e, i, 2)}
+              />
+
+              <InputText
+                value={row.productDescription}
+                onChange={(e) => handleDialogRowChange(i, 'productDescription', e.target.value)}
+                onKeyDown={(e) => handleEnterKey(e, i, 3)}
+              />
+
+              <InputNumber
+                value={row.discount}
+                onValueChange={(e) => handleDialogRowChange(i, 'discount', e.value || 0)}
                 min={0}
                 max={100}
-                className="w-full"
+                onKeyDown={(e) => handleEnterKey(e, i, 4)}
               />
-              <label>Profit %</label>
-            </FloatLabel>
-          </div>
-          <div className="flex-1">
-            <FloatLabel className="always-float">
-              <InputNumber value={sellingPrice} disabled className="w-full" />
-              <label>Selling Price</label>
-            </FloatLabel>
-          </div>
-        </div>
 
-        {/* Quantity */}
-        <div className="flex gap-3 mt-3">
-          <div className="flex-1">
-            <FloatLabel className="always-float">
               <InputNumber
-                value={quantity}
-                min={0}
-                max={remainingQuantity}
-                onValueChange={(e) => handleQuantityChange(e.value || 0)}
-                className="w-full"
+                value={row.discountPrice}
+                onValueChange={(e) => handleDialogRowChange(i, 'discountPrice', e.value || 0)}
+                onKeyDown={(e) => handleEnterKey(e, i, 5)}
               />
-              <label>Quantity</label>
-            </FloatLabel>
-            <small className="text-sm text-color-danger mt-1">Max allowed: {acceptedTotal}</small>
-          </div>
-        </div>
 
-        {/* Dialog Rows */}
-        <div className="mt-3 overflow-auto" style={{ maxHeight: '300px' }}>
-          <div className="flex gap-3 font-bold border-b pb-1">
-            <div style={{ width: '60px', textAlign: 'center' }}>S.No</div>
-            <div className="flex-1">Line Item</div>
-            <div className="flex-1">Reference No</div>
-            <div className="flex-1">Description</div>
-            <div className="flex-1">Discount %</div>
-            <div className="flex-1">Discount Price</div>
-            <div className="flex-1">Price</div>
-            <div className="flex-1">Profit %</div>
-            <div className="flex-1">Total Amount</div>
-          </div>
+              <InputNumber
+                value={row.price}
+                onValueChange={(e) => handleDialogRowChange(i, 'price', e.value || 0)}
+                onKeyDown={(e) => handleEnterKey(e, i, 6)}
+              />
 
-          {dialogRows.map((row, rowIndex) => {
-            const inputRefs: React.RefObject<HTMLInputElement | null>[] = Array.from(
-              { length: 8 },
-              () => React.createRef<HTMLInputElement | null>()
-            )
-
-            const handleKeyDown = (e: React.KeyboardEvent, colIndex: number) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                const next = inputRefs[colIndex + 1]
-                if (next?.current) next.current.focus()
-              }
-            }
-
-            return (
-              <div key={row.id} className="flex gap-3 mt-2 align-items-center">
-                <div style={{ width: '60px', textAlign: 'center' }}>{row.sNo}</div>
-
-                {/* Line Item */}
-                <div className="flex-1">
-                  <InputNumber
-                    value={row.lineNumber}
-                    onValueChange={(e) =>
-                      handleDialogRowChange(rowIndex, 'lineNumber', e.value || 1)
-                    }
-                    className="w-full"
-                    inputRef={(el) => {
-                      console.log('el', el)
-                      // inputRefs.current[rowIndex * 8 + 0] = el
-                    }}
-                    onKeyDown={(e) => handleKeyDown(e, rowIndex * 8 + 0)}
-                  />
-                </div>
-
-                {/* Reference No */}
-                <div className="flex-1">
-                  <InputText
-                    value={row.referenceNumber}
-                    onChange={(e) =>
-                      handleDialogRowChange(rowIndex, 'referenceNumber', e.target.value)
-                    }
-                    className="w-full"
-                    ref={inputRefs[1]}
-                    onKeyDown={(e) => handleKeyDown(e, 1)}
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="flex-1">
-                  <InputText
-                    value={row.productDescription}
-                    onChange={(e) =>
-                      handleDialogRowChange(rowIndex, 'productDescription', e.target.value)
-                    }
-                    className="w-full"
-                    ref={inputRefs[2]}
-                    onKeyDown={(e) => handleKeyDown(e, 2)}
-                  />
-                </div>
-
-                {/* Discount */}
-                <div className="flex-1">
-                  <InputNumber
-                    value={row.discount || 0}
-                    onValueChange={(e) => handleDialogRowChange(rowIndex, 'discount', e.value || 0)}
-                    min={0}
-                    max={100}
-                    className="w-full"
-                    inputRef={inputRefs[3]}
-                    onKeyDown={(e) => handleKeyDown(e, 3)}
-                  />
-                </div>
-
-                {/* Discount Price (readonly) */}
-                <div className="flex-1">
-                  <InputNumber
-                    value={row.discountPrice}
-                    disabled
-                    className="w-full"
-                    inputRef={inputRefs[4]}
-                  />
-                </div>
-
-                {/* Price */}
-                <div className="flex-1">
-                  <InputNumber
-                    value={row.price}
-                    onValueChange={(e) => handleDialogRowChange(rowIndex, 'price', e.value || 0)}
-                    className="w-full"
-                    inputRef={inputRefs[5]}
-                    onKeyDown={(e) => handleKeyDown(e, 5)}
-                  />
-                </div>
-
-                {/* Profit */}
-                <div className="flex-1">
-                  <InputNumber
-                    value={row.margin}
-                    onValueChange={(e) => handleDialogRowChange(rowIndex, 'margin', e.value || 0)}
-                    className="w-full"
-                    inputRef={inputRefs[6]}
-                    onKeyDown={(e) => handleKeyDown(e, 6)}
-                  />
-                </div>
-
-                {/* Total (readonly) */}
-                <div className="flex-1">
-                  <InputNumber
-                    value={Number(row.totalAmount)}
-                    disabled
-                    className="w-full"
-                    inputRef={inputRefs[7]}
-                  />
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="mt-3 flex justify-content-end">
-          <Button label="Save" icon={<Check size={18} />} className="gap-3" onClick={saveRow} />
+              <InputNumber
+                value={Number(row.totalAmount)}
+                onValueChange={(e) => handleDialogRowChange(i, 'totalAmount', e.value || 0)}
+                onKeyDown={(e) => handleEnterKey(e, i, 7)}
+              />
+            </div>
+          ))}
         </div>
       </Dialog>
     </div>
