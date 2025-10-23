@@ -330,10 +330,16 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
         header={editingRow ? 'Edit Product' : 'Add Product'}
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
-        style={{ width: '95vw', height: '95vh' }}
+        className="addEditGRNProductDialog"
+        style={{ width: '98vw', height: '98vh' }}
         footer={
           <div className="flex justify-content-end">
-            <Button label="Save" icon={<Check size={18} />} className="gap-3" onClick={saveRow} />
+            <Button
+              label="Save"
+              icon={<Check size={18} />}
+              className="gap-3 p-button-primary"
+              onClick={saveRow}
+            />
           </div>
         }
       >
@@ -476,39 +482,48 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
         </div>
         <DataTable
           value={dialogRows}
+          scrollable
+          scrollHeight="400px"
           responsiveLayout="scroll"
           showGridlines
           rowHover
           className="p-datatable-sm"
         >
+          {/* S.No */}
           <Column
             header="S.No"
             body={(rowData) => <span className="p-text-center">{rowData.sNo}</span>}
-            style={{ width: '4rem', textAlign: 'center' }}
+            style={{ width: '50px', textAlign: 'center' }}
           />
+
+          {/* Line Item */}
           <Column
             header="Line Item"
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={rowData.lineNumber}
+                className="productGRNTableInput"
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'lineNumber', e.value || 0)}
-                className="w-full"
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
               />
             )}
-            style={{ textAlign: 'center' }}
+            style={{ minWidth: '50px', maxWidth: '60px', textAlign: 'center' }}
           />
+
+          {/* Ref No */}
           <Column
             header="Ref No"
             body={(rowData, { rowIndex }) => (
               <InputText
                 value={rowData.referenceNumber}
                 onChange={(e) => handleDialogRowChange(rowIndex, 'referenceNumber', e.target.value)}
-                className="w-full"
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'referenceNumber')}
               />
             )}
+            style={{ width: '120px' }}
           />
+
+          {/* Description */}
           <Column
             header="Description"
             body={(rowData, { rowIndex }) => (
@@ -518,10 +533,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                   handleDialogRowChange(rowIndex, 'productDescription', e.target.value)
                 }
                 className="w-full"
-                onKeyDown={(e) => focusNextInput(e, rowIndex, 'referenceNumber')}
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'productDescription')}
               />
             )}
+            style={{ width: '300px' }}
           />
+
+          {/* Discount % */}
           <Column
             header="Discount %"
             body={(rowData, { rowIndex }) => (
@@ -530,11 +548,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'discount', e.value || 0)}
                 min={0}
                 max={100}
-                className="w-full"
-                onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'discount')}
               />
             )}
+            style={{ width: '100px' }}
           />
+
+          {/* Discount Price */}
           <Column
             header="Discount Price"
             body={(rowData, { rowIndex }) => (
@@ -543,32 +563,53 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                 onValueChange={(e) =>
                   handleDialogRowChange(rowIndex, 'discountPrice', e.value || 0)
                 }
-                className="w-full"
-                onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'discountPrice')}
               />
             )}
+            style={{ width: '120px' }}
           />
+
+          {/* Profit % */}
+          <Column
+            header="Profit %"
+            body={(rowData, { rowIndex }) => (
+              <InputNumber
+                value={rowData.margin}
+                onValueChange={(e) => handleDialogRowChange(rowIndex, 'margin', e.value || 0)}
+                min={0}
+                max={100}
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'margin')}
+              />
+            )}
+            style={{ width: '100px' }}
+          />
+
+          {/* Price */}
           <Column
             header="Price"
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={rowData.price}
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'price', e.value || 0)}
-                className="w-full"
-                onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
+                onKeyDown={(e) => focusNextInput(e, rowIndex, 'price')}
               />
             )}
+            style={{ width: '120px' }}
           />
+
+          {/* Total */}
           <Column
             header="Total"
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={Number(rowData.totalAmount)}
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'totalAmount', e.value || 0)}
-                className="w-full"
               />
             )}
+            style={{ width: '120px' }}
           />
+
+          {/* Action */}
           <Column
             header="Action"
             body={(_rowData, { rowIndex }) => (
@@ -583,6 +624,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                 }}
               />
             )}
+            style={{ textAlign: 'center' }}
           />
         </DataTable>
       </Dialog>
