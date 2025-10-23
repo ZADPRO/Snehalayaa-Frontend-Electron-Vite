@@ -265,6 +265,46 @@ Specificity: (0,2,2)
   padding: 10px;
 }
 
-.productGRNTableInput .p-inputnumber-input {
+/* S.No and Line Item (InputNumber) */
+.productGRNTableInputLineItem .p-inputnumber-input {
   width: 40px;
+}
+
+.productGRNTableInputSNo .p-inputnumber-input {
+  width: 40px;
+}
+
+/* Ref No (InputText) */
+.productGRNTableInputRefNo .p-inputtext {
+  width: 3rem;
+}
+
+/* Description (InputText) */
+.productGRNTableInputDescription .p-inputtext {
+  width: 10rem; /* can adjust easily later */
+}
+
+/* Discount % (InputNumber) */
+.productGRNTableInputDiscountPercent .p-inputnumber-input {
+  width: 60px;
+}
+
+/* Discount Price (InputNumber) */
+.productGRNTableInputDiscountPrice .p-inputnumber-input {
+  width: 80px;
+}
+
+/* Profit % (InputNumber) */
+.productGRNTableInputProfitPercent .p-inputnumber-input {
+  width: 60px;
+}
+
+/* Price (InputNumber) */
+.productGRNTableInputPrice .p-inputnumber-input {
+  width: 80px;
+}
+
+/* Total (InputNumber) */
+.productGRNTableInputTotalAmt .p-inputnumber-input {
+  width: 80px;
 }

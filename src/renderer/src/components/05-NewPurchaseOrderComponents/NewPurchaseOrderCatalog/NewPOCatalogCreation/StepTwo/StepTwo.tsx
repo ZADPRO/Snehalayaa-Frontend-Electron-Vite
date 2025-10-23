@@ -493,7 +493,8 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
           <Column
             header="S.No"
             body={(rowData) => <span className="p-text-center">{rowData.sNo}</span>}
-            style={{ width: '50px', textAlign: 'center' }}
+            className="productGRNTableInputSNo"
+            style={{ textAlign: 'center' }}
           />
 
           {/* Line Item */}
@@ -502,12 +503,11 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={rowData.lineNumber}
-                className="productGRNTableInput"
+                className="productGRNTableInputLineItem w-full"
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'lineNumber', e.value || 0)}
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'lineNumber')}
               />
             )}
-            style={{ minWidth: '50px', maxWidth: '60px', textAlign: 'center' }}
           />
 
           {/* Ref No */}
@@ -516,11 +516,11 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputText
                 value={rowData.referenceNumber}
+                className="productGRNTableInputRefNo w-full"
                 onChange={(e) => handleDialogRowChange(rowIndex, 'referenceNumber', e.target.value)}
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'referenceNumber')}
               />
             )}
-            style={{ width: '120px' }}
           />
 
           {/* Description */}
@@ -529,14 +529,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputText
                 value={rowData.productDescription}
+                className="productGRNTableInputDescription w-full"
                 onChange={(e) =>
                   handleDialogRowChange(rowIndex, 'productDescription', e.target.value)
                 }
-                className="w-full"
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'productDescription')}
               />
             )}
-            style={{ width: '300px' }}
           />
 
           {/* Discount % */}
@@ -545,13 +544,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={rowData.discount}
+                className="productGRNTableInputDiscountPercent w-full"
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'discount', e.value || 0)}
                 min={0}
                 max={100}
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'discount')}
               />
             )}
-            style={{ width: '100px' }}
           />
 
           {/* Discount Price */}
@@ -560,13 +559,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={rowData.discountPrice}
+                className="productGRNTableInputDiscountPrice w-full"
                 onValueChange={(e) =>
                   handleDialogRowChange(rowIndex, 'discountPrice', e.value || 0)
                 }
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'discountPrice')}
               />
             )}
-            style={{ width: '120px' }}
           />
 
           {/* Profit % */}
@@ -575,13 +574,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={rowData.margin}
+                className="productGRNTableInputProfitPercent w-full"
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'margin', e.value || 0)}
                 min={0}
                 max={100}
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'margin')}
               />
             )}
-            style={{ width: '100px' }}
           />
 
           {/* Price */}
@@ -590,11 +589,11 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={rowData.price}
+                className="productGRNTableInputPrice w-full"
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'price', e.value || 0)}
                 onKeyDown={(e) => focusNextInput(e, rowIndex, 'price')}
               />
             )}
-            style={{ width: '120px' }}
           />
 
           {/* Total */}
@@ -603,10 +602,10 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(rowData, { rowIndex }) => (
               <InputNumber
                 value={Number(rowData.totalAmount)}
+                className="productGRNTableInputTotalAmt w-full"
                 onValueChange={(e) => handleDialogRowChange(rowIndex, 'totalAmount', e.value || 0)}
               />
             )}
-            style={{ width: '120px' }}
           />
 
           {/* Action */}
@@ -615,7 +614,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             body={(_rowData, { rowIndex }) => (
               <Button
                 icon={<Trash2 />}
-                className="p-button-danger"
+                className="p-button-danger productGRNTableAction"
                 onClick={() => {
                   const updatedRows = [...dialogRows]
                   updatedRows.splice(rowIndex, 1)
@@ -624,7 +623,6 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                 }}
               />
             )}
-            style={{ textAlign: 'center' }}
           />
         </DataTable>
       </Dialog>
