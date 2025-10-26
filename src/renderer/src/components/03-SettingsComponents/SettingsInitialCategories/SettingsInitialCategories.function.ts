@@ -65,3 +65,20 @@ export const exportExcel = (categories: InitialCategory[]) => {
   const fileName = `categories_excel_${getFormattedTimestamp()}.xlsx`
   saveAs(blob, fileName)
 }
+
+export const deleteInitialCategories = async (
+  ids: any[]
+): Promise<{ status: boolean; message: string }> => {
+  const response = await api.delete(`${baseURL}/admin/settings/initialCategories`, {
+    data: { ids } // bulk delete request
+  })
+
+  if (response.data?.status) {
+    return {
+      status: true,
+      message: response.data.message || 'Categories deleted successfully.'
+    }
+  } else {
+    throw new Error(response.data?.message || 'Failed to delete categories')
+  }
+}

@@ -8,7 +8,10 @@ import { Toolbar } from 'primereact/toolbar'
 import { Tooltip } from 'primereact/tooltip'
 import React, { useEffect, useRef, useState } from 'react'
 import SettingsAddEditInitialCategories from './SettingsAddEditInitialCategories/SettingsAddEditInitialCategories'
-import { fetchInitialCategories } from './SettingsInitialCategories.function'
+import {
+  deleteInitialCategories,
+  fetchInitialCategories
+} from './SettingsInitialCategories.function'
 import { InitialCategory } from './SettingsAddEditInitialCategories/SettingsAddEditInitialCategories.interface'
 
 const SettingsInitialCategories: React.FC = () => {
@@ -22,6 +25,43 @@ const SettingsInitialCategories: React.FC = () => {
   const selectedCategory = editMode ? selectedCategories[0] : null
 
   const dt = useRef<DataTable<InitialCategory[]>>(null)
+
+  const handleDelete = async () => {
+    if (selectedCategories.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'No Selection',
+        detail: 'Please select at least one category to delete.',
+        life: 3000
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const ids = selectedCategories.map((cat) => String(cat.initialCategoryId))
+      const result = await deleteInitialCategories(ids)
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Deleted',
+        detail: result.message,
+        life: 3000
+      })
+
+      await load()
+      setSelectedCategories([])
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message || 'Failed to delete categories',
+        life: 3000
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const leftToolbarTemplate = () => (
     <div className="flex gap-2">
@@ -47,7 +87,7 @@ const SettingsInitialCategories: React.FC = () => {
         tooltip="Delete Categories"
         tooltipOptions={{ position: 'left' }}
         // disabled={!isAnySelected}
-        // onClick={handleDelete}
+        onClick={handleDelete}
       />
     </div>
   )
