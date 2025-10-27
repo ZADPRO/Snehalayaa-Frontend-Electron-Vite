@@ -133,7 +133,8 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
       supplierState: formData.supplierState,
       supplierCountry: formData.supplierCountry,
       creditedDays: formData.creditedDays,
-      supplierIsActive: formData.selectedStatus?.isActive ? 'true' : 'false'
+      supplierIsActive: formData.selectedStatus?.isActive ? 'true' : 'false',
+      pincode: formData.pincode
     }
 
     if (selectedSupplier) payload.supplierId = selectedSupplier.supplierId

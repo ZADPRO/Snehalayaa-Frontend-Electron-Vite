@@ -19,6 +19,8 @@ import { formatINR } from '../../../utils/helper'
 import { Calendar } from 'primereact/calendar'
 import { InputSwitch } from 'primereact/inputswitch'
 
+// import { generatePurchaseOrderPdf } from '../NewPurchaseOrderCreation/NewPOPdfGeneration/NewPOPdfGeneration.function'
+
 const TAX_PERCENTAGE = 5
 
 const NewPurchaseOrderCreation: React.FC = () => {
@@ -44,6 +46,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
 
   const [isSaved, setIsSaved] = useState(false)
   const [taxEnabled, setTaxEnabled] = useState(false)
+  const [taxPercentage, setTaxPercentage] = useState<string>('')
   const [creditedDate, setCreditedDate] = useState<Date | null>(null)
 
   // Fetch data
@@ -132,7 +135,12 @@ const NewPurchaseOrderCreation: React.FC = () => {
   const currentSubTotal = () =>
     products.reduce((sum, p) => sum + p.unitPrice * p.quantity * (1 - p.discount / 100), 0)
 
-  const taxAmount = () => (taxEnabled ? (currentSubTotal() * TAX_PERCENTAGE) / 100 : 0)
+  const taxAmount = () => {
+    if (taxEnabled && parseFloat(taxPercentage) > 0) {
+      return (currentSubTotal() * parseFloat(taxPercentage)) / 100
+    }
+    return 0
+  }
 
   const totalAmount = () => currentSubTotal() + taxAmount()
 
@@ -200,6 +208,47 @@ const NewPurchaseOrderCreation: React.FC = () => {
     setIsSaved(false)
   }
 
+  const handleDownloadPdf = async () => {
+    if (!selectedSupplier || !selectedBranch || products.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Missing Details',
+        detail: 'Please select supplier, branch, and add products before downloading PDF'
+      })
+      return
+    }
+
+    // 🧠 Create payload as per your PurchaseOrderProps
+    const pdfProps = {
+      from: selectedSupplier,
+      to: selectedBranch,
+      items: products.map((p) => ({
+        category: p.category.initialCategoryName,
+        description: p.description,
+        quantity: p.quantity,
+        unitPrice: p.unitPrice,
+        discount: p.discount,
+        total: p.total
+      }))
+    }
+    console.log('pdfProps', pdfProps)
+
+    try {
+      // await generatePurchaseOrderPdf(pdfProps: any)
+      toast.current?.show({
+        severity: 'success',
+        summary: 'PDF Generated',
+        detail: 'Purchase order PDF downloaded successfully'
+      })
+    } catch (error) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to generate PDF'
+      })
+    }
+  }
+
   const actionBodyTemplate = (rowData: any, { rowIndex }: { rowIndex: number }) => (
     <div className="flex gap-2">
       <Button
@@ -260,13 +309,15 @@ const NewPurchaseOrderCreation: React.FC = () => {
             label="Download"
             icon={<Download size={16} />}
             className="p-button-outlined gap-2"
-            // disabled={!isSaved}
+            onClick={handleDownloadPdf}
+            disabled={!isSaved}
           />
+
           <Button
             label="Print"
             icon={<Printer size={16} />}
             className="p-button-outlined gap-2"
-            // disabled={!isSaved}
+            disabled={!isSaved}
           />
         </div>
       </div>
@@ -473,7 +524,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
               value={creditedDate}
               dateFormat="dd-mm-yy"
               showIcon
-              className="w-full mt-1"
+              className="w-full mt-1 paymentNotesCalendarIcon"
               placeholder="Select Date"
             />
           </div>
@@ -493,12 +544,36 @@ const NewPurchaseOrderCreation: React.FC = () => {
             <span className="font-medium">{formatINR(totalDiscount())}</span>
           </div>
 
-          <div className="flex justify-content-between items-center mb-2">
-            <span>Tax {TAX_PERCENTAGE}%:</span>
-            <InputSwitch checked={taxEnabled} onChange={(e) => setTaxEnabled(e.value)} />
+          <div className="flex justify-content-between align-items-center mb-2">
+            <span>Tax:</span>
+            <InputSwitch
+              checked={taxEnabled}
+              onChange={(e) => {
+                setTaxEnabled(e.value)
+                if (!e.value) setTaxPercentage('')
+              }}
+            />
           </div>
 
           {taxEnabled && (
+            <div className="flex justify-content-between align-items-center mb-2">
+              <span>Tax % :</span>
+              <InputText
+                type="number"
+                step="0.1"
+                value={taxPercentage}
+                onChange={(e) => {
+                  const val = e.target.value
+                  // allow only numeric and decimal
+                  if (/^\d*\.?\d*$/.test(val)) setTaxPercentage(val)
+                }}
+                className="w-4rem text-right"
+                placeholder="0.0"
+              />
+            </div>
+          )}
+
+          {taxEnabled && parseFloat(taxPercentage) > 0 && (
             <div className="flex justify-content-between mb-2">
               <span>Tax Amount:</span>
               <span className="font-medium">{formatINR(taxAmount())}</span>

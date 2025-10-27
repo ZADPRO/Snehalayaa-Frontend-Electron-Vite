@@ -54,6 +54,7 @@ const SettingsSuppliers: React.FC = () => {
 
   const editMode = Array.isArray(selectedSuppliers) && selectedSuppliers.length === 1
   const selectedSupplier = editMode ? selectedSuppliers[0] : null
+  console.log('selectedSupplier', selectedSupplier)
 
   const handleDelete = async () => {
     if (!selectedSuppliers.length) return
@@ -257,7 +258,10 @@ const SettingsSuppliers: React.FC = () => {
       >
         <SettingsAddEditSuppliers
           selectedSupplier={selectedSupplier}
-          onClose={() => setVisibleRight(false)}
+          onClose={() => {
+            setVisibleRight(false)
+            setSelectedSuppliers([])
+          }}
           reloadData={load}
         />
       </Sidebar>

@@ -195,6 +195,11 @@ Specificity: (0,2,2)
   color: #fff; /* text color on hover */
 }
 
+.paymentNotesCalendarIcon .p-datepicker-trigger {
+  background-color: #6f1f5f;
+  border: 1px solid #6f1f5f; /* border color */
+}
+
 .p-dialog .p-dialog-header {
   padding: 10px;
 }
