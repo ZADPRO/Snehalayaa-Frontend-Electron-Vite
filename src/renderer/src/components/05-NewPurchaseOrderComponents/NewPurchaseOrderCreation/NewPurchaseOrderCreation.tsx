@@ -18,6 +18,8 @@ import { Plus, Trash2, Edit3, Save, Download, Printer, X, CalendarIcon } from 'l
 import { formatINR } from '../../../utils/helper'
 import { Calendar } from 'primereact/calendar'
 import { InputSwitch } from 'primereact/inputswitch'
+import { Sidebar } from 'primereact/sidebar'
+import SettingsAddEditInitialCategories from '../../03-SettingsComponents/SettingsInitialCategories/SettingsAddEditInitialCategories/SettingsAddEditInitialCategories'
 
 // import { generatePurchaseOrderPdf } from '../NewPurchaseOrderCreation/NewPOPdfGeneration/NewPOPdfGeneration.function'
 
@@ -30,6 +32,8 @@ const NewPurchaseOrderCreation: React.FC = () => {
   const [branches, setBranches] = useState<Branch[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [initialCategories, setInitialCategories] = useState<InitialCategory[]>([])
+  const [initialCategoriesSidebarVisible, setInitialCategoriesSidebarVisible] =
+    useState<boolean>(false)
 
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
@@ -102,6 +106,23 @@ const NewPurchaseOrderCreation: React.FC = () => {
         detail: 'Product updated successfully'
       })
     } else {
+      const duplicate = products.find(
+        (p) =>
+          p.category.initialCategoryId === newProduct.category.initialCategoryId &&
+          p.description.trim().toLowerCase() === newProduct.description.trim().toLowerCase() &&
+          p.unitPrice === newProduct.unitPrice &&
+          p.discount === newProduct.discount
+      )
+
+      if (duplicate) {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Duplicate Product',
+          detail: 'A product with same category, description, and price already exists'
+        })
+        return
+      }
+
       setProducts([...products, newProduct])
       toast.current?.show({
         severity: 'success',
@@ -382,7 +403,12 @@ const NewPurchaseOrderCreation: React.FC = () => {
 
       {/* PRODUCT ENTRY */}
       <div className="card shadow-1 p-3 mt-3">
-        <p className="underline font-semibold uppercase">Products</p>
+        <div className="flex align-items-center justify-content-between">
+          <p className="underline font-semibold uppercase">Products</p>
+          <Button onClick={() => setInitialCategoriesSidebarVisible(true)}>
+            Add initial Category
+          </Button>
+        </div>
         <div className="flex gap-3 mt-3 flex-wrap">
           <div className="flex-1 min-w-[200px]">
             <p>Initial Category</p>
@@ -392,24 +418,28 @@ const NewPurchaseOrderCreation: React.FC = () => {
                 const selected = e.value
                 setSelectedInitialCategory(selected)
 
-                // Check for duplicate using category ID
-                const existingIndex = products.findIndex(
+                const existing = products.find(
                   (p) => p.category.initialCategoryId === selected.initialCategoryId
                 )
 
-                if (existingIndex !== -1) {
-                  const existing = products[existingIndex]
+                if (existing) {
                   setProductDescription(existing.description)
                   setUnitPrice(existing.unitPrice.toString())
                   setDiscount(existing.discount.toString())
                   setQuantity(existing.quantity.toString())
-                  setEditIndex(existingIndex)
+                  setEditIndex(null)
+
                   toast.current?.show({
                     severity: 'info',
-                    summary: 'Item Exists',
-                    detail: 'Item already selected, kindly edit the existing entry'
+                    summary: 'Prefilled',
+                    detail:
+                      'Category already exists. You can modify the values to create a new product under same category.'
                   })
                 } else {
+                  setProductDescription('')
+                  setUnitPrice('')
+                  setDiscount('')
+                  setQuantity('')
                   setEditIndex(null)
                 }
               }}
@@ -586,6 +616,22 @@ const NewPurchaseOrderCreation: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <Sidebar
+        visible={initialCategoriesSidebarVisible}
+        position="right"
+        header="Add Initial Categories"
+        style={{ width: '50vw' }}
+        onHide={() => setInitialCategoriesSidebarVisible(false)}
+      >
+        <SettingsAddEditInitialCategories
+          onClose={() => setInitialCategoriesSidebarVisible(false)}
+          reloadData={async () => {
+            const data = await fetchInitialCategories()
+            setInitialCategories(data)
+          }}
+        />
+      </Sidebar>
     </div>
   )
 }
