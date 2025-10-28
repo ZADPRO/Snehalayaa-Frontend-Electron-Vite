@@ -5,10 +5,12 @@ import { Button } from 'primereact/button'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { InputNumber } from 'primereact/inputnumber'
-import { Tag } from 'primereact/tag'
 import { Divider } from 'primereact/divider'
 import { Toast } from 'primereact/toast'
 import { formatINR } from '../../../../utils/helper'
+import { savePurchaseOrderProducts } from './PurchaseOrderProductDetails.function'
+import StepTwo from '../../NewPurchaseOrderCatalog/NewPOCatalogCreation/StepTwo/StepTwo'
+// import axios from 'axios' // uncomment when backend endpoint is ready
 
 interface Product {
   poProductId: number
@@ -27,102 +29,118 @@ interface PurchaseOrderProductDetailsProps {
 const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = ({
   purchaseOrder
 }) => {
-  const toast = useRef<Toast>(null)
-  console.log('purchaseOrder', purchaseOrder)
+  const toastRef = useRef<Toast>(null)
+
+  // Initialize product list with received/rejected/status fields
   const [products, setProducts] = useState(
     purchaseOrder.products.map((p: any) => ({
       ...p,
       received: 0,
-      rejected: 0,
+      rejected: p.quantity,
       status: 'Pending'
     }))
   )
 
-  const [receivedBatches, setReceivedBatches] = useState<any[]>([]) // store history
+  const [receivedBatches, setReceivedBatches] = useState<any[]>([])
   const [activeStep, setActiveStep] = useState(0)
-  const toastRef = React.useRef<Toast>(null)
+  const [loading, setLoading] = useState(false)
 
+  // ✅ Auto calculate rejected quantity
   const handleReceivedChange = (value: number, rowIndex: number) => {
-    setProducts((prev) => {
-      const updated = [...prev]
-      updated[rowIndex].received = value
-      updated[rowIndex].rejected = updated[rowIndex].quantity - value
-      updated[rowIndex].status =
-        value === updated[rowIndex].quantity ? 'Completed' : 'Partially Received'
-      return updated
-    })
+    setProducts((prev) =>
+      prev.map((item, i) => {
+        if (i !== rowIndex) return item
+        const received = value
+        const rejected = Math.max(0, item.quantity - received)
+        const status =
+          received === item.quantity ? 'Completed' : received > 0 ? 'Partially Received' : 'Pending'
+        return { ...item, received, rejected, status }
+      })
+    )
   }
 
-  const getStatusSeverity = (status: string) => {
-    switch (status) {
-      case 'Completed':
-        return 'success'
-      case 'Partially Received':
-        return 'info'
-      default:
-        return 'warning'
+  const [confirmedData, setConfirmedData] = useState<any[]>([])
+
+  const handleSavePO = async () => {
+    const payload = products.map((p) => ({
+      purchase_order_id: purchaseOrder.purchaseOrderId,
+      purchase_order_number: purchaseOrder.purchaseOrderNumber,
+      category_id: p.categoryDetails?.initialCategoryId || null,
+      po_product_id: p.poProductId,
+      accepted_quantity: p.received,
+      rejected_quantity: p.rejected,
+      status: p.status
+    }))
+
+    console.log('🧾 Sending payload:', payload)
+
+    try {
+      setLoading(true)
+      const success = await savePurchaseOrderProducts(payload)
+      setLoading(false)
+
+      if (success) {
+        toastRef.current?.show({
+          severity: 'success',
+          summary: 'Saved Successfully',
+          detail: 'Purchase Order products updated successfully.'
+        })
+
+        // Save current data batch for history
+        const currentBatch = {
+          id: Date.now(),
+          timestamp: new Date().toLocaleString(),
+          data: [...products]
+        }
+        setReceivedBatches((prev) => [currentBatch, ...prev])
+
+        // ✅ Save payload for next step confirmation
+        setConfirmedData(payload)
+
+        // ✅ Move to next step (Confirmation)
+        setActiveStep(1)
+      }
+    } catch (err: any) {
+      setLoading(false)
+      toastRef.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message || 'Failed to save purchase order products.'
+      })
     }
-  }
-
-  const handleSavePO = () => {
-    const currentBatch = {
-      id: Date.now(),
-      timestamp: new Date().toLocaleString(),
-      data: [...products]
-    }
-
-    console.log('✅ Received Batch:', currentBatch)
-    toastRef.current?.show({
-      severity: 'success',
-      summary: 'Saved',
-      detail: 'PO saved successfully!'
-    })
-
-    // Add new batch on top
-    setReceivedBatches((prev) => [currentBatch, ...prev])
-
-    // Move to next step after save
-    setActiveStep(1)
   }
 
   return (
     <div className="">
-      <Toast ref={toast} />
-      <p className="font-bold uppercase underline">Purchase Order Details</p> {/* Summary */}{' '}
-      <div className="mt-3 mb-3">
-        {' '}
+      <Toast ref={toastRef} />
+
+      <div className="mb-3">
         <div className="flex gap-4">
-          {' '}
           <p className="flex-1">
-            {' '}
-            <strong>Invoice Number:</strong> {purchaseOrder.purchaseOrderNumber}{' '}
-          </p>{' '}
+            <strong>Invoice Number:</strong> {purchaseOrder.purchaseOrderNumber}
+          </p>
           <p className="flex-1">
-            {' '}
-            <strong>Supplier:</strong> {purchaseOrder.supplierName}{' '}
-          </p>{' '}
+            <strong>Supplier:</strong> {purchaseOrder.supplierName}
+          </p>
           <p className="flex-1">
-            {' '}
-            <strong>Total Items:</strong> {purchaseOrder.totalOrderedQuantity}{' '}
-          </p>{' '}
-        </div>{' '}
+            <strong>Total Items:</strong> {purchaseOrder.totalOrderedQuantity}
+          </p>
+        </div>
         <div className="flex mt-2 gap-4">
-          {' '}
           <p className="flex-1">
-            {' '}
-            <strong>Total Ordered Qty:</strong>{' '}
-          </p>{' '}
+            <strong>Total Ordered Qty:</strong> {purchaseOrder.totalOrderedQuantity}
+          </p>
           <p className="flex-1">
-            {' '}
-            <strong>Total Received Qty:</strong>{' '}
-          </p>{' '}
+            <strong>Total Received Qty:</strong> {products.reduce((sum, p) => sum + p.received, 0)}
+          </p>
           <p className="flex-1">
-            {' '}
-            <strong>Total Amount:</strong> {formatINR(Number(purchaseOrder.totalAmount))}{' '}
-          </p>{' '}
-        </div>{' '}
-      </div>{' '}
+            <strong>Total Amount:</strong> {formatINR(Number(purchaseOrder.totalAmount))}
+          </p>
+        </div>
+      </div>
+
       <Divider />
+
       <Stepper activeStep={activeStep} onStepChange={(e) => setActiveStep(e.index)}>
         {/* STEP 1 — Product Receiving */}
         <StepperPanel header="Receive Products">
@@ -149,16 +167,6 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
                     <Column
                       header="Amount"
                       body={(rowData) => formatINR(rowData.unitPrice * rowData.received)}
-                    />
-                    <Column
-                      header="Status"
-                      body={(rowData) => (
-                        <Tag
-                          value={rowData.status}
-                          severity={getStatusSeverity(rowData.status)}
-                          rounded
-                        />
-                      )}
                     />
                   </DataTable>
                 </div>
@@ -198,26 +206,13 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
               header="Amount"
               body={(rowData) => formatINR(rowData.unitPrice * rowData.received)}
             />
-            <Column
-              header="Status"
-              body={(rowData) => (
-                <Tag value={rowData.status} severity={getStatusSeverity(rowData.status)} rounded />
-              )}
-            />
           </DataTable>
         </StepperPanel>
 
         {/* STEP 2 — Confirmation */}
         <StepperPanel header="Confirmation">
-          <div className="text-center p-5">
-            <h3>All product receipts recorded successfully ✅</h3>
-            <p>You can review the batches above or finalize this purchase order.</p>
-            <Button
-              label="Back to Step 1"
-              icon="pi pi-arrow-left"
-              className="mt-3"
-              onClick={() => setActiveStep(0)}
-            />
+          <div className="">
+            <StepTwo purchaseOrder={purchaseOrder} />
           </div>
         </StepperPanel>
       </Stepper>

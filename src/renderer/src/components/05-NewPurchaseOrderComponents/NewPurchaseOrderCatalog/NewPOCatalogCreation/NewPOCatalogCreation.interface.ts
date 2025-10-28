@@ -79,6 +79,8 @@ export interface TableRow {
   mrp: number
   cost: number
   profitMargin: number
+  discountPercent: any
+  discountPrice: any
   sellingPrice: number
   dialogRows: DialogRow[]
 }

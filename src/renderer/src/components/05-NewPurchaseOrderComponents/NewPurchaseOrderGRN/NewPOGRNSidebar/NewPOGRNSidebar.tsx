@@ -160,21 +160,7 @@ const NewPOGRNSidebar: React.FC<NewPOGRNSidebarProps> = ({ purchaseOrder }) => {
 
       <Divider />
 
-      <TabView
-        activeIndex={activeIndex}
-        onTabChange={(e) => {
-          // 🔒 Prevent switching to Step Two or Step Three before saving
-          if (!isSaved && e.index > 0) {
-            toast.current?.show({
-              severity: 'warn',
-              summary: 'Restricted',
-              detail: 'Please save the PO before proceeding.'
-            })
-            return
-          }
-          setActiveIndex(e.index)
-        }}
-      >
+      <TabView>
         <TabPanel header="GRN Count">
           <div className="flex justify-content-end mb-3">
             <Button label="Save PO" severity="success" outlined onClick={handleSavePO} />

@@ -12,12 +12,14 @@ import { Plus, Check, Trash2 } from 'lucide-react'
 import { fetchCategories, fetchSubCategories } from '../NewPOCatalogCreation.function'
 import { Category, SubCategory, TableRow, DialogRow } from '../NewPOCatalogCreation.interface'
 import { Divider } from 'primereact/divider'
+import api from '../../../../../utils/api'
 
 interface StepTwoProps {
   purchaseOrder: any
 }
 
 const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
+  console.log('purchaseOrder', purchaseOrder)
   const toast = useRef<Toast>(null)
   const [rows, setRows] = useState<TableRow[]>([])
   const [dialogVisible, setDialogVisible] = useState(false)
@@ -43,11 +45,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   const [dialogRows, setDialogRows] = useState<DialogRow[]>([])
 
   console.log('purchaseOrder', purchaseOrder)
-  const acceptedTotal =
-    purchaseOrder.accepted_products?.reduce(
-      (sum: number, p: any) => sum + Number(p.accepted_total || 0),
-      0
-    ) || 0
+  const totalOrderedQuantity =
+    purchaseOrder.products?.reduce((sum: number, p: any) => sum + Number(p.quantity || 0), 0) || 0
+
+  const usedQuantity = rows.reduce((sum, r) => sum + (r.quantity || 0), 0)
+
+  // Remaining quantity available for adding products
+  const remainingQuantity = totalOrderedQuantity - usedQuantity + (editingRow?.quantity || 0)
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -80,19 +84,9 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     }
   }, [discountPrice])
 
-  useEffect(() => {
-    const storedData = localStorage.getItem(`po_${purchaseOrder.purchase_order_id}`)
-    if (storedData) {
-      setRows(JSON.parse(storedData))
-    }
-  }, [purchaseOrder.purchase_order_id])
-
   const filteredSubCategories = selectedCategory
     ? subCategoryOptions.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
     : []
-
-  const remainingQuantity =
-    acceptedTotal - rows.reduce((sum, r) => sum + r.quantity, 0) + (editingRow?.quantity || 0)
 
   const generateSKU = (index: number): string => {
     const now = new Date()
@@ -104,21 +98,11 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   }
 
   const openAddDialog = () => {
-    const remainingQty = acceptedTotal - rows.reduce((sum, r) => sum + r.quantity, 0)
-    if (remainingQty <= 0) {
-      toast.current?.show({
-        severity: 'warn',
-        summary: 'No Quantity Left',
-        detail: 'No quantity left for GRN'
-      })
-      return
-    }
-
     setEditingRow(null)
     setSelectedCategory(null)
     setSelectedSubCategory(null)
     setLineNumber(rows.length + 1)
-    setQuantity(1)
+    setQuantity(0)
     setProductName('')
     setBrand('Snehalayaa')
     setTaxClass('')
@@ -193,21 +177,29 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     setDialogRows(updated)
   }
 
-  const canGenerateRows = () => {
-    return (
-      lineNumber > 0 &&
-      productName.trim() !== '' &&
-      selectedCategory &&
-      selectedSubCategory &&
-      cost > 0 &&
-      quantity > 0
-    )
-  }
+  // const canGenerateRows = () => {
+  //   return (
+  //     lineNumber > 0 &&
+  //     productName.trim() !== '' &&
+  //     selectedCategory &&
+  //     selectedSubCategory &&
+  //     cost > 0 &&
+  //     quantity > 0
+  //   )
+  // }
 
   const handleQuantityChange = (value: number) => {
-    if (!canGenerateRows()) return
+    console.log('value', value)
+    // if (!canGenerateRows()) return
 
-    if (value > remainingQuantity) value = remainingQuantity
+    if (value > remainingQuantity) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Quantity Limit',
+        detail: `You can only add up to ${remainingQuantity} more products`
+      })
+      value = remainingQuantity
+    }
     setQuantity(value)
     generateDialogRows(value)
   }
@@ -308,23 +300,52 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     )
   }, [lineNumber, cost, discountPercent, discountPrice, profitMargin])
 
+  const handleSaveAll = async () => {
+    console.log('purchaseOrder', purchaseOrder)
+    const payload = {
+      purchaseOrderId: purchaseOrder.purchaseOrderId,
+      products: rows.map((r) => ({
+        sNo: r.sNo,
+        lineNumber: r.lineNumber,
+        productName: r.productName,
+        brand: r.brand,
+        categoryId: r.category?.refCategoryId,
+        subCategoryId: r.subCategory?.refSubCategoryId,
+        taxClass: r.taxClass,
+        quantity: r.quantity,
+        cost: r.cost,
+        profitMargin: r.profitMargin,
+        sellingPrice: r.sellingPrice,
+        mrp: r.mrp,
+        discountPercent: r.discountPercent,
+        discountPrice: r.discountPrice,
+        dialogRows: r.dialogRows.map((d) => ({
+          sNo: d.sNo,
+          lineNumber: d.lineNumber,
+          referenceNumber: d.referenceNumber,
+          productDescription: d.productDescription,
+          discount: d.discount,
+          price: d.price,
+          discountPrice: d.discountPrice,
+          margin: d.margin,
+          totalAmount: d.totalAmount
+        }))
+      }))
+    }
+
+    console.log('📦 Final Payload to send to backend:', payload)
+
+    const response = await api.post('/admin/savePurchaseOrderProducts', payload)
+    console.log('📦 Save PO Products Response:', response)
+  }
+
   return (
     <div>
       <Toast ref={toast} />
 
       <div className="flex gap-3 justify-content-end mb-3">
         <Button label="Add Product" icon={<Plus size={18} />} onClick={openAddDialog} />
-        <Button
-          label="Save All"
-          icon={<Check size={18} />}
-          onClick={() =>
-            toast.current?.show({
-              severity: 'success',
-              summary: 'Saved',
-              detail: 'All rows saved successfully'
-            })
-          }
-        />
+        <Button label="Save All" icon={<Check size={18} />} onClick={handleSaveAll} />
       </div>
 
       <DataTable value={rows} responsiveLayout="scroll" showGridlines rowHover>
