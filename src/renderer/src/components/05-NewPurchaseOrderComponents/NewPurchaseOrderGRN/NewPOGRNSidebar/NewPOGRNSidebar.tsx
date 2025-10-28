@@ -21,7 +21,9 @@ const NewPOGRNSidebar: React.FC<NewPOGRNSidebarProps> = ({ purchaseOrder }) => {
   const [products, setProducts] = useState<any[]>([])
   const [localPO, setLocalPO] = useState<any>(purchaseOrder)
   const [isSaved, setIsSaved] = useState(false)
+  console.log('isSaved', isSaved)
   const [activeIndex, setActiveIndex] = useState(0)
+  console.log('activeIndex', activeIndex)
 
   React.useEffect(() => {
     if (purchaseOrder?.products && products.length === 0) {
