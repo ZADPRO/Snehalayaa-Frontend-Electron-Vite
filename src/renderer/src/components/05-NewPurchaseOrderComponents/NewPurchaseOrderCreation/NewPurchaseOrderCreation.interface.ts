@@ -102,15 +102,18 @@ export interface PurchaseOrderPayload {
 }
 
 export interface PurchaseOrderListResponse {
-  purchase_order_id: number
-  purchase_order_number: string
+  purchaseOrderId: number
+  purchaseOrderNumber: string
   status: string
-  total_ordered_quantity: number
-  total_accepted_quantity: number
-  total_rejected_quantity: number
-  total_amount: string
-  created_at: string
-  taxable_amount: string
-  supplier_name: string
-  branch_name: string
+  totalOrderedQuantity: number
+  totalAcceptedQuantity: number
+  totalRejectedQuantity: number
+  totalAmount: string
+  createdAt: string
+  taxableAmount: string
+  supplierId: number
+  supplierName: string
+  branchId: number
+  branchName: string
+  products?: PurchaseOrderProduct[]
 }

@@ -4,6 +4,7 @@ import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Dropdown } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
+import { Sidebar } from 'primereact/sidebar'
 import {
   fetchBranches,
   fetchPurchaseOrderDetails,
@@ -14,6 +15,7 @@ import {
   PurchaseOrderListResponse,
   Supplier
 } from '../NewPurchaseOrderCreation/NewPurchaseOrderCreation.interface'
+import PurchaseOrderProductDetails from './PurchaseOrderProductDetails/PurchaseOrderProductDetails'
 
 const NewPurchaseOrderList: React.FC = () => {
   const [branches, setBranches] = useState<Branch[]>([])
@@ -27,6 +29,10 @@ const NewPurchaseOrderList: React.FC = () => {
   const [fromDate, setFromDate] = useState<Date | null>(null)
   const [toDate, setToDate] = useState<Date | null>(null)
   const [globalSearch, setGlobalSearch] = useState('')
+
+  // Sidebar
+  const [sidebarVisible, setSidebarVisible] = useState(false)
+  const [selectedPO, setSelectedPO] = useState<PurchaseOrderListResponse | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,30 +53,26 @@ const NewPurchaseOrderList: React.FC = () => {
   useEffect(() => {
     let filtered = [...purchaseOrders]
 
-    // Branch filter
     if (selectedBranch) {
       filtered = filtered.filter(
-        (po) => po.branch_name?.toLowerCase() === selectedBranch.refBranchName?.toLowerCase()
+        (po) => po.branchName?.toLowerCase() === selectedBranch.refBranchName?.toLowerCase()
       )
     }
 
-    // Supplier filter
     if (selectedSupplier) {
       filtered = filtered.filter(
         (po) =>
-          po.supplier_name?.toLowerCase() === selectedSupplier.supplierCompanyName?.toLowerCase()
+          po.supplierName?.toLowerCase() === selectedSupplier.supplierCompanyName?.toLowerCase()
       )
     }
 
-    // Date range filter
     if (fromDate && toDate) {
       filtered = filtered.filter((po) => {
-        const poDate = new Date(po.created_at)
+        const poDate = new Date(po.createdAt)
         return poDate >= fromDate && poDate <= toDate
       })
     }
 
-    // Global search
     if (globalSearch.trim() !== '') {
       const searchText = globalSearch.toLowerCase()
       filtered = filtered.filter((po) =>
@@ -80,6 +82,19 @@ const NewPurchaseOrderList: React.FC = () => {
 
     setFilteredOrders(filtered)
   }, [selectedBranch, selectedSupplier, fromDate, toDate, globalSearch, purchaseOrders])
+
+  // 👇 Column template for clickable PO number
+  const purchaseOrderTemplate = (rowData: PurchaseOrderListResponse) => (
+    <span
+      onClick={() => {
+        setSelectedPO(rowData)
+        setSidebarVisible(true)
+      }}
+      className="text-primary cursor-pointer hover:underline"
+    >
+      {rowData.purchaseOrderNumber}
+    </span>
+  )
 
   return (
     <div>
@@ -132,26 +147,35 @@ const NewPurchaseOrderList: React.FC = () => {
       </div>
 
       {/* 📋 Data Table */}
-      <DataTable
-        value={filteredOrders}
-        showGridlines
-        scrollable
-        className="mt-4"
-        paginator
-        rows={10}
-        emptyMessage="No Purchase Orders Found"
-      >
+      <DataTable value={filteredOrders} showGridlines scrollable paginator rows={10}>
         <Column header="S.No" body={(_, { rowIndex }) => rowIndex + 1} style={{ width: '70px' }} />
-        <Column field="purchase_order_number" header="Purchase Order No" sortable />
-        <Column field="total_ordered_quantity" header="No. of Products" sortable />
-        <Column field="total_accepted_quantity" header="Accepted Qty" sortable />
-        <Column field="total_rejected_quantity" header="Rejected Qty" sortable />
-        <Column field="total_amount" header="Total Amount" sortable />
+        <Column
+          field="purchaseOrderNumber"
+          header="Purchase Order No"
+          body={purchaseOrderTemplate}
+          sortable
+        />
+        <Column field="totalOrderedQuantity" header="No. of Products" sortable />
+        <Column field="totalAcceptedQuantity" header="Accepted Qty" sortable />
+        <Column field="totalRejectedQuantity" header="Rejected Qty" sortable />
+        <Column field="totalAmount" header="Total Amount" sortable />
         <Column field="status" header="Status" sortable />
-        <Column field="created_at" header="Created At" sortable />
-        <Column field="supplier_name" header="Supplier Name" sortable />
-        <Column field="branch_name" header="Branch Name" sortable />
+        <Column field="createdAt" header="Created At" sortable />
+        <Column field="supplierName" header="Supplier Name" sortable />
+        <Column field="branchName" header="Branch Name" sortable />
       </DataTable>
+
+      {/* 📦 Sidebar for PO Details */}
+      <Sidebar
+        visible={sidebarVisible}
+        position="right"
+        onHide={() => setSidebarVisible(false)}
+        className=""
+        header="Purchase Order - GRN"
+        style={{ width: '80vw' }}
+      >
+        {selectedPO && <PurchaseOrderProductDetails purchaseOrder={selectedPO} />}
+      </Sidebar>
     </div>
   )
 }
