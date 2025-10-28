@@ -302,6 +302,73 @@ const NewPurchaseOrderCreation: React.FC = () => {
     }
   }
 
+  const handlePrintPdf = async () => {
+    if (!selectedSupplier || !selectedBranch || products.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Missing Details',
+        detail: 'Please select supplier, branch, and add products before printing PDF'
+      })
+      return
+    }
+
+    const logoBase64 = await getBase64FromImage(logo)
+
+    const pdfProps = {
+      from: selectedSupplier,
+      to: selectedBranch,
+      items: products.map((p) => ({
+        category: p.category.initialCategoryName,
+        description: p.description,
+        quantity: p.quantity,
+        unitPrice: p.unitPrice,
+        discount: p.discount,
+        total: p.total
+      })),
+      invoiceNumber: purchaseOrderNumber,
+      summary: {
+        taxPercentage: taxPercentage || '0',
+        taxAmount: taxAmount().toString(),
+        subTotal: currentSubTotal().toString(),
+        totalAmount: totalAmount().toString()
+      },
+      logoBase64
+    }
+
+    try {
+      const blob = await pdf(<PurchaseOrderPdf {...pdfProps} />).toBlob()
+      const url = URL.createObjectURL(blob)
+
+      const printWindow = window.open(url)
+
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.focus()
+          printWindow.print()
+        }
+
+        toast.current?.show({
+          severity: 'success',
+          summary: 'PDF Ready',
+          detail: 'Purchase order PDF opened for printing'
+        })
+      } else {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Popup Blocked',
+          detail: 'Please allow popups for this site to print the PDF'
+        })
+      }
+    } catch (error) {
+      console.error('PDF print failed:', error)
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to generate PDF for print'
+      })
+    }
+  }
+
   const actionBodyTemplate = (rowData: any, { rowIndex }: { rowIndex: number }) => (
     <div className="flex gap-2">
       <Button
@@ -370,6 +437,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
             label="Print"
             icon={<Printer size={16} />}
             className="p-button-outlined gap-2"
+            onClick={handlePrintPdf}
             disabled={!isSaved}
           />
         </div>
