@@ -42,7 +42,12 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   const [discountPrice, setDiscountPrice] = useState<number>(0)
   const [dialogRows, setDialogRows] = useState<DialogRow[]>([])
 
-  const acceptedTotal = Number(purchaseOrder.accepted_products[0]?.accepted_total || 0)
+  console.log('purchaseOrder', purchaseOrder)
+  const acceptedTotal =
+    purchaseOrder.accepted_products?.reduce(
+      (sum: number, p: any) => sum + Number(p.accepted_total || 0),
+      0
+    ) || 0
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -251,21 +256,40 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     rowIndex: number,
     field: keyof DialogRow
   ) => {
-    console.log('field', field)
-    console.log('rowIndex', rowIndex)
     if (e.key !== 'Enter') return
     e.preventDefault()
 
     const table = e.currentTarget.closest('.p-datatable-wrapper')
     if (!table) return
 
-    const inputs = table.querySelectorAll<HTMLInputElement>('.p-inputtext, .p-inputnumber-input')
-    const currentIndex = Array.from(inputs).indexOf(e.currentTarget as HTMLInputElement)
+    const inputs = Array.from(
+      table.querySelectorAll<HTMLInputElement>('.p-inputtext, .p-inputnumber-input')
+    )
 
+    const currentIndex = inputs.indexOf(e.currentTarget as HTMLInputElement)
     const nextInput = inputs[currentIndex + 1]
     if (nextInput) {
       nextInput.focus()
-      if ((nextInput as HTMLInputElement).select) (nextInput as HTMLInputElement).select()
+      nextInput.select?.()
+    } else {
+      const nextRowInputs = Array.from(
+        table.querySelectorAll<HTMLInputElement>('.p-inputtext, .p-inputnumber-input')
+      ).filter((input) => {
+        const row = input.closest('tr')
+        return row && Number(row.getAttribute('data-p-rowindex')) === rowIndex + 1
+      })
+
+      if (nextRowInputs.length > 0) {
+        const firstInputNextRow = nextRowInputs[0]
+        firstInputNextRow.focus()
+        firstInputNextRow.select?.()
+      } else {
+        const firstInput = inputs[0]
+        if (firstInput) {
+          firstInput.focus()
+          firstInput.select?.()
+        }
+      }
     }
   }
 
@@ -288,7 +312,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     <div>
       <Toast ref={toast} />
 
-      <div className="flex gap-3 justify-end mb-3">
+      <div className="flex gap-3 justify-content-end mb-3">
         <Button label="Add Product" icon={<Plus size={18} />} onClick={openAddDialog} />
         <Button
           label="Save All"

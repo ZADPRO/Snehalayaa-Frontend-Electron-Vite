@@ -3,7 +3,8 @@ import {
   Branch,
   Supplier,
   InitialCategory,
-  PurchaseOrderPayload
+  PurchaseOrderPayload,
+  PurchaseOrderListResponse
 } from './NewPurchaseOrderCreation.interface'
 import { baseURL, baseURLV2 } from '../../../utils/helper'
 import api from '../../../utils/api'
@@ -117,4 +118,13 @@ export const updatePurchaseOrder = async (payload: PurchaseOrderPayload) => {
     console.error('Error updating PO:', err)
     throw err
   }
+}
+
+export const fetchPurchaseOrderDetails = async (): Promise<PurchaseOrderListResponse[]> => {
+  const res = await axios.get(`${baseURL}/admin/getAllPurchaseOrders`, {
+    headers: {
+      Authorization: localStorage.getItem('token') || ''
+    }
+  })
+  return res.data.data
 }

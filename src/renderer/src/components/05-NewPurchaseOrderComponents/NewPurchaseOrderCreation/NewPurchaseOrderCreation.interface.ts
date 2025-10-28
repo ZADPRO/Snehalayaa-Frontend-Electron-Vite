@@ -100,3 +100,17 @@ export interface PurchaseOrderPayload {
   summary: PurchaseOrderSummary
   creditedDate: string // text in DB
 }
+
+export interface PurchaseOrderListResponse {
+  purchase_order_id: number
+  purchase_order_number: string
+  status: string
+  total_ordered_quantity: number
+  total_accepted_quantity: number
+  total_rejected_quantity: number
+  total_amount: string
+  created_at: string
+  taxable_amount: string
+  supplier_name: string
+  branch_name: string
+}

@@ -51,29 +51,14 @@ const styles = StyleSheet.create({
   },
   bold: { fontWeight: 'bold' },
 
-  // ✅ Table borders fixed
   table: {
     display: 'table' as any,
     width: '100%',
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#ddd',
-    borderStyle: 'solid', // ✅ added
+    borderStyle: 'solid',
     marginBottom: 10
-  },
-  tableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-    borderStyle: 'solid' // ✅ added
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: '#bbb',
-    borderStyle: 'solid', // ✅ added
-    fontWeight: 'bold',
-    backgroundColor: '#f5f5f5'
   },
   col: {
     flexGrow: 1,
@@ -87,33 +72,71 @@ const styles = StyleSheet.create({
   },
   summaryText: { fontSize: 10, lineHeight: 1.3, textAlign: 'right' },
 
-  // ✅ Tax table borders fixed
-  taxTable: {
-    display: 'table' as any,
-    width: '100%',
-    marginTop: 10,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-    borderStyle: 'solid' // ✅ added
+  colHeader: {
+    flexGrow: 1,
+    paddingVertical: 4,
+    textAlign: 'center',
+    fontWeight: 'bold'
   },
-  taxRow: {
+  colData: {
+    flexGrow: 1,
+    paddingVertical: 4,
+    textAlign: 'left'
+  },
+  tableCell: {
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    fontSize: 9,
+    borderRightWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'solid'
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#f5f5f5',
+    borderBottomWidth: 1,
+    borderColor: '#bbb',
+    borderStyle: 'solid',
+    fontWeight: 'bold'
+  },
+  tableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderColor: '#eee',
-    borderStyle: 'solid' // ✅ added
+    borderStyle: 'solid'
   },
+  taxTable: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'solid',
+    marginTop: 6,
+    width: '100%'
+  },
+
+  taxRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'solid'
+  },
+
   taxCellHeader: {
-    flex: 1,
-    padding: 4,
+    fontSize: 9,
     fontWeight: 'bold',
-    backgroundColor: '#f5f5f5',
-    textAlign: 'center'
-  },
-  taxCell: {
-    flex: 1,
     padding: 4,
-    textAlign: 'center'
+    borderRightWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'solid',
+    backgroundColor: '#f2f2f2'
+  },
+
+  taxCell: {
+    fontSize: 9,
+    padding: 4,
+    borderRightWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'solid',
+    textAlign: 'right' // default to right for numeric
   }
 })
 
@@ -202,25 +225,39 @@ export const PurchaseOrderPdf = ({
 
         {/* Product Table */}
         <View style={styles.table}>
+          {/* Header */}
           <View style={styles.tableHeader}>
-            {['S.No', 'Category', 'Description', 'Qty', 'Unit Price', 'Disc %', 'Total'].map(
-              (h, i) => (
-                <Text key={i} style={styles.col}>
-                  {h}
-                </Text>
-              )
-            )}
+            <Text style={[styles.tableCell, { width: '7%', textAlign: 'center' }]}>S.No</Text>
+            <Text style={[styles.tableCell, { width: '18%', textAlign: 'left' }]}>Category</Text>
+            <Text style={[styles.tableCell, { width: '30%', textAlign: 'left' }]}>Description</Text>
+            <Text style={[styles.tableCell, { width: '10%', textAlign: 'right' }]}>Qty</Text>
+            <Text style={[styles.tableCell, { width: '13%', textAlign: 'right' }]}>Unit Price</Text>
+            <Text style={[styles.tableCell, { width: '10%', textAlign: 'right' }]}>Disc %</Text>
+            <Text style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>Total</Text>
           </View>
 
+          {/* Rows */}
           {items.map((item, i) => (
             <View key={i} style={styles.tableRow}>
-              <Text style={styles.col}>{i + 1}</Text>
-              <Text style={styles.col}>{item.category}</Text>
-              <Text style={styles.col}>{item.description}</Text>
-              <Text style={styles.col}>{item.quantity}</Text>
-              <Text style={styles.col}>{item.unitPrice.toFixed(2)}</Text>
-              <Text style={styles.col}>{item.discount.toFixed(2)}</Text>
-              <Text style={styles.col}>{item.total.toFixed(2)}</Text>
+              <Text style={[styles.tableCell, { width: '7%', textAlign: 'center' }]}>{i + 1}</Text>
+              <Text style={[styles.tableCell, { width: '18%', textAlign: 'left' }]}>
+                {item.category}
+              </Text>
+              <Text style={[styles.tableCell, { width: '30%', textAlign: 'left' }]}>
+                {item.description}
+              </Text>
+              <Text style={[styles.tableCell, { width: '10%', textAlign: 'right' }]}>
+                {item.quantity}
+              </Text>
+              <Text style={[styles.tableCell, { width: '13%', textAlign: 'right' }]}>
+                {item.unitPrice?.toFixed(2)}
+              </Text>
+              <Text style={[styles.tableCell, { width: '10%', textAlign: 'right' }]}>
+                {item.discount?.toFixed(2)}
+              </Text>
+              <Text style={[styles.tableCell, { width: '12%', textAlign: 'right' }]}>
+                {item.total?.toFixed(2)}
+              </Text>
             </View>
           ))}
         </View>
@@ -236,19 +273,34 @@ export const PurchaseOrderPdf = ({
 
         {/* Tax Summary */}
         <Text style={[styles.bold, { marginTop: 12 }]}>Tax Summary</Text>
+
         <View style={styles.taxTable}>
+          {/* Header */}
           <View style={styles.taxRow}>
-            {['Tax Type', 'Tax Rate', 'Tax Valuable', 'Tax Amount'].map((h, i) => (
-              <Text key={i} style={styles.taxCellHeader}>
-                {h}
-              </Text>
-            ))}
+            <Text style={[styles.taxCellHeader, { width: '25%', textAlign: 'left' }]}>
+              Tax Type
+            </Text>
+            <Text style={[styles.taxCellHeader, { width: '25%', textAlign: 'right' }]}>
+              Tax Rate
+            </Text>
+            <Text style={[styles.taxCellHeader, { width: '25%', textAlign: 'right' }]}>
+              Tax Valuable
+            </Text>
+            <Text style={[styles.taxCellHeader, { width: '25%', textAlign: 'right' }]}>
+              Tax Amount
+            </Text>
           </View>
+
+          {/* Data Row */}
           <View style={styles.taxRow}>
-            <Text style={styles.taxCell}>IGST</Text>
-            <Text style={styles.taxCell}>{TAX_RATE}%</Text>
-            <Text style={styles.taxCell}>₹ {SUBTOTAL.toFixed(2)}</Text>
-            <Text style={styles.taxCell}>₹ {TAX_AMOUNT.toFixed(2)}</Text>
+            <Text style={[styles.taxCell, { width: '25%', textAlign: 'left' }]}>IGST</Text>
+            <Text style={[styles.taxCell, { width: '25%', textAlign: 'right' }]}>{TAX_RATE}%</Text>
+            <Text style={[styles.taxCell, { width: '25%', textAlign: 'right' }]}>
+              ₹ {SUBTOTAL.toFixed(2)}
+            </Text>
+            <Text style={[styles.taxCell, { width: '25%', textAlign: 'right' }]}>
+              ₹ {TAX_AMOUNT.toFixed(2)}
+            </Text>
           </View>
         </View>
       </Page>

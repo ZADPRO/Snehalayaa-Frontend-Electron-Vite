@@ -376,6 +376,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
         rounded
         outlined
         onClick={() => handleEdit(rowData, rowIndex)}
+        disabled={isSaved}
       />
       <Button
         icon={<Trash2 size={16} />}
@@ -383,6 +384,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
         outlined
         severity="danger"
         onClick={() => handleDelete(rowIndex)}
+        disabled={isSaved}
       />
     </div>
   )
@@ -608,6 +610,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
             icon={<Plus size={16} />}
             onClick={handleAddProduct}
             className="p-button-primary gap-2"
+            disabled={isSaved}
           />
         </div>
 
@@ -682,6 +685,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
                 setTaxEnabled(e.value)
                 if (!e.value) setTaxPercentage('')
               }}
+              disabled={isSaved}
             />
           </div>
 
