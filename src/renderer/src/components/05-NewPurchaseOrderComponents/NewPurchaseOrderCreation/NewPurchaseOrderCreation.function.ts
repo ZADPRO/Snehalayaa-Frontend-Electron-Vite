@@ -5,11 +5,11 @@ import {
   InitialCategory,
   PurchaseOrderPayload
 } from './NewPurchaseOrderCreation.interface'
-import { baseURL } from '../../../utils/helper'
+import { baseURL, baseURLV2 } from '../../../utils/helper'
 import api from '../../../utils/api'
 
 export const fetchBranches = async (): Promise<Branch[]> => {
-  const res = await axios.get(`${baseURL}/admin/settings/branches`, {
+  const res = await axios.get(`${baseURLV2}/admin/settings/branches`, {
     headers: {
       Authorization: localStorage.getItem('token') || ''
     }

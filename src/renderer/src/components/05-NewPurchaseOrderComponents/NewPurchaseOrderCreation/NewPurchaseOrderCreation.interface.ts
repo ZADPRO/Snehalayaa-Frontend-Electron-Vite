@@ -42,6 +42,11 @@ export interface Branch {
   refMobile: string
   updatedAt: string
   updatedBy: string
+  refBranchDoorNo?: string
+  refBranchStreet?: string
+  refBranchCity?: string
+  refBranchState?: string
+  refBranchPincode?: string
 }
 
 export interface InitialCategory {

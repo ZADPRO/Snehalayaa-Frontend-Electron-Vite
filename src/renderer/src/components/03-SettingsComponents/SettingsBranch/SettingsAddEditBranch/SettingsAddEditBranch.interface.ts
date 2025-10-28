@@ -1,4 +1,5 @@
 export interface Branch {
+  refBranchId?: number
   refBranchName: string
   refBranchCode: string
   refLocation: string
@@ -6,31 +7,38 @@ export interface Branch {
   refEmail: string
   isMainBranch: boolean
   isActive: boolean
-  refBTId: number
-  refBranchId?: number
+  refBTId?: number
   isOnline: boolean
   isOffline: boolean
+  refBranchDoorNo?: string
+  refBranchStreet?: string
+  refBranchCity?: string
+  refBranchState?: string
+  refBranchPincode?: string
+  floors: Floor[]
+}
+
+export interface BranchFormData {
+  refBranchName: string
+  refBranchCode: string
+  refLocation: string
+  refMobile: string
+  refEmail: string
+  isMainBranch: boolean
+  isOnline: boolean
+  isOffline: boolean
+  refBranchDoorNo?: string
+  refBranchStreet?: string
+  refBranchCity?: string
+  refBranchState?: string
+  refBranchPincode?: string
+  selectedStatus: BranchStatusOptions | null
   floors: Floor[]
 }
 
 export interface BranchStatusOptions {
   name: string
   isActive: boolean
-}
-
-export interface BranchFormData {
-  // refBranchId: number
-  refBranchName: string
-  refBranchCode: string
-  refLocation: string
-  refMobile: string
-  refEmail: string
-  isMainBranch: boolean
-  //   refBTId: number
-  selectedStatus: BranchStatusOptions | null
-  isOnline: boolean
-  isOffline: boolean
-  floors: Floor[]
 }
 
 export interface Section {

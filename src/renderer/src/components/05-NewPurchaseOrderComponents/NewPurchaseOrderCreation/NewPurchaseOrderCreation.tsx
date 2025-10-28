@@ -20,14 +20,18 @@ import { Calendar } from 'primereact/calendar'
 import { InputSwitch } from 'primereact/inputswitch'
 import { Sidebar } from 'primereact/sidebar'
 import SettingsAddEditInitialCategories from '../../03-SettingsComponents/SettingsInitialCategories/SettingsAddEditInitialCategories/SettingsAddEditInitialCategories'
-
+import logo from '../../../assets/logo/transparentLogo01.png'
 // import { generatePurchaseOrderPdf } from '../NewPurchaseOrderCreation/NewPOPdfGeneration/NewPOPdfGeneration.function'
+import { PurchaseOrderPdf } from './NewPOPdfGeneration/NewPOPdfGeneration'
+
+import { pdf } from '@react-pdf/renderer'
 
 const TAX_PERCENTAGE = 5
 
 const NewPurchaseOrderCreation: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
   const toast = useRef<Toast>(null)
+  const [purchaseOrderNumber, setPurchaseOrderNumber] = useState('')
 
   const [branches, setBranches] = useState<Branch[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -202,6 +206,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
     try {
       const response = await createPurchaseOrder(payload)
       console.log('✅ PO created:', response)
+      setPurchaseOrderNumber(response.purchaseOrderNumber)
       toast.current?.show({
         severity: 'success',
         summary: 'Saved',
@@ -212,7 +217,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to save purchase order'
+        detail: error
       })
     }
   }
@@ -229,6 +234,19 @@ const NewPurchaseOrderCreation: React.FC = () => {
     setIsSaved(false)
   }
 
+  const getBase64FromImage = (imgUrl: string): Promise<string> => {
+    return fetch(imgUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+      })
+  }
+
   const handleDownloadPdf = async () => {
     if (!selectedSupplier || !selectedBranch || products.length === 0) {
       toast.current?.show({
@@ -239,7 +257,9 @@ const NewPurchaseOrderCreation: React.FC = () => {
       return
     }
 
-    // 🧠 Create payload as per your PurchaseOrderProps
+    const logoBase64 = await getBase64FromImage(logo)
+
+    console.log('selectedBranch', selectedBranch)
     const pdfProps = {
       from: selectedSupplier,
       to: selectedBranch,
@@ -250,18 +270,30 @@ const NewPurchaseOrderCreation: React.FC = () => {
         unitPrice: p.unitPrice,
         discount: p.discount,
         total: p.total
-      }))
+      })),
+      invoiceNumber: purchaseOrderNumber,
+      summary: {
+        taxPercentage: taxPercentage || '0',
+        taxAmount: taxAmount().toString(),
+        subTotal: currentSubTotal().toString(),
+        totalAmount: totalAmount().toString()
+      },
+      logoBase64
     }
-    console.log('pdfProps', pdfProps)
 
     try {
-      // await generatePurchaseOrderPdf(pdfProps: any)
+      const blob = await pdf(<PurchaseOrderPdf {...pdfProps} />).toBlob()
+
+      const url = URL.createObjectURL(blob)
+      window.open(url)
+
       toast.current?.show({
         severity: 'success',
         summary: 'PDF Generated',
         detail: 'Purchase order PDF downloaded successfully'
       })
     } catch (error) {
+      console.error('PDF generation failed:', error)
       toast.current?.show({
         severity: 'error',
         summary: 'Error',

@@ -38,7 +38,6 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   const [floors, setFloors] = useState<Floor[]>([])
 
   const [formData, setFormData] = useState<BranchFormData>({
-    // refBranchId:0,
     refBranchName: '',
     refBranchCode: '',
     refLocation: '',
@@ -47,8 +46,13 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     isMainBranch: false,
     isOnline: false,
     isOffline: true,
-    floors: [], // <-- ADD THIS
-    selectedStatus: { name: 'Active', isActive: true }
+    refBranchDoorNo: '',
+    refBranchStreet: '',
+    refBranchCity: '',
+    refBranchState: '',
+    refBranchPincode: '',
+    selectedStatus: { name: 'Active', isActive: true },
+    floors: []
   })
 
   const statusOptions: BranchStatusOptions[] = [
@@ -83,11 +87,17 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
         isMainBranch: selectedBranches.isMainBranch,
         isOnline: selectedBranches.isOnline,
         isOffline: selectedBranches.isOffline,
+        refBranchDoorNo: selectedBranches.refBranchDoorNo || '',
+        refBranchStreet: selectedBranches.refBranchStreet || '',
+        refBranchCity: selectedBranches.refBranchCity || '',
+        refBranchState: selectedBranches.refBranchState || '',
+        refBranchPincode: selectedBranches.refBranchPincode || '',
         selectedStatus: selectedBranches.isActive
           ? { name: 'Active', isActive: true }
           : { name: 'Inactive', isActive: false },
         floors: mappedFloors
       })
+
       setFloors(mappedFloors)
     } else {
       setFloors([])
@@ -179,6 +189,11 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
       isActive: formData.selectedStatus?.isActive ?? false,
       isOnline: formData.isOnline,
       isOffline: formData.isOffline,
+      refBranchDoorNo: formData.refBranchDoorNo,
+      refBranchStreet: formData.refBranchStreet,
+      refBranchCity: formData.refBranchCity,
+      refBranchState: formData.refBranchState,
+      refBranchPincode: formData.refBranchPincode,
       floors: floors
     }
 
@@ -215,9 +230,10 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   ]
 
   return (
-    <div className="mt-3">
+    <div className="">
       <Toast ref={toast} />
       <div className="">
+        <p>Basic Details</p>
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
@@ -243,6 +259,72 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           </div>
         </div>
 
+        <p className="mt-2">Communication Details</p>
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchDoorNo"
+                value={formData.refBranchDoorNo || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchDoorNo', e.target.value)}
+              />
+              <label htmlFor="refBranchDoorNo">Branch Door No</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchStreet"
+                value={formData.refBranchStreet || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchStreet', e.target.value)}
+              />
+              <label htmlFor="refBranchStreet">Branch Street</label>
+            </FloatLabel>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchCity"
+                value={formData.refBranchCity || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchCity', e.target.value)}
+              />
+              <label htmlFor="refBranchCity">Branch City</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchState"
+                value={formData.refBranchState || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchState', e.target.value)}
+              />
+              <label htmlFor="refBranchState">Branch State</label>
+            </FloatLabel>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchPincode"
+                value={formData.refBranchPincode || ''}
+                className="w-full"
+                keyfilter={'int'}
+                maxLength={6}
+                onChange={(e) => handleInputChange('refBranchPincode', e.target.value.slice(0, 6))}
+              />
+              <label htmlFor="refBranchPincode">Pincode</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1"></div>
+        </div>
+        <p className="mt-2">Other Details</p>
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">

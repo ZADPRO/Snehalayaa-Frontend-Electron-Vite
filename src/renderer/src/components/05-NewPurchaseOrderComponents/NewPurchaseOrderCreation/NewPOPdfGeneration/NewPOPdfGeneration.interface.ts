@@ -8,11 +8,21 @@ export interface BranchDetails {
   refBranchCode: string
   refBranchId: number
   refBranchName: string
+  refBranchDoorNo?: string
+  refBranchStreet?: string
+  refBranchCity?: string
+  refBranchState?: string
+  refBranchPincode?: string
   refEmail: string
   refLocation: string
   refMobile: string
   updatedAt: string
   updatedBy: string
+
+  branchCompanyName?: string
+  branchContactPerson?: string
+  branchPhone?: string
+  branchCountry?: string
 }
 
 export interface PartyDetails {
@@ -44,10 +54,25 @@ export interface PartyDetails {
   updatedBy: string
 }
 
-export interface PurchaseOrderItem {}
+export interface PurchaseOrderItem {
+  category: string
+  description: string
+  quantity: number
+  unitPrice: number
+  discount: number
+  total: number
+}
+
+export interface PurchaseOrderSummary {
+  subTotal: string
+  taxPercentage: string
+  taxAmount: string
+  totalAmount: string
+}
 
 export interface PurchaseOrderProps {
   from: PartyDetails
   to: BranchDetails
   items: PurchaseOrderItem[]
+  summary: PurchaseOrderSummary
 }
