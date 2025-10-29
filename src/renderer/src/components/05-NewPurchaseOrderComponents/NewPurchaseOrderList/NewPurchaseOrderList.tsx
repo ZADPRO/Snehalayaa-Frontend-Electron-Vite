@@ -41,6 +41,7 @@ const NewPurchaseOrderList: React.FC = () => {
         fetchSuppliers(),
         fetchPurchaseOrderDetails()
       ])
+      console.log('purchaseOrderData', purchaseOrderData)
       setBranches(branchData)
       setSuppliers(supplierData)
       setPurchaseOrders(purchaseOrderData || [])
@@ -125,14 +126,14 @@ const NewPurchaseOrderList: React.FC = () => {
             placeholder="From Date"
             value={fromDate}
             onChange={(e) => setFromDate(e.value as Date)}
-            className="w-13rem"
+            className="w-13rem paymentNotesCalendarIcon"
             showIcon
           />
           <Calendar
             placeholder="To Date"
             value={toDate}
             onChange={(e) => setToDate(e.value as Date)}
-            className="w-13rem"
+            className="w-13rem paymentNotesCalendarIcon"
             showIcon
           />
         </div>
@@ -147,13 +148,21 @@ const NewPurchaseOrderList: React.FC = () => {
       </div>
 
       {/* 📋 Data Table */}
-      <DataTable value={filteredOrders} showGridlines scrollable paginator rows={10}>
+      <DataTable
+        value={filteredOrders}
+        showGridlines
+        scrollable
+        paginator
+        rows={10}
+        className="mt-2"
+      >
         <Column header="S.No" body={(_, { rowIndex }) => rowIndex + 1} style={{ width: '70px' }} />
         <Column
           field="purchaseOrderNumber"
           header="Purchase Order No"
           body={purchaseOrderTemplate}
           sortable
+          style={{ minWidth: '10rem' }}
         />
         <Column field="totalOrderedQuantity" header="No. of Products" sortable />
         <Column field="totalAcceptedQuantity" header="Accepted Qty" sortable />

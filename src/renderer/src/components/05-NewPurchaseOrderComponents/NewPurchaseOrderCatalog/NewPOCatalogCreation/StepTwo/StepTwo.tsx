@@ -230,6 +230,8 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
       cost,
       profitMargin,
       sellingPrice,
+      discountPercent, // ✅ Add this
+      discountPrice, // ✅ Add this
       dialogRows: dialogRowsWithSKU
     }
 

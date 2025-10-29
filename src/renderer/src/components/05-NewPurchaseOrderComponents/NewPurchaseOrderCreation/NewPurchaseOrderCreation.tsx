@@ -446,7 +446,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
       </div>
 
       {/* SUPPLIER & BRANCH */}
-      <div className="card shadow-1 p-3 mt-4 flex flex-column">
+      <div className="card shadow-1 p-3 mt-2 flex flex-column">
         <p className="underline uppercase font-semibold">Supplier & Address</p>
         <div className="flex gap-3 mt-3">
           <div className="flex-1">

@@ -12,15 +12,15 @@ import { savePurchaseOrderProducts } from './PurchaseOrderProductDetails.functio
 import StepTwo from '../../NewPurchaseOrderCatalog/NewPOCatalogCreation/StepTwo/StepTwo'
 // import axios from 'axios' // uncomment when backend endpoint is ready
 
-interface Product {
-  poProductId: number
-  description: string
-  quantity: number
-  unitPrice: number
-  categoryDetails: {
-    initialCategoryName: string
-  }
-}
+// interface Product {
+//   poProductId: number
+//   description: string
+//   quantity: number
+//   unitPrice: number
+//   categoryDetails: {
+//     initialCategoryName: string
+//   }
+// }
 
 interface PurchaseOrderProductDetailsProps {
   purchaseOrder: any
@@ -44,6 +44,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
   const [receivedBatches, setReceivedBatches] = useState<any[]>([])
   const [activeStep, setActiveStep] = useState(0)
   const [loading, setLoading] = useState(false)
+  console.log('loading', loading)
 
   // ✅ Auto calculate rejected quantity
   const handleReceivedChange = (value: number, rowIndex: number) => {
@@ -60,6 +61,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
   }
 
   const [confirmedData, setConfirmedData] = useState<any[]>([])
+  console.log('confirmedData', confirmedData)
 
   const handleSavePO = async () => {
     const payload = products.map((p) => ({
@@ -141,7 +143,13 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
 
       <Divider />
 
-      <Stepper activeStep={activeStep} onStepChange={(e) => setActiveStep(e.index)}>
+      <Stepper
+        activeStep={activeStep}
+        onChange={(e) => {
+          console.log('e', e)
+          setActiveStep(e.index)
+        }}
+      >
         {/* STEP 1 — Product Receiving */}
         <StepperPanel header="Receive Products">
           <div className="flex justify-content-end mb-3">

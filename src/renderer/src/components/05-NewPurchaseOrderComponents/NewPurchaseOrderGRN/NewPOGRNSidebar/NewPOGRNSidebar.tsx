@@ -285,9 +285,7 @@ const NewPOGRNSidebar: React.FC<NewPOGRNSidebarProps> = ({ purchaseOrder }) => {
         <TabPanel header="GRN Initialization">
           <StepTwo purchaseOrder={localPO} />
         </TabPanel>
-        <TabPanel header="GRN Products">
-          <StepThree purchaseOrder={localPO} />
-        </TabPanel>
+        <TabPanel header="GRN Products">{/* <StepThree purchaseOrder={localPO} /> */}</TabPanel>
       </TabView>
     </div>
   )
