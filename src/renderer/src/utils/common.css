@@ -3,7 +3,7 @@ body {
 }
 
 * {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 /* PASSWORD */
@@ -312,4 +312,9 @@ Specificity: (0,2,2)
 /* Total (InputNumber) */
 .productGRNTableInputTotalAmt .p-inputnumber-input {
   width: 80px;
+}
+
+.grnTableUI .p-datatable-wrapper table thead tr th,
+.grnTableUI .p-datatable-wrapper table tbody tr td {
+  padding: 2px;
 }

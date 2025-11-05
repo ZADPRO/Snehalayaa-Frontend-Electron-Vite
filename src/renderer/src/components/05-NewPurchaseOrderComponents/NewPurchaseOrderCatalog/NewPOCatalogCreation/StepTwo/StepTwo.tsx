@@ -133,75 +133,83 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     setDialogVisible(true)
   }
 
-  const generateDialogRows = (qty: number) => {
+  const generateDialogRows = (newQty: number) => {
     setDialogRows((prevRows) => {
-      const newRows: DialogRow[] = []
-      for (let i = 0; i < qty; i++) {
-        const existing = prevRows[i]
-        newRows.push({
-          id: existing?.id || Date.now() + i,
-          sNo: i + 1,
+      let updatedRows = [...prevRows]
+
+      // If quantity increased → add empty rows
+      if (newQty > prevRows.length) {
+        const rowsToAdd = newQty - prevRows.length
+        const additionalRows = Array.from({ length: rowsToAdd }, (_, i) => ({
+          id: Date.now() + i,
+          sNo: prevRows.length + i + 1,
           lineNumber,
-          referenceNumber: existing?.referenceNumber || '',
-          productDescription: existing?.productDescription || '',
+          referenceNumber: '',
+          productDescription: '',
           discount: discountPercent,
           price: cost,
           discountPrice: discountPrice,
           margin: profitMargin,
           totalAmount: ((discountPrice || cost) * (1 + profitMargin / 100)).toFixed(2)
-        })
+        }))
+        updatedRows = [...prevRows, ...additionalRows]
       }
-      return newRows
+
+      // If quantity decreased → trim rows
+      if (newQty < prevRows.length) {
+        updatedRows = updatedRows.slice(0, newQty)
+      }
+
+      return updatedRows
     })
   }
 
   const handleDialogRowChange = (index: number, field: keyof DialogRow, value: number | string) => {
-    const updated = [...dialogRows]
-    const row = { ...updated[index], [field]: value }
+    setDialogRows((prevRows) => {
+      const updatedRows = [...prevRows]
+      const row = { ...updatedRows[index], [field]: value }
 
-    let price = Number(row.price)
-    let discount = Number(row.discount)
-    let dPrice = Number(row.discountPrice)
-    let margin = Number(row.margin)
+      // Update dependent fields
+      const price = Number(row.price)
+      const discount = Number(row.discount)
+      const discountPrice = Number(row.discountPrice)
+      const margin = Number(row.margin)
 
-    if (field === 'discount') {
-      dPrice = price - (price * discount) / 100
-      row.discountPrice = Number(dPrice.toFixed(2))
-    } else if (field === 'discountPrice') {
-      discount = ((price - dPrice) / price) * 100
-      row.discount = Number(discount.toFixed(2))
-    }
+      if (field === 'discount') {
+        const dPrice = price - (price * discount) / 100
+        row.discountPrice = Number(dPrice.toFixed(2))
+      } else if (field === 'discountPrice') {
+        const percent = ((price - discountPrice) / price) * 100
+        row.discount = Number(percent.toFixed(2))
+      }
 
-    row.totalAmount = ((dPrice || price) * (1 + margin / 100)).toFixed(2)
-    updated[index] = row
-    setDialogRows(updated)
+      // Calculate total
+      const effectivePrice = row.discountPrice || price
+      row.totalAmount = (effectivePrice * (1 + margin / 100)).toFixed(2)
+
+      updatedRows[index] = row
+
+      // Log to console in array format
+      console.log('🧾 Updated Dialog Rows:', updatedRows)
+
+      return updatedRows
+    })
   }
 
-  // const canGenerateRows = () => {
-  //   return (
-  //     lineNumber > 0 &&
-  //     productName.trim() !== '' &&
-  //     selectedCategory &&
-  //     selectedSubCategory &&
-  //     cost > 0 &&
-  //     quantity > 0
-  //   )
-  // }
-
   const handleQuantityChange = (value: number) => {
-    console.log('value', value)
-    // if (!canGenerateRows()) return
+    let qty = value || 0
 
-    if (value > remainingQuantity) {
+    if (qty > remainingQuantity) {
       toast.current?.show({
         severity: 'warn',
         summary: 'Quantity Limit',
         detail: `You can only add up to ${remainingQuantity} more products`
       })
-      value = remainingQuantity
+      qty = remainingQuantity
     }
-    setQuantity(value)
-    generateDialogRows(value)
+
+    setQuantity(qty)
+    generateDialogRows(qty)
   }
 
   const saveRow = () => {
@@ -246,64 +254,87 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   }
 
   const focusNextInput = (
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: React.KeyboardEvent<HTMLInputElement | HTMLButtonElement>,
     rowIndex: number,
     field: keyof DialogRow
   ) => {
+    console.log('field', field)
     if (e.key !== 'Enter') return
     e.preventDefault()
 
     const table = e.currentTarget.closest('.p-datatable-wrapper')
     if (!table) return
 
-    const inputs = Array.from(
-      table.querySelectorAll<HTMLInputElement>('.p-inputtext, .p-inputnumber-input')
+    // include buttons in tab order
+    const focusableElements = Array.from(
+      table.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+        '.p-inputtext, .p-inputnumber-input, button'
+      )
     )
 
-    const currentIndex = inputs.indexOf(e.currentTarget as HTMLInputElement)
-    const nextInput = inputs[currentIndex + 1]
-    if (nextInput) {
-      nextInput.focus()
-      nextInput.select?.()
+    const currentIndex = focusableElements.indexOf(e.currentTarget as HTMLInputElement)
+    let nextElement = focusableElements[currentIndex + 1]
+
+    // Skip disabled or hidden ones
+    while (
+      nextElement &&
+      (nextElement.disabled || nextElement.getAttribute('aria-hidden') === 'true')
+    ) {
+      nextElement = focusableElements[focusableElements.indexOf(nextElement) + 1]
+    }
+
+    if (nextElement) {
+      nextElement.focus()
+      ;(nextElement as HTMLInputElement).select?.()
     } else {
       const nextRowInputs = Array.from(
-        table.querySelectorAll<HTMLInputElement>('.p-inputtext, .p-inputnumber-input')
-      ).filter((input) => {
-        const row = input.closest('tr')
+        table.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+          '.p-inputtext, .p-inputnumber-input, button'
+        )
+      ).filter((el) => {
+        const row = el.closest('tr')
         return row && Number(row.getAttribute('data-p-rowindex')) === rowIndex + 1
       })
 
       if (nextRowInputs.length > 0) {
-        const firstInputNextRow = nextRowInputs[0]
-        firstInputNextRow.focus()
-        firstInputNextRow.select?.()
+        const firstInNextRow = nextRowInputs[0]
+        firstInNextRow.focus()
+        ;(firstInNextRow as HTMLInputElement).select?.()
       } else {
-        const firstInput = inputs[0]
+        const firstInput = focusableElements[0]
         if (firstInput) {
           firstInput.focus()
-          firstInput.select?.()
+          ;(firstInput as HTMLInputElement).select?.()
         }
       }
     }
   }
 
-  useEffect(() => {
-    if (dialogRows.length === 0) return
-    setDialogRows((prevRows) =>
-      prevRows.map((row) => ({
-        ...row,
-        lineNumber,
-        discount: discountPercent,
-        price: cost,
-        discountPrice: discountPrice,
-        margin: profitMargin,
-        totalAmount: ((discountPrice || cost) * (1 + profitMargin / 100)).toFixed(2)
-      }))
-    )
-  }, [lineNumber, cost, discountPercent, discountPrice, profitMargin])
-
   const handleSaveAll = async () => {
-    console.log('purchaseOrder', purchaseOrder)
+    const totalOrderedQuantity =
+      purchaseOrder.products?.reduce((sum: number, p: any) => sum + Number(p.quantity || 0), 0) || 0
+
+    const totalCreatedQuantity = rows.reduce((sum, r) => sum + Number(r.quantity || 0), 0)
+
+    if (totalCreatedQuantity < totalOrderedQuantity) {
+      const remaining = totalOrderedQuantity - totalCreatedQuantity
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Incomplete Product Creation',
+        detail: `You have created only ${totalCreatedQuantity} of ${totalOrderedQuantity} total products. Please create ${remaining} more before saving.`
+      })
+      return
+    }
+
+    if (totalCreatedQuantity > totalOrderedQuantity) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Quantity Mismatch',
+        detail: `Created quantity (${totalCreatedQuantity}) exceeds total ordered (${totalOrderedQuantity}). Please correct it.`
+      })
+      return
+    }
+
     const payload = {
       purchaseOrderId: purchaseOrder.purchaseOrderId,
       products: rows.map((r) => ({
@@ -335,10 +366,25 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
       }))
     }
 
+    console.log('✅ Validation Passed!')
     console.log('📦 Final Payload to send to backend:', payload)
 
-    const response = await api.post('/admin/savePurchaseOrderProducts', payload)
-    console.log('📦 Save PO Products Response:', response)
+    try {
+      const response = await api.post('/admin/savePurchaseOrderProducts', payload)
+      console.log('📦 Save PO Products Response:', response)
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Products Saved',
+        detail: 'All products saved successfully!'
+      })
+    } catch (error) {
+      console.error('❌ Error saving products:', error)
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Save Failed',
+        detail: 'Failed to save products. Please try again.'
+      })
+    }
   }
 
   return (
@@ -426,10 +472,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             />
             <label>Line No.</label>
           </FloatLabel>
-        </div>
 
-        {/* Product Info */}
-        <div className="flex gap-3 mt-3">
           <FloatLabel className="flex-1 always-float">
             <InputText
               value={productName}
@@ -438,7 +481,10 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             />
             <label>Product</label>
           </FloatLabel>
+        </div>
 
+        {/* Product Info */}
+        <div className="flex gap-3 mt-3">
           <FloatLabel className="flex-1 always-float">
             <InputText
               value={brand}
@@ -456,10 +502,6 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             />
             <label>Tax Class</label>
           </FloatLabel>
-        </div>
-
-        {/* Pricing Row */}
-        <div className="flex gap-3 mt-3">
           <FloatLabel className="flex-1 always-float">
             <InputNumber
               value={cost}
@@ -480,15 +522,13 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             />
             <label>Profit %</label>
           </FloatLabel>
+        </div>
 
+        <div className="flex gap-3 mt-3">
           <FloatLabel className="flex-1 always-float">
             <InputNumber value={sellingPrice} disabled className="w-full" />
             <label>Selling Price</label>
           </FloatLabel>
-        </div>
-
-        {/* Quantity + Discount */}
-        <div className="flex gap-3 mt-3">
           <FloatLabel className="flex-1 always-float">
             <InputNumber
               value={quantity}
@@ -534,7 +574,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
           responsiveLayout="scroll"
           showGridlines
           rowHover
-          className="p-datatable-sm"
+          className="p-datatable-sm grnTableUI"
         >
           {/* S.No */}
           <Column
@@ -660,7 +700,8 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             header="Action"
             body={(_rowData, { rowIndex }) => (
               <Button
-                icon={<Trash2 />}
+                text
+                icon={<Trash2 size={16} />}
                 className="p-button-danger productGRNTableAction"
                 onClick={() => {
                   const updatedRows = [...dialogRows]

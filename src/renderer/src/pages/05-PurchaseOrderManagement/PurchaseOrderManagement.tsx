@@ -38,7 +38,7 @@ const sidebarItems = [
   },
   {
     key: 'grnCatalog',
-    label: 'GRN Products',
+    label: 'Products',
     icon: <PackagePlus size={20} className="sidebar-icon" />,
     component: <NewPurchaseOrderCatalog />
   }

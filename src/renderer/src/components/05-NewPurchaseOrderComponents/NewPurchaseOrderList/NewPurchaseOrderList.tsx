@@ -16,6 +16,9 @@ import {
   Supplier
 } from '../NewPurchaseOrderCreation/NewPurchaseOrderCreation.interface'
 import PurchaseOrderProductDetails from './PurchaseOrderProductDetails/PurchaseOrderProductDetails'
+import { ScrollText } from 'lucide-react'
+import axios from 'axios'
+import { baseURL } from '../../../utils/helper'
 
 const NewPurchaseOrderList: React.FC = () => {
   const [branches, setBranches] = useState<Branch[]>([])
@@ -91,11 +94,34 @@ const NewPurchaseOrderList: React.FC = () => {
         setSelectedPO(rowData)
         setSidebarVisible(true)
       }}
-      className="text-primary cursor-pointer hover:underline"
+      className="text-primary cursor-pointer underline font-bold"
     >
       {rowData.purchaseOrderNumber}
     </span>
   )
+
+  const handleDetailsClick = async (rowData) => {
+    try {
+      const token = localStorage.getItem('token') // ✅ your auth token
+      const response = await axios.get(`${baseURL}/admin/details/${rowData.purchaseOrderNumber}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      console.log('Purchase Order Details:', response.data)
+    } catch (error) {
+      console.error('❌ Failed to fetch PO details:', error)
+    }
+  }
+
+  const scrollIconTemplate = (rowData) => {
+    return (
+      <div className="flex cursor-pointer">
+        <ScrollText className="" onClick={() => handleDetailsClick(rowData)} />
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -157,21 +183,42 @@ const NewPurchaseOrderList: React.FC = () => {
         className="mt-2"
       >
         <Column header="S.No" body={(_, { rowIndex }) => rowIndex + 1} style={{ width: '70px' }} />
+        <Column header="" body={scrollIconTemplate} />
         <Column
           field="purchaseOrderNumber"
           header="Purchase Order No"
           body={purchaseOrderTemplate}
           sortable
-          style={{ minWidth: '10rem' }}
+          style={{ minWidth: '14rem' }}
         />
-        <Column field="totalOrderedQuantity" header="No. of Products" sortable />
-        <Column field="totalAcceptedQuantity" header="Accepted Qty" sortable />
-        <Column field="totalRejectedQuantity" header="Rejected Qty" sortable />
-        <Column field="totalAmount" header="Total Amount" sortable />
-        <Column field="status" header="Status" sortable />
-        <Column field="createdAt" header="Created At" sortable />
-        <Column field="supplierName" header="Supplier Name" sortable />
-        <Column field="branchName" header="Branch Name" sortable />
+        <Column
+          field="totalOrderedQuantity"
+          header="No. of Products"
+          sortable
+          style={{ minWidth: '14rem' }}
+        />
+        <Column
+          field="totalAcceptedQuantity"
+          header="Accepted Qty"
+          sortable
+          style={{ minWidth: '14rem' }}
+        />
+        <Column
+          field="totalRejectedQuantity"
+          header="Rejected Qty"
+          sortable
+          style={{ minWidth: '14rem' }}
+        />
+        <Column field="totalAmount" header="Total Amount" sortable style={{ minWidth: '14rem' }} />
+        <Column field="status" header="Status" sortable style={{ minWidth: '14rem' }} />
+        <Column field="createdAt" header="Created At" sortable style={{ minWidth: '14rem' }} />
+        <Column
+          field="supplierName"
+          header="Supplier Name"
+          sortable
+          style={{ minWidth: '14rem' }}
+        />
+        <Column field="branchName" header="Branch Name" sortable style={{ minWidth: '14rem' }} />
       </DataTable>
 
       {/* 📦 Sidebar for PO Details */}

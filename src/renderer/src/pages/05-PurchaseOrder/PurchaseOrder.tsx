@@ -74,7 +74,7 @@ const sidebarItems = [
   },
   {
     key: 'bulkImagesUpdated',
-    label: 'Bulk Images',
+    label: 'SKU Scan Testing',
     icon: <Images size={20} className="sidebar-icon" />,
     component: <PurchaseOrderImage />
   }

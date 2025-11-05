@@ -11,7 +11,7 @@ import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
-import { Check, Plus } from 'lucide-react'
+import { Check, Plus, Trash2 } from 'lucide-react'
 
 interface Section {
   sectionName: string
@@ -228,6 +228,19 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     { label: 'Yes', value: true },
     { label: 'No', value: false }
   ]
+
+  const handleDeleteFloor = (floorIndex: number) => {
+    const updated = floors.filter((_, index) => index !== floorIndex)
+    setFloors(updated)
+  }
+
+  const handleDeleteSection = (floorIndex: number, sectionIndex: number) => {
+    const updated = [...floors]
+    updated[floorIndex].sections = updated[floorIndex].sections.filter(
+      (_, index) => index !== sectionIndex
+    )
+    setFloors(updated)
+  }
 
   return (
     <div className="">
@@ -450,6 +463,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                   />
                   <label htmlFor={`floorName-${floorIndex}`}>Floor Name</label>
                 </FloatLabel>
+
                 <FloatLabel className="always-float">
                   <InputText
                     id={`floorCode-${floorIndex}`}
@@ -458,10 +472,18 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                   />
                   <label htmlFor={`floorCode-${floorIndex}`}>Floor Code</label>
                 </FloatLabel>
+
                 <Button
-                  icon={<Plus className="" />}
+                  icon={<Plus />}
                   label="Add Section"
                   onClick={() => handleAddSection(floorIndex)}
+                />
+
+                <Button
+                  icon={<Trash2 />}
+                  severity="danger"
+                  className="ml-2"
+                  onClick={() => handleDeleteFloor(floorIndex)}
                 />
               </div>
 
@@ -472,10 +494,18 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                 )
 
                 return (
-                  <div key={sectionIndex} className="flex flex-column  mt-3  w-full">
-                    <p className="w-full font-medium text-gray-900">
-                      Section {`${floorIndex + 1}.${String.fromCharCode(65 + sectionIndex)}`}
-                    </p>
+                  <div key={sectionIndex} className="flex flex-column mt-3 w-full">
+                    <div className="flex justify-content-between align-items-center">
+                      <p className="font-medium text-gray-900">
+                        Section {`${floorIndex + 1}.${String.fromCharCode(65 + sectionIndex)}`}
+                      </p>
+
+                      <Button
+                        icon={<Trash2 size={16} />}
+                        className="p-button-danger"
+                        onClick={() => handleDeleteSection(floorIndex, sectionIndex)}
+                      />
+                    </div>
                     <div className="flex flex-column gap-3 mt-3">
                       <div className="flex gap-3">
                         <div className="flex-1 ">
@@ -522,10 +552,11 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
 
                       <div className="flex gap-3 bg-white rounded shadow-sm w-full">
                         <div className="flex-1">
-                          <FloatLabel className="always-float ">
+                          <FloatLabel className="always-float">
                             <Dropdown
                               id={`category-${floorIndex}-${sectionIndex}`}
                               value={section.categoryId}
+                              filter
                               onChange={(e) => {
                                 handleSectionChange(floorIndex, sectionIndex, 'categoryId', e.value)
 
@@ -553,6 +584,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                             <Dropdown
                               id={`subCategory-${floorIndex}-${sectionIndex}`}
                               value={section.refSubCategoryId}
+                              filter
                               onChange={(e) =>
                                 handleSectionChange(
                                   floorIndex,

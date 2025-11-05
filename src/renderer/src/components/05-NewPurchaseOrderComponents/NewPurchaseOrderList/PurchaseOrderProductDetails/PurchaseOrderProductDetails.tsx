@@ -10,17 +10,6 @@ import { Toast } from 'primereact/toast'
 import { formatINR } from '../../../../utils/helper'
 import { savePurchaseOrderProducts } from './PurchaseOrderProductDetails.function'
 import StepTwo from '../../NewPurchaseOrderCatalog/NewPOCatalogCreation/StepTwo/StepTwo'
-// import axios from 'axios' // uncomment when backend endpoint is ready
-
-// interface Product {
-//   poProductId: number
-//   description: string
-//   quantity: number
-//   unitPrice: number
-//   categoryDetails: {
-//     initialCategoryName: string
-//   }
-// }
 
 interface PurchaseOrderProductDetailsProps {
   purchaseOrder: any
@@ -30,23 +19,33 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
   purchaseOrder
 }) => {
   const toastRef = useRef<Toast>(null)
-
-  // Initialize product list with received/rejected/status fields
-  const [products, setProducts] = useState(
-    purchaseOrder.products.map((p: any) => ({
-      ...p,
-      received: 0,
-      rejected: p.quantity,
-      status: 'Pending'
-    }))
-  )
-
-  const [receivedBatches, setReceivedBatches] = useState<any[]>([])
   const [activeStep, setActiveStep] = useState(0)
   const [loading, setLoading] = useState(false)
-  console.log('loading', loading)
+  const [receivedBatches, setReceivedBatches] = useState<any[]>([])
+  const [confirmedData, setConfirmedData] = useState<any[]>([])
+  console.log('confirmedData', confirmedData)
 
-  // ✅ Auto calculate rejected quantity
+  // ✅ Initialize product data with backend accepted/rejected
+  const [products, setProducts] = useState(() =>
+    purchaseOrder.products.map((p: any) => {
+      const quantity = Number(p.quantity) || 0
+      const accepted = Number(p.accepted_quantity) || 0
+      const rejected = Number(p.rejected_quantity) || 0
+      const status =
+        accepted === quantity ? 'Completed' : accepted > 0 ? 'Partially Received' : 'Pending'
+      return {
+        ...p,
+        received: accepted,
+        rejected: rejected > 0 ? rejected : Math.max(0, quantity - accepted),
+        status
+      }
+    })
+  )
+
+  // ✅ Check if PO already has received/rejected data
+  const hasExistingData = products.some((p) => p.received > 0 || p.rejected > 0)
+
+  // ✅ Handle quantity edits
   const handleReceivedChange = (value: number, rowIndex: number) => {
     setProducts((prev) =>
       prev.map((item, i) => {
@@ -60,9 +59,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
     )
   }
 
-  const [confirmedData, setConfirmedData] = useState<any[]>([])
-  console.log('confirmedData', confirmedData)
-
+  // ✅ Save PO handler
   const handleSavePO = async () => {
     const payload = products.map((p) => ({
       purchase_order_id: purchaseOrder.purchaseOrderId,
@@ -88,19 +85,13 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
           detail: 'Purchase Order products updated successfully.'
         })
 
-        // Save current data batch for history
         const currentBatch = {
           id: Date.now(),
           timestamp: new Date().toLocaleString(),
           data: [...products]
         }
         setReceivedBatches((prev) => [currentBatch, ...prev])
-
-        // ✅ Save payload for next step confirmation
         setConfirmedData(payload)
-
-        // ✅ Move to next step (Confirmation)
-        setActiveStep(1)
       }
     } catch (err: any) {
       setLoading(false)
@@ -113,9 +104,10 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
   }
 
   return (
-    <div className="">
+    <div>
       <Toast ref={toastRef} />
 
+      {/* Header summary */}
       <div className="mb-3">
         <div className="flex gap-4">
           <p className="flex-1">
@@ -143,20 +135,27 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
 
       <Divider />
 
-      <Stepper
-        activeStep={activeStep}
-        onChange={(e) => {
-          console.log('e', e)
-          setActiveStep(e.index)
-        }}
-      >
+      <Stepper activeStep={activeStep} onChange={(e: any) => setActiveStep(e.index)}>
         {/* STEP 1 — Product Receiving */}
         <StepperPanel header="Receive Products">
-          <div className="flex justify-content-end mb-3">
-            <Button label="Save PO" severity="success" outlined onClick={handleSavePO} />
+          <div className="flex justify-content-end mb-3 gap-2">
+            <Button
+              label="Save PO"
+              severity="success"
+              outlined
+              onClick={handleSavePO}
+              loading={loading}
+            />
+            {hasExistingData && (
+              <Button
+                label="Next → Confirmation"
+                onClick={() => setActiveStep(1)}
+                severity="info"
+              />
+            )}
           </div>
 
-          {/* Previously Saved Batches */}
+          {/* Previous Batches */}
           {receivedBatches.length > 0 && (
             <div className="mb-4">
               <p className="font-bold text-lg mb-2">Received Batches</p>
@@ -219,9 +218,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
 
         {/* STEP 2 — Confirmation */}
         <StepperPanel header="Confirmation">
-          <div className="">
-            <StepTwo purchaseOrder={purchaseOrder} />
-          </div>
+          <StepTwo purchaseOrder={purchaseOrder} />
         </StepperPanel>
       </Stepper>
     </div>

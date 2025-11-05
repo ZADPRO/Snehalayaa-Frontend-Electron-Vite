@@ -1,7 +1,6 @@
 import api from '../../../../utils/api'
-import { POProductPayload } from './NewPOGRNSidebar.interface'
 
-export const createPOProducts = async (payload: POProductPayload) => {
+export const createPOProducts = async (payload: any) => {
   try {
     const response = await api.post('/admin/poProductsUpdate', payload)
     console.log('PO Products Response:', response)

@@ -10,7 +10,7 @@ import { Tag } from 'primereact/tag'
 import { createPOProducts } from './NewPOGRNSidebar.function'
 import { TabPanel, TabView } from 'primereact/tabview'
 import StepTwo from '../../NewPurchaseOrderCatalog/NewPOCatalogCreation/StepTwo/StepTwo'
-import StepThree from '../../NewPurchaseOrderCatalog/NewPOCatalogCreation/StepThree/StepThree'
+// import StepThree from '../../NewPurchaseOrderCatalog/NewPOCatalogCreation/StepThree/StepThree'
 
 interface NewPOGRNSidebarProps {
   purchaseOrder: any
