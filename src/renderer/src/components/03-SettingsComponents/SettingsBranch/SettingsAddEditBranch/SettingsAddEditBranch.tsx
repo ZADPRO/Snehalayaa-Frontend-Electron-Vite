@@ -11,7 +11,7 @@ import { InputText } from 'primereact/inputtext'
 import { FloatLabel } from 'primereact/floatlabel'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
-import { Check, Plus } from 'lucide-react'
+import { Check, Plus, Trash2 } from 'lucide-react'
 
 interface Section {
   sectionName: string
@@ -38,7 +38,6 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
   const [floors, setFloors] = useState<Floor[]>([])
 
   const [formData, setFormData] = useState<BranchFormData>({
-    // refBranchId:0,
     refBranchName: '',
     refBranchCode: '',
     refLocation: '',
@@ -47,8 +46,13 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     isMainBranch: false,
     isOnline: false,
     isOffline: true,
-    floors: [], // <-- ADD THIS
-    selectedStatus: { name: 'Active', isActive: true }
+    refBranchDoorNo: '',
+    refBranchStreet: '',
+    refBranchCity: '',
+    refBranchState: '',
+    refBranchPincode: '',
+    selectedStatus: { name: 'Active', isActive: true },
+    floors: []
   })
 
   const statusOptions: BranchStatusOptions[] = [
@@ -83,11 +87,17 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
         isMainBranch: selectedBranches.isMainBranch,
         isOnline: selectedBranches.isOnline,
         isOffline: selectedBranches.isOffline,
+        refBranchDoorNo: selectedBranches.refBranchDoorNo || '',
+        refBranchStreet: selectedBranches.refBranchStreet || '',
+        refBranchCity: selectedBranches.refBranchCity || '',
+        refBranchState: selectedBranches.refBranchState || '',
+        refBranchPincode: selectedBranches.refBranchPincode || '',
         selectedStatus: selectedBranches.isActive
           ? { name: 'Active', isActive: true }
           : { name: 'Inactive', isActive: false },
         floors: mappedFloors
       })
+
       setFloors(mappedFloors)
     } else {
       setFloors([])
@@ -179,6 +189,11 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
       isActive: formData.selectedStatus?.isActive ?? false,
       isOnline: formData.isOnline,
       isOffline: formData.isOffline,
+      refBranchDoorNo: formData.refBranchDoorNo,
+      refBranchStreet: formData.refBranchStreet,
+      refBranchCity: formData.refBranchCity,
+      refBranchState: formData.refBranchState,
+      refBranchPincode: formData.refBranchPincode,
       floors: floors
     }
 
@@ -214,10 +229,24 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
     { label: 'No', value: false }
   ]
 
+  const handleDeleteFloor = (floorIndex: number) => {
+    const updated = floors.filter((_, index) => index !== floorIndex)
+    setFloors(updated)
+  }
+
+  const handleDeleteSection = (floorIndex: number, sectionIndex: number) => {
+    const updated = [...floors]
+    updated[floorIndex].sections = updated[floorIndex].sections.filter(
+      (_, index) => index !== sectionIndex
+    )
+    setFloors(updated)
+  }
+
   return (
-    <div className="mt-3">
+    <div className="">
       <Toast ref={toast} />
       <div className="">
+        <p>Basic Details</p>
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
@@ -243,6 +272,72 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
           </div>
         </div>
 
+        <p className="mt-2">Communication Details</p>
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchDoorNo"
+                value={formData.refBranchDoorNo || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchDoorNo', e.target.value)}
+              />
+              <label htmlFor="refBranchDoorNo">Branch Door No</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchStreet"
+                value={formData.refBranchStreet || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchStreet', e.target.value)}
+              />
+              <label htmlFor="refBranchStreet">Branch Street</label>
+            </FloatLabel>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchCity"
+                value={formData.refBranchCity || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchCity', e.target.value)}
+              />
+              <label htmlFor="refBranchCity">Branch City</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchState"
+                value={formData.refBranchState || ''}
+                className="w-full"
+                onChange={(e) => handleInputChange('refBranchState', e.target.value)}
+              />
+              <label htmlFor="refBranchState">Branch State</label>
+            </FloatLabel>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-3">
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="refBranchPincode"
+                value={formData.refBranchPincode || ''}
+                className="w-full"
+                keyfilter={'int'}
+                maxLength={6}
+                onChange={(e) => handleInputChange('refBranchPincode', e.target.value.slice(0, 6))}
+              />
+              <label htmlFor="refBranchPincode">Pincode</label>
+            </FloatLabel>
+          </div>
+          <div className="flex-1"></div>
+        </div>
+        <p className="mt-2">Other Details</p>
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
             <FloatLabel className="always-float">
@@ -368,6 +463,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                   />
                   <label htmlFor={`floorName-${floorIndex}`}>Floor Name</label>
                 </FloatLabel>
+
                 <FloatLabel className="always-float">
                   <InputText
                     id={`floorCode-${floorIndex}`}
@@ -376,10 +472,18 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                   />
                   <label htmlFor={`floorCode-${floorIndex}`}>Floor Code</label>
                 </FloatLabel>
+
                 <Button
-                  icon={<Plus className="" />}
+                  icon={<Plus />}
                   label="Add Section"
                   onClick={() => handleAddSection(floorIndex)}
+                />
+
+                <Button
+                  icon={<Trash2 />}
+                  severity="danger"
+                  className="ml-2"
+                  onClick={() => handleDeleteFloor(floorIndex)}
                 />
               </div>
 
@@ -390,10 +494,18 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                 )
 
                 return (
-                  <div key={sectionIndex} className="flex flex-column  mt-3  w-full">
-                    <p className="w-full font-medium text-gray-900">
-                      Section {`${floorIndex + 1}.${String.fromCharCode(65 + sectionIndex)}`}
-                    </p>
+                  <div key={sectionIndex} className="flex flex-column mt-3 w-full">
+                    <div className="flex justify-content-between align-items-center">
+                      <p className="font-medium text-gray-900">
+                        Section {`${floorIndex + 1}.${String.fromCharCode(65 + sectionIndex)}`}
+                      </p>
+
+                      <Button
+                        icon={<Trash2 size={16} />}
+                        className="p-button-danger"
+                        onClick={() => handleDeleteSection(floorIndex, sectionIndex)}
+                      />
+                    </div>
                     <div className="flex flex-column gap-3 mt-3">
                       <div className="flex gap-3">
                         <div className="flex-1 ">
@@ -440,10 +552,11 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
 
                       <div className="flex gap-3 bg-white rounded shadow-sm w-full">
                         <div className="flex-1">
-                          <FloatLabel className="always-float ">
+                          <FloatLabel className="always-float">
                             <Dropdown
                               id={`category-${floorIndex}-${sectionIndex}`}
                               value={section.categoryId}
+                              filter
                               onChange={(e) => {
                                 handleSectionChange(floorIndex, sectionIndex, 'categoryId', e.value)
 
@@ -471,6 +584,7 @@ const SettingsAddEditBranch: React.FC<SettingsAddEditBranchProps> = ({
                             <Dropdown
                               id={`subCategory-${floorIndex}-${sectionIndex}`}
                               value={section.refSubCategoryId}
+                              filter
                               onChange={(e) =>
                                 handleSectionChange(
                                   floorIndex,

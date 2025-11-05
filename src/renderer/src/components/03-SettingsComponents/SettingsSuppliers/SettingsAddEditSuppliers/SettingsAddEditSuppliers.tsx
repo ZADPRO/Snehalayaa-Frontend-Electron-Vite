@@ -43,7 +43,8 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
     supplierState: '',
     supplierCountry: '',
     creditedDays: 0,
-    selectedStatus: { name: 'Active', isActive: true }
+    selectedStatus: { name: 'Active', isActive: true },
+    pincode: ''
   })
 
   const statusOptions: SupplierStatusOptions[] = [
@@ -85,7 +86,8 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
         creditedDays: selectedSupplier.creditedDays,
         selectedStatus: selectedSupplier.supplierIsActive
           ? { name: 'Active', isActive: true }
-          : { name: 'Inactive', isActive: false }
+          : { name: 'Inactive', isActive: false },
+        pincode: selectedSupplier.pincode
       })
     }
   }, [selectedSupplier])
@@ -131,7 +133,8 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
       supplierState: formData.supplierState,
       supplierCountry: formData.supplierCountry,
       creditedDays: formData.creditedDays,
-      supplierIsActive: formData.selectedStatus?.isActive ? 'true' : 'false'
+      supplierIsActive: formData.selectedStatus?.isActive ? 'true' : 'false',
+      pincode: formData.pincode
     }
 
     if (selectedSupplier) payload.supplierId = selectedSupplier.supplierId
@@ -348,7 +351,17 @@ const SettingsAddEditSuppliers: React.FC<SettingsAddEditSupplierProps> = ({
               <label htmlFor="supplierCountry">Country</label>
             </FloatLabel>
           </div>
-          <div className="flex-1"></div>
+          <div className="flex-1">
+            <FloatLabel className="always-float">
+              <InputText
+                id="pincode"
+                value={formData.pincode}
+                className="w-full"
+                onChange={(e) => handleInputChange('pincode', e.target.value)}
+              />
+              <label htmlFor="pincode">Pincode</label>
+            </FloatLabel>
+          </div>
         </div>
 
         <p className="mt-3">Bank details</p>

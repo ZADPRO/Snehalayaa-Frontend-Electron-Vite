@@ -24,7 +24,7 @@ import SettingsBranch from '../../components/03-SettingsComponents/SettingsBranc
 import SettingsEmployees from '../../components/03-SettingsComponents/SettingsEmployees/SettingsEmployees'
 // import SettingsAttribute from '../../components/03-SettingsComponents/SettingsAttribute/SettingsAttribute'
 import SettingsAttributes from '../../components/03-SettingsComponents/SettingsAttributes/SettingsAttributes'
-import SettingsOnlineAttributes from '../../components/03-SettingsComponents/SettingsOnlineAttributes/SettingsOnlineAttributes'
+// import SettingsOnlineAttributes from '../../components/03-SettingsComponents/SettingsOnlineAttributes/SettingsOnlineAttributes'
 import SettingsInitialCategories from '../../components/03-SettingsComponents/SettingsInitialCategories/SettingsInitialCategories'
 // import SettingsUserRoles from '../../components/03-SettingsComponents/SettingsUserRoles/SettingsUserRoles'
 
@@ -78,12 +78,12 @@ const sidebarItems = [
     icon: <SlidersVertical size={20} className="sidebar-icon" />,
     component: <SettingsAttributes />
   },
-  {
-    key: 'onlineAttributes',
-    label: 'Online Attributes',
-    icon: <SlidersVertical size={20} className="sidebar-icon" />,
-    component: <SettingsOnlineAttributes />
-  },
+  // {
+  //   key: 'onlineAttributes',
+  //   label: 'Online Attributes',
+  //   icon: <SlidersVertical size={20} className="sidebar-icon" />,
+  //   component: <SettingsOnlineAttributes />
+  // },
   {
     key: 'employees',
     label: 'Employees',

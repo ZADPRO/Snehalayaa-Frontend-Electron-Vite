@@ -19,7 +19,9 @@ const Login: React.FC = () => {
   const toast = useRef<Toast>(null)
   const navigate = useNavigate()
 
-  const onLogin = async () => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault() // prevent page refresh
+
     if (!username || !password) {
       toast.current?.show({
         severity: 'warn',
@@ -62,10 +64,11 @@ const Login: React.FC = () => {
       </div>
 
       <div className="loginRight">
-        <div className="loginForm">
+        <form className="loginForm" onSubmit={onSubmit}>
           <div className="loginImage flex justify-content-center align-items-center">
-            <img src={logoImage} alt="" style={{ width: '150px' }} />
+            <img src={logoImage} alt="Logo" style={{ width: '150px' }} />
           </div>
+
           <h2 className="login-title">Welcome to Snehalayaa Silks</h2>
 
           <div className="p-inputgroup">
@@ -77,6 +80,7 @@ const Login: React.FC = () => {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Username"
               className="w-full"
+              required
             />
           </div>
 
@@ -91,31 +95,31 @@ const Login: React.FC = () => {
               toggleMask
               feedback={false}
               className="w-full"
+              required
             />
           </div>
 
-          <div className="passwordFeatures mt-4">
-            <span>Remember Me</span>
-            <span className="forgot" onClick={() => navigate('/forgot-password')}>
+          <div className="passwordFeatures justify-content-end mt-4">
+            <span className="forgot cursor-pointer" onClick={() => navigate('/forgot-password')}>
               Forgot Password?
             </span>
           </div>
 
           <Button
+            type="submit"
             label={loading ? '' : 'Login'}
             className="w-full mt-3 loginButton uppercase font-bold flex justify-content-center align-items-center"
             style={{
               backgroundColor: '#6f1f5f',
               borderColor: '#6f1f5f'
             }}
-            onClick={onLogin}
             disabled={loading}
           >
             {loading && (
               <ProgressSpinner style={{ width: '20px', height: '20px' }} strokeWidth="4" />
             )}
           </Button>
-        </div>
+        </form>
       </div>
     </div>
   )

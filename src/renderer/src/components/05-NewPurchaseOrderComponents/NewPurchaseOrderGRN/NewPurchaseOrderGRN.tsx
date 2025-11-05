@@ -36,7 +36,7 @@ const NewPurchaseOrderGRN: React.FC = () => {
       style={{ color: '#0d6efd', cursor: 'pointer', textDecoration: 'underline' }}
       onClick={() => handleInvoiceClick(rowData)}
     >
-      {rowData.invoiceNumber || 'Not Available'}
+      {rowData.purchaseOrderNumber || 'Not Available'}
     </span>
   )
 
@@ -58,7 +58,7 @@ const NewPurchaseOrderGRN: React.FC = () => {
           body={(_rowData, { rowIndex }) => rowIndex + 1}
           style={{ width: '5rem', textAlign: 'center' }}
         />
-        <Column field="invoiceNumber" header="Invoice No" body={invoiceTemplate} sortable />
+        <Column field="purchaseOrderNumber" header="Invoice No" body={invoiceTemplate} sortable />
         <Column field="supplier.supplierName" header="Supplier Name" sortable />
         <Column field="branch.refBranchName" header="Branch Name" sortable />
         <Column field="summary.subTotal" header="Sub Total" sortable />

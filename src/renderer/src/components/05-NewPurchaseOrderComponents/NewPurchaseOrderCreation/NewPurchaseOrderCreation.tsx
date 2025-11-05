@@ -18,16 +18,26 @@ import { Plus, Trash2, Edit3, Save, Download, Printer, X, CalendarIcon } from 'l
 import { formatINR } from '../../../utils/helper'
 import { Calendar } from 'primereact/calendar'
 import { InputSwitch } from 'primereact/inputswitch'
+import { Sidebar } from 'primereact/sidebar'
+import SettingsAddEditInitialCategories from '../../03-SettingsComponents/SettingsInitialCategories/SettingsAddEditInitialCategories/SettingsAddEditInitialCategories'
+import logo from '../../../assets/logo/transparentLogo01.png'
+// import { generatePurchaseOrderPdf } from '../NewPurchaseOrderCreation/NewPOPdfGeneration/NewPOPdfGeneration.function'
+import { PurchaseOrderPdf } from './NewPOPdfGeneration/NewPOPdfGeneration'
+
+import { pdf } from '@react-pdf/renderer'
 
 const TAX_PERCENTAGE = 5
 
 const NewPurchaseOrderCreation: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
   const toast = useRef<Toast>(null)
+  const [purchaseOrderNumber, setPurchaseOrderNumber] = useState('')
 
   const [branches, setBranches] = useState<Branch[]>([])
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [initialCategories, setInitialCategories] = useState<InitialCategory[]>([])
+  const [initialCategoriesSidebarVisible, setInitialCategoriesSidebarVisible] =
+    useState<boolean>(false)
 
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
@@ -44,6 +54,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
 
   const [isSaved, setIsSaved] = useState(false)
   const [taxEnabled, setTaxEnabled] = useState(false)
+  const [taxPercentage, setTaxPercentage] = useState<string>('')
   const [creditedDate, setCreditedDate] = useState<Date | null>(null)
 
   // Fetch data
@@ -99,6 +110,23 @@ const NewPurchaseOrderCreation: React.FC = () => {
         detail: 'Product updated successfully'
       })
     } else {
+      const duplicate = products.find(
+        (p) =>
+          p.category.initialCategoryId === newProduct.category.initialCategoryId &&
+          p.description.trim().toLowerCase() === newProduct.description.trim().toLowerCase() &&
+          p.unitPrice === newProduct.unitPrice &&
+          p.discount === newProduct.discount
+      )
+
+      if (duplicate) {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Duplicate Product',
+          detail: 'A product with same category, description, and price already exists'
+        })
+        return
+      }
+
       setProducts([...products, newProduct])
       toast.current?.show({
         severity: 'success',
@@ -132,7 +160,12 @@ const NewPurchaseOrderCreation: React.FC = () => {
   const currentSubTotal = () =>
     products.reduce((sum, p) => sum + p.unitPrice * p.quantity * (1 - p.discount / 100), 0)
 
-  const taxAmount = () => (taxEnabled ? (currentSubTotal() * TAX_PERCENTAGE) / 100 : 0)
+  const taxAmount = () => {
+    if (taxEnabled && parseFloat(taxPercentage) > 0) {
+      return (currentSubTotal() * parseFloat(taxPercentage)) / 100
+    }
+    return 0
+  }
 
   const totalAmount = () => currentSubTotal() + taxAmount()
 
@@ -173,6 +206,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
     try {
       const response = await createPurchaseOrder(payload)
       console.log('✅ PO created:', response)
+      setPurchaseOrderNumber(response.purchaseOrderNumber)
       toast.current?.show({
         severity: 'success',
         summary: 'Saved',
@@ -183,7 +217,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
       toast.current?.show({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to save purchase order'
+        detail: error
       })
     }
   }
@@ -200,6 +234,141 @@ const NewPurchaseOrderCreation: React.FC = () => {
     setIsSaved(false)
   }
 
+  const getBase64FromImage = (imgUrl: string): Promise<string> => {
+    return fetch(imgUrl)
+      .then((res) => res.blob())
+      .then((blob) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+      })
+  }
+
+  const handleDownloadPdf = async () => {
+    if (!selectedSupplier || !selectedBranch || products.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Missing Details',
+        detail: 'Please select supplier, branch, and add products before downloading PDF'
+      })
+      return
+    }
+
+    const logoBase64 = await getBase64FromImage(logo)
+
+    console.log('selectedBranch', selectedBranch)
+    const pdfProps = {
+      from: selectedSupplier,
+      to: selectedBranch,
+      items: products.map((p) => ({
+        category: p.category.initialCategoryName,
+        description: p.description,
+        quantity: p.quantity,
+        unitPrice: p.unitPrice,
+        discount: p.discount,
+        total: p.total
+      })),
+      invoiceNumber: purchaseOrderNumber,
+      summary: {
+        taxPercentage: taxPercentage || '0',
+        taxAmount: taxAmount().toString(),
+        subTotal: currentSubTotal().toString(),
+        totalAmount: totalAmount().toString()
+      },
+      logoBase64
+    }
+
+    try {
+      const blob = await pdf(<PurchaseOrderPdf {...pdfProps} />).toBlob()
+
+      const url = URL.createObjectURL(blob)
+      window.open(url)
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'PDF Generated',
+        detail: 'Purchase order PDF downloaded successfully'
+      })
+    } catch (error) {
+      console.error('PDF generation failed:', error)
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to generate PDF'
+      })
+    }
+  }
+
+  const handlePrintPdf = async () => {
+    if (!selectedSupplier || !selectedBranch || products.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Missing Details',
+        detail: 'Please select supplier, branch, and add products before printing PDF'
+      })
+      return
+    }
+
+    const logoBase64 = await getBase64FromImage(logo)
+
+    const pdfProps = {
+      from: selectedSupplier,
+      to: selectedBranch,
+      items: products.map((p) => ({
+        category: p.category.initialCategoryName,
+        description: p.description,
+        quantity: p.quantity,
+        unitPrice: p.unitPrice,
+        discount: p.discount,
+        total: p.total
+      })),
+      invoiceNumber: purchaseOrderNumber,
+      summary: {
+        taxPercentage: taxPercentage || '0',
+        taxAmount: taxAmount().toString(),
+        subTotal: currentSubTotal().toString(),
+        totalAmount: totalAmount().toString()
+      },
+      logoBase64
+    }
+
+    try {
+      const blob = await pdf(<PurchaseOrderPdf {...pdfProps} />).toBlob()
+      const url = URL.createObjectURL(blob)
+
+      const printWindow = window.open(url)
+
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.focus()
+          printWindow.print()
+        }
+
+        toast.current?.show({
+          severity: 'success',
+          summary: 'PDF Ready',
+          detail: 'Purchase order PDF opened for printing'
+        })
+      } else {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Popup Blocked',
+          detail: 'Please allow popups for this site to print the PDF'
+        })
+      }
+    } catch (error) {
+      console.error('PDF print failed:', error)
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to generate PDF for print'
+      })
+    }
+  }
+
   const actionBodyTemplate = (rowData: any, { rowIndex }: { rowIndex: number }) => (
     <div className="flex gap-2">
       <Button
@@ -207,6 +376,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
         rounded
         outlined
         onClick={() => handleEdit(rowData, rowIndex)}
+        disabled={isSaved}
       />
       <Button
         icon={<Trash2 size={16} />}
@@ -214,6 +384,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
         outlined
         severity="danger"
         onClick={() => handleDelete(rowIndex)}
+        disabled={isSaved}
       />
     </div>
   )
@@ -260,19 +431,22 @@ const NewPurchaseOrderCreation: React.FC = () => {
             label="Download"
             icon={<Download size={16} />}
             className="p-button-outlined gap-2"
+            onClick={handleDownloadPdf}
             disabled={!isSaved}
           />
+
           <Button
             label="Print"
             icon={<Printer size={16} />}
             className="p-button-outlined gap-2"
+            onClick={handlePrintPdf}
             disabled={!isSaved}
           />
         </div>
       </div>
 
       {/* SUPPLIER & BRANCH */}
-      <div className="card shadow-1 p-3 mt-4 flex flex-column">
+      <div className="card shadow-1 p-3 mt-2 flex flex-column">
         <p className="underline uppercase font-semibold">Supplier & Address</p>
         <div className="flex gap-3 mt-3">
           <div className="flex-1">
@@ -331,7 +505,12 @@ const NewPurchaseOrderCreation: React.FC = () => {
 
       {/* PRODUCT ENTRY */}
       <div className="card shadow-1 p-3 mt-3">
-        <p className="underline font-semibold uppercase">Products</p>
+        <div className="flex align-items-center justify-content-between">
+          <p className="underline font-semibold uppercase">Products</p>
+          <Button onClick={() => setInitialCategoriesSidebarVisible(true)}>
+            Add initial Category
+          </Button>
+        </div>
         <div className="flex gap-3 mt-3 flex-wrap">
           <div className="flex-1 min-w-[200px]">
             <p>Initial Category</p>
@@ -341,24 +520,28 @@ const NewPurchaseOrderCreation: React.FC = () => {
                 const selected = e.value
                 setSelectedInitialCategory(selected)
 
-                // Check for duplicate using category ID
-                const existingIndex = products.findIndex(
+                const existing = products.find(
                   (p) => p.category.initialCategoryId === selected.initialCategoryId
                 )
 
-                if (existingIndex !== -1) {
-                  const existing = products[existingIndex]
+                if (existing) {
                   setProductDescription(existing.description)
                   setUnitPrice(existing.unitPrice.toString())
                   setDiscount(existing.discount.toString())
                   setQuantity(existing.quantity.toString())
-                  setEditIndex(existingIndex)
+                  setEditIndex(null)
+
                   toast.current?.show({
                     severity: 'info',
-                    summary: 'Item Exists',
-                    detail: 'Item already selected, kindly edit the existing entry'
+                    summary: 'Prefilled',
+                    detail:
+                      'Category already exists. You can modify the values to create a new product under same category.'
                   })
                 } else {
+                  setProductDescription('')
+                  setUnitPrice('')
+                  setDiscount('')
+                  setQuantity('')
                   setEditIndex(null)
                 }
               }}
@@ -427,6 +610,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
             icon={<Plus size={16} />}
             onClick={handleAddProduct}
             className="p-button-primary gap-2"
+            disabled={isSaved}
           />
         </div>
 
@@ -473,7 +657,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
               value={creditedDate}
               dateFormat="dd-mm-yy"
               showIcon
-              className="w-full mt-1"
+              className="w-full mt-1 paymentNotesCalendarIcon"
               placeholder="Select Date"
             />
           </div>
@@ -493,12 +677,37 @@ const NewPurchaseOrderCreation: React.FC = () => {
             <span className="font-medium">{formatINR(totalDiscount())}</span>
           </div>
 
-          <div className="flex justify-content-between items-center mb-2">
-            <span>Tax {TAX_PERCENTAGE}%:</span>
-            <InputSwitch checked={taxEnabled} onChange={(e) => setTaxEnabled(e.value)} />
+          <div className="flex justify-content-between align-items-center mb-2">
+            <span>Tax:</span>
+            <InputSwitch
+              checked={taxEnabled}
+              onChange={(e) => {
+                setTaxEnabled(e.value)
+                if (!e.value) setTaxPercentage('')
+              }}
+              disabled={isSaved}
+            />
           </div>
 
           {taxEnabled && (
+            <div className="flex justify-content-between align-items-center mb-2">
+              <span>Tax % :</span>
+              <InputText
+                type="number"
+                step="0.1"
+                value={taxPercentage}
+                onChange={(e) => {
+                  const val = e.target.value
+                  // allow only numeric and decimal
+                  if (/^\d*\.?\d*$/.test(val)) setTaxPercentage(val)
+                }}
+                className="w-4rem text-right"
+                placeholder="0.0"
+              />
+            </div>
+          )}
+
+          {taxEnabled && parseFloat(taxPercentage) > 0 && (
             <div className="flex justify-content-between mb-2">
               <span>Tax Amount:</span>
               <span className="font-medium">{formatINR(taxAmount())}</span>
@@ -511,6 +720,22 @@ const NewPurchaseOrderCreation: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <Sidebar
+        visible={initialCategoriesSidebarVisible}
+        position="right"
+        header="Add Initial Categories"
+        style={{ width: '50vw' }}
+        onHide={() => setInitialCategoriesSidebarVisible(false)}
+      >
+        <SettingsAddEditInitialCategories
+          onClose={() => setInitialCategoriesSidebarVisible(false)}
+          reloadData={async () => {
+            const data = await fetchInitialCategories()
+            setInitialCategories(data)
+          }}
+        />
+      </Sidebar>
     </div>
   )
 }

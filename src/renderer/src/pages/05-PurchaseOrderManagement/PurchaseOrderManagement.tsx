@@ -8,6 +8,7 @@ import NewPurchaseOrderGRN from '../../components/05-NewPurchaseOrderComponents/
 // import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
 // import NewPurchaseOrderProductsAccept from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderProductsAccept/NewPurchaseOrderProductsAccept'
 import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
+import NewPurchaseOrderList from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderList/NewPurchaseOrderList'
 
 // Sidebar items config
 const sidebarItems = [
@@ -24,6 +25,12 @@ const sidebarItems = [
     component: <NewPurchaseOrderCreation />
   },
   {
+    key: 'purchaseOrderList',
+    label: 'Purchase Order',
+    icon: <PackagePlus size={20} className="sidebar-icon" />,
+    component: <NewPurchaseOrderList />
+  },
+  {
     key: 'goodsReceivedNotes',
     label: 'GRN',
     icon: <PackagePlus size={20} className="sidebar-icon" />,
@@ -31,20 +38,14 @@ const sidebarItems = [
   },
   {
     key: 'grnCatalog',
-    label: 'GRN Products',
-    icon: <PackagePlus size={20} className="sidebar-icon" />,
-    component: <NewPurchaseOrderCatalog />
-  },
-  {
-    key: 'rejectedProductsDebit',
-    label: 'GRN Debit',
+    label: 'Products',
     icon: <PackagePlus size={20} className="sidebar-icon" />,
     component: <NewPurchaseOrderCatalog />
   }
 ]
 
 const PurchaseOrderManagement: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('goodsReceivedNotes')
+  const [activeKey, setActiveKey] = useState('createPurchaseOrder')
 
   return (
     <div>

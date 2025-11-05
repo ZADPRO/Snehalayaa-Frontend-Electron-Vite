@@ -42,6 +42,11 @@ export interface Branch {
   refMobile: string
   updatedAt: string
   updatedBy: string
+  refBranchDoorNo?: string
+  refBranchStreet?: string
+  refBranchCity?: string
+  refBranchState?: string
+  refBranchPincode?: string
 }
 
 export interface InitialCategory {
@@ -94,4 +99,21 @@ export interface PurchaseOrderPayload {
   products: PurchaseOrderProduct[]
   summary: PurchaseOrderSummary
   creditedDate: string // text in DB
+}
+
+export interface PurchaseOrderListResponse {
+  purchaseOrderId: number
+  purchaseOrderNumber: string
+  status: string
+  totalOrderedQuantity: number
+  totalAcceptedQuantity: number
+  totalRejectedQuantity: number
+  totalAmount: string
+  createdAt: string
+  taxableAmount: string
+  supplierId: number
+  supplierName: string
+  branchId: number
+  branchName: string
+  products?: PurchaseOrderProduct[]
 }

@@ -25,6 +25,16 @@ const topRoutes = [
     name: 'Inventory',
     icon: <PackageSearch size={20} />
   },
+  // {
+  //   path: '/inventoryMgmt',
+  //   name: 'Inventory Management',
+  //   icon: <Package2 size={20} />
+  // },
+  // {
+  //   path: '/online',
+  //   name: 'Shopify Inventory',
+  //   icon: <Store size={20} />
+  // },
   {
     path: '/pomgmt',
     name: 'Purchase Orders',
