@@ -516,6 +516,7 @@ const NewPurchaseOrderCreation: React.FC = () => {
             <p>Initial Category</p>
             <Dropdown
               value={selectedInitialCategory}
+              filter
               onChange={(e) => {
                 const selected = e.value
                 setSelectedInitialCategory(selected)

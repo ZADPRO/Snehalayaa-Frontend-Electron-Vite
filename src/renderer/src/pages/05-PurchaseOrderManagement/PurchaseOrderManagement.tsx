@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import { Divider } from 'primereact/divider'
 import NewPurchaseOrderCreation from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCreation/NewPurchaseOrderCreation'
-import NewPurchaseOrderOverview from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderOverview/NewPurchaseOrderOverview'
-import { Blocks, PackagePlus } from 'lucide-react'
+// import NewPurchaseOrderOverview from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderOverview/NewPurchaseOrderOverview'
+import { PackagePlus } from 'lucide-react'
 import NewPurchaseOrderGRN from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderGRN/NewPurchaseOrderGRN'
 // import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
 // import NewPurchaseOrderProductsAccept from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderProductsAccept/NewPurchaseOrderProductsAccept'
@@ -12,12 +12,12 @@ import NewPurchaseOrderList from '../../components/05-NewPurchaseOrderComponents
 
 // Sidebar items config
 const sidebarItems = [
-  {
-    key: 'overview',
-    label: 'Overview',
-    icon: <Blocks size={20} className="sidebar-icon" />,
-    component: <NewPurchaseOrderOverview />
-  },
+  // {
+  //   key: 'overview',
+  //   label: 'Overview',
+  //   icon: <Blocks size={20} className="sidebar-icon" />,
+  //   component: <NewPurchaseOrderOverview />
+  // },
   {
     key: 'createPurchaseOrder',
     label: 'Create PO',
