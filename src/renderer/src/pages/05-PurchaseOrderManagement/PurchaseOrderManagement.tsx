@@ -29,6 +29,12 @@ const sidebarItems = [
     label: 'Purchase Order',
     icon: <PackagePlus size={20} className="sidebar-icon" />,
     component: <NewPurchaseOrderList />
+  },
+  {
+    key: 'debitNoteList',
+    label: 'Debit Note',
+    icon: <PackagePlus size={20} className="sidebar-icon" />,
+    component: <NewPurchaseOrderList />
   }
   // {
   //   key: 'goodsReceivedNotes',

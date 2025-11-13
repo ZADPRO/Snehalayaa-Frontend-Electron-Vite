@@ -12,6 +12,7 @@ import { Products } from './InventoryProducts.interface'
 import { fetchCategories } from '../../../components/03-SettingsComponents/SettingsCategories/SettingsCategories.function'
 import { fetchSubCategories } from '../../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories.function'
 import { fetchBranch } from '../../../components/03-SettingsComponents/SettingsBranch/SettingsBranch.function'
+import { InputText } from 'primereact/inputtext'
 
 const InventoryProducts: React.FC = () => {
   const toast = useRef<Toast>(null)
@@ -33,6 +34,7 @@ const InventoryProducts: React.FC = () => {
       const response = await axios.get(`${baseURL}/admin/purchaseOrderAcceptedProducts`, {
         headers: { Authorization: `Bearer ${token}` }
       })
+      console.log('response', response)
       setProducts(response.data.data || [])
     } catch (error: any) {
       toast.current?.show({
@@ -76,6 +78,7 @@ const InventoryProducts: React.FC = () => {
   // ✅ Toolbar with dropdown filters
   const rightToolbarTemplate = () => (
     <div className="flex gap-3 align-items-center">
+      <InputText placeholder="Search Here" />
       <Dropdown
         value={selectedCategory}
         options={categories}
@@ -120,16 +123,21 @@ const InventoryProducts: React.FC = () => {
         paginator
         showGridlines
         stripedRows
-        rows={10}
-        rowsPerPageOptions={[5, 10, 20]}
+        rows={20}
+        rowsPerPageOptions={[20, 50, 100]}
         responsiveLayout="scroll"
         scrollable
       >
         {/* Serial Number Column */}
-        <Column header="S.No" body={serialNumberBody} style={{ minWidth: '6rem' }} />
-        <Column field="sku" header="SKU" style={{ minWidth: '12rem' }} />
-        <Column field="productName" header="Product Name" style={{ minWidth: '14rem' }} />
-        <Column field="invoiceFinalNumber" header="Invoice Number" style={{ minWidth: '14rem' }} />
+        <Column header="S.No" body={serialNumberBody} frozen style={{ minWidth: '6rem' }} />
+        <Column field="sku" sortable header="SKU" frozen style={{ minWidth: '12rem' }} />
+        <Column field="productName" sortable header="Product Name" style={{ minWidth: '14rem' }} />
+        <Column
+          field="invoiceFinalNumber"
+          sortable
+          header="Invoice Number"
+          style={{ minWidth: '14rem' }}
+        />
         {/* <Column field="poProductId" header="PO Product ID" style={{ minWidth: '10rem' }} /> */}
         <Column field="unitPrice" header="Unit Price" style={{ minWidth: '8rem' }} />
         <Column field="discount" header="Discount (%)" style={{ minWidth: '8rem' }} />
@@ -137,11 +145,15 @@ const InventoryProducts: React.FC = () => {
         <Column field="margin" header="Margin (%)" style={{ minWidth: '8rem' }} />
         <Column field="totalAmount" header="Total Amount" style={{ minWidth: '10rem' }} />
         {/* <Column field="status" header="Status" style={{ minWidth: '8rem' }} /> */}
-        <Column field="categoryName" header="Category" style={{ minWidth: '10rem' }} />
-        <Column field="subCategoryName" header="Sub Category" style={{ minWidth: '12rem' }} />
-        <Column field="branchName" header="Branch" style={{ minWidth: '10rem' }} />
-        <Column field="createdAt" header="Created At" style={{ minWidth: '12rem' }} />
-        <Column field="updatedAt" header="Updated At" style={{ minWidth: '12rem' }} />
+        <Column field="categoryName" header="Category" sortable style={{ minWidth: '10rem' }} />
+        <Column
+          field="subCategoryName"
+          header="Sub Category"
+          sortable
+          style={{ minWidth: '12rem' }}
+        />
+        <Column field="branchName" header="Branch" sortable style={{ minWidth: '10rem' }} />
+        <Column field="createdAt" header="Created At" sortable style={{ minWidth: '12rem' }} />
       </DataTable>
     </div>
   )

@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { FolderKanban, Layers3, PanelsTopLeft, PackageCheck, Boxes } from 'lucide-react'
+import {
+  FolderKanban,
+  Layers3,
+  PanelsTopLeft,
+  PackageCheck,
+  ImageUp,
+  TableOfContents
+} from 'lucide-react'
 import { Divider } from 'primereact/divider'
 
 import './Inventory.css'
@@ -10,6 +17,7 @@ import InventoryStockTake from '../../components/08-InventoryComponents/Inventor
 import InventoryStockTransfer from '../../components/08-InventoryComponents/InventoryStockTransfer/InventoryStockTransfer'
 import InventoryProducts from '../../components/08-InventoryComponents/InventoryProducts/InventoryProducts'
 import InventoryBulkUpdate from '../../components/08-InventoryComponents/InventoryBulkUpdate/InventoryBulkUpdate'
+import ImageBulkUpload from '../../components/08-InventoryComponents/ImageBulkUpload/ImageBulkUpload'
 
 // Sidebar items config
 const sidebarItems = [
@@ -45,9 +53,15 @@ const sidebarItems = [
   },
   {
     key: 'bulkUpload',
-    label: 'Bulk Upload',
-    icon: <Boxes size={20} className="sidebar-icon" />,
+    label: 'Data Bulk Update',
+    icon: <TableOfContents size={20} className="sidebar-icon" />,
     component: <InventoryBulkUpdate />
+  },
+  {
+    key: 'imageUpload',
+    label: 'Image Upload',
+    icon: <ImageUp size={20} className="sidebar-icon" />,
+    component: <ImageBulkUpload />
   }
 ]
 
