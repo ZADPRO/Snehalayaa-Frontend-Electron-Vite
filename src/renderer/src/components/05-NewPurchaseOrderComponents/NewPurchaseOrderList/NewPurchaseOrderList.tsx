@@ -37,22 +37,6 @@ const NewPurchaseOrderList: React.FC = () => {
   const [sidebarVisible, setSidebarVisible] = useState(false)
   const [selectedPO, setSelectedPO] = useState<PurchaseOrderListResponse | null>(null)
 
-  useEffect(() => {
-    const loadData = async () => {
-      const [branchData, supplierData, purchaseOrderData] = await Promise.all([
-        fetchBranches(),
-        fetchSuppliers(),
-        fetchPurchaseOrderDetails()
-      ])
-      console.log('purchaseOrderData', purchaseOrderData)
-      setBranches(branchData)
-      setSuppliers(supplierData)
-      setPurchaseOrders(purchaseOrderData || [])
-      setFilteredOrders(purchaseOrderData || [])
-    }
-    loadData()
-  }, [])
-
   // 🧠 Filter Logic
   useEffect(() => {
     let filtered = [...purchaseOrders]
@@ -121,6 +105,23 @@ const NewPurchaseOrderList: React.FC = () => {
         <ScrollText className="" onClick={() => handleDetailsClick(rowData)} />
       </div>
     )
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    const [branchData, supplierData, purchaseOrderData] = await Promise.all([
+      fetchBranches(),
+      fetchSuppliers(),
+      fetchPurchaseOrderDetails()
+    ])
+    console.log('purchaseOrderData', purchaseOrderData)
+    setBranches(branchData)
+    setSuppliers(supplierData)
+    setPurchaseOrders(purchaseOrderData || [])
+    setFilteredOrders(purchaseOrderData || [])
   }
 
   return (
@@ -227,7 +228,11 @@ const NewPurchaseOrderList: React.FC = () => {
       <Sidebar
         visible={sidebarVisible}
         position="right"
-        onHide={() => setSidebarVisible(false)}
+        onHide={() => {
+          setSidebarVisible(false)
+          setSelectedPO(null)
+          loadData()
+        }}
         className=""
         header="Purchase Order - GRN"
         style={{ width: '80vw' }}

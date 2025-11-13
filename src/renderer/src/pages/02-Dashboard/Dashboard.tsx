@@ -2,18 +2,17 @@ import React, { useEffect, useState } from 'react'
 import { Card } from 'primereact/card'
 import { Chart } from 'primereact/chart'
 import { Dropdown } from 'primereact/dropdown'
-import { Badge } from 'primereact/badge'
 import 'primereact/resources/themes/lara-light-cyan/theme.css'
 import 'primereact/resources/primereact.min.css'
 import 'primeicons/primeicons.css'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
 import { BadgeCent, ClockArrowUp, ShoppingCart, Sparkles, User } from 'lucide-react'
-import { fetchProducts } from './Dashboard.function'
+// import { fetchProducts } from './Dashboard.function'
 import { Product } from './Dashboard.interface'
 
 const Dashboard: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState({ name: 'Weekly', code: 'weekly' })
-  const [products, setProducts] = useState<Product[]>([])
+  const [_products, setProducts] = useState<Product[]>([])
 
   const periodOptions = [
     { name: 'Weekly', code: 'weekly' },
