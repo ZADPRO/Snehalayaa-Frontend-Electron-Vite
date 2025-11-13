@@ -131,6 +131,7 @@ const NewPurchaseOrderList: React.FC = () => {
       <div className="flex justify-content-between flex-wrap gap-3">
         <div className="flex flex-wrap gap-3">
           <Dropdown
+            filter
             placeholder="Select Branch"
             options={branches}
             optionLabel="refBranchName"
@@ -140,6 +141,7 @@ const NewPurchaseOrderList: React.FC = () => {
             showClear
           />
           <Dropdown
+            filter
             placeholder="Select Supplier"
             options={suppliers}
             optionLabel="supplierCompanyName"
