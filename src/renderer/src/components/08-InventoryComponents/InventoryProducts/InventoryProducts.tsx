@@ -6,22 +6,26 @@ import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
+import { InputText } from 'primereact/inputtext'
+import { FileDown, FileSpreadsheet } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import axios from 'axios'
 import { baseURL } from '../../../utils/helper'
 import { Products } from './InventoryProducts.interface'
 import { fetchCategories } from '../../../components/03-SettingsComponents/SettingsCategories/SettingsCategories.function'
 import { fetchSubCategories } from '../../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories.function'
 import { fetchBranch } from '../../../components/03-SettingsComponents/SettingsBranch/SettingsBranch.function'
-import { InputText } from 'primereact/inputtext'
 
 const InventoryProducts: React.FC = () => {
   const toast = useRef<Toast>(null)
   const [products, setProducts] = useState<Products[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Products[]>([])
 
   // Dropdown filter states
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null)
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const [categories, setCategories] = useState<any[]>([])
   const [subCategories, setSubCategories] = useState<any[]>([])
@@ -34,8 +38,9 @@ const InventoryProducts: React.FC = () => {
       const response = await axios.get(`${baseURL}/admin/purchaseOrderAcceptedProducts`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      console.log('response', response)
-      setProducts(response.data.data || [])
+      const data = response.data.data || []
+      setProducts(data)
+      setFilteredProducts(data)
     } catch (error: any) {
       toast.current?.show({
         severity: 'error',
@@ -72,13 +77,110 @@ const InventoryProducts: React.FC = () => {
     loadDropdownData()
   }, [])
 
+  // ✅ Filtering logic
+  useEffect(() => {
+    let filtered = [...products]
+
+    if (selectedCategory)
+      filtered = filtered.filter((p) => Number(p.categoryId) === Number(selectedCategory))
+    if (selectedSubCategory)
+      filtered = filtered.filter((p) => Number(p.subCategoryId) === Number(selectedSubCategory))
+    if (selectedBranch)
+      filtered = filtered.filter((p) => Number(p.productBranchId) === Number(selectedBranch))
+
+    if (searchTerm.trim() !== '') {
+      const term = searchTerm.toLowerCase()
+      filtered = filtered.filter(
+        (p) =>
+          p.productName?.toLowerCase().includes(term) ||
+          p.sku?.toLowerCase().includes(term) ||
+          p.invoiceFinalNumber?.toLowerCase().includes(term)
+      )
+    }
+
+    setFilteredProducts(filtered)
+  }, [selectedCategory, selectedSubCategory, selectedBranch, searchTerm, products])
+
   // ✅ Serial number column template
   const serialNumberBody = (_rowData: Products, { rowIndex }: { rowIndex: number }) => rowIndex + 1
 
-  // ✅ Toolbar with dropdown filters
+  // ✅ Export CSV
+  const exportCSV = () => {
+    const csvData = filteredProducts.map((item) => ({
+      SKU: item.sku,
+      'Product Name': item.productName,
+      'Invoice Number': item.invoiceFinalNumber,
+      'Unit Price': item.unitPrice,
+      Discount: item.discount,
+      'Discount Price': item.discountPrice,
+      Margin: item.margin,
+      'Total Amount': item.totalAmount,
+      Category: item.categoryName,
+      'Sub Category': item.subCategoryName,
+      Branch: item.branchName,
+      'Created At': item.createdAt
+    }))
+
+    if (csvData.length === 0) {
+      toast.current?.show({ severity: 'warn', summary: 'No Data', detail: 'Nothing to export.' })
+      return
+    }
+
+    const csv = [
+      Object.keys(csvData[0]).join(','),
+      ...csvData.map((row) => Object.values(row).join(','))
+    ].join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'InventoryProducts.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  // ✅ Export Excel
+  const exportExcel = () => {
+    if (filteredProducts.length === 0) {
+      toast.current?.show({ severity: 'warn', summary: 'No Data', detail: 'Nothing to export.' })
+      return
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(filteredProducts)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory Products')
+    XLSX.writeFile(workbook, 'InventoryProducts.xlsx')
+  }
+
+  // ✅ Left Toolbar Template
+  const leftToolbarTemplate = () => (
+    <div className="flex gap-2">
+      <Button
+        icon={<FileDown size={16} strokeWidth={2} />}
+        severity="info"
+        tooltip="Export CSV"
+        tooltipOptions={{ position: 'bottom' }}
+        onClick={exportCSV}
+      />
+      <Button
+        icon={<FileSpreadsheet size={16} strokeWidth={2} />}
+        severity="success"
+        tooltip="Export Excel"
+        tooltipOptions={{ position: 'bottom' }}
+        onClick={exportExcel}
+      />
+    </div>
+  )
+
+  // ✅ Right Toolbar Template
   const rightToolbarTemplate = () => (
     <div className="flex gap-3 align-items-center">
-      <InputText placeholder="Search Here" />
+      <InputText
+        placeholder="Search Here"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <Dropdown
         value={selectedCategory}
         options={categories}
@@ -87,15 +189,19 @@ const InventoryProducts: React.FC = () => {
         onChange={(e) => setSelectedCategory(e.value)}
         placeholder="Select Category"
         className="w-12rem"
+        showClear
+        filter
       />
       <Dropdown
         value={selectedSubCategory}
         options={subCategories}
         optionLabel="subCategoryName"
-        optionValue="refCategoryId"
+        optionValue="refSubCategoryId"
         onChange={(e) => setSelectedSubCategory(e.value)}
         placeholder="Select Sub Category"
         className="w-14rem"
+        showClear
+        filter
       />
       <Dropdown
         value={selectedBranch}
@@ -105,21 +211,21 @@ const InventoryProducts: React.FC = () => {
         onChange={(e) => setSelectedBranch(e.value)}
         placeholder="Select Branch"
         className="w-12rem"
+        showClear
+        filter
       />
-      <Button label="Apply Filter" icon="pi pi-filter" className="p-button-sm" />
     </div>
   )
 
   return (
     <div>
       <Toast ref={toast} />
-      <Toolbar className="mb-3" right={rightToolbarTemplate} />
-      <Tooltip target=".p-button" position="left" />
+      <Toolbar className="mb-3" left={leftToolbarTemplate} right={rightToolbarTemplate} />
+      <Tooltip target=".p-button" position="bottom" />
 
-      {/* ✅ Products Table */}
       <DataTable
-        value={products}
-        dataKey="poProductId"
+        value={filteredProducts}
+        dataKey="sku"
         paginator
         showGridlines
         stripedRows
@@ -128,7 +234,6 @@ const InventoryProducts: React.FC = () => {
         responsiveLayout="scroll"
         scrollable
       >
-        {/* Serial Number Column */}
         <Column header="S.No" body={serialNumberBody} frozen style={{ minWidth: '6rem' }} />
         <Column field="sku" sortable header="SKU" frozen style={{ minWidth: '12rem' }} />
         <Column field="productName" sortable header="Product Name" style={{ minWidth: '14rem' }} />
@@ -138,13 +243,11 @@ const InventoryProducts: React.FC = () => {
           header="Invoice Number"
           style={{ minWidth: '14rem' }}
         />
-        {/* <Column field="poProductId" header="PO Product ID" style={{ minWidth: '10rem' }} /> */}
         <Column field="unitPrice" header="Unit Price" style={{ minWidth: '8rem' }} />
         <Column field="discount" header="Discount (%)" style={{ minWidth: '8rem' }} />
         <Column field="discountPrice" header="Discount Price" style={{ minWidth: '10rem' }} />
         <Column field="margin" header="Margin (%)" style={{ minWidth: '8rem' }} />
         <Column field="totalAmount" header="Total Amount" style={{ minWidth: '10rem' }} />
-        {/* <Column field="status" header="Status" style={{ minWidth: '8rem' }} /> */}
         <Column field="categoryName" header="Category" sortable style={{ minWidth: '10rem' }} />
         <Column
           field="subCategoryName"

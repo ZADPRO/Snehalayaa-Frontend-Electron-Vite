@@ -5,13 +5,15 @@ import { Toast } from 'primereact/toast'
 import JSZip from 'jszip'
 import { Check, X } from 'lucide-react'
 import axios from 'axios'
+import { ProgressBar } from 'primereact/progressbar'
 
 import { baseURL } from '../../../utils/helper'
 
 const ImageBulkUpload: React.FC = () => {
-  const [images, setImages] = useState<any[]>([])
+  const [images, setImages] = useState<
+    { name: string; url: string; blob: Blob; uploading?: boolean; progress?: number }[]
+  >([])
   const toast = useRef<Toast>(null)
-  // Removed mappings since it’s unused
 
   const handleZipUpload = async (event: FileUploadSelectEvent) => {
     const file = event.files[0]
@@ -26,13 +28,10 @@ const ImageBulkUpload: React.FC = () => {
 
     try {
       const zip = await JSZip.loadAsync(file)
-      const extractedImages: { name: string; url: string; blob: Blob }[] = [] // ✅ fixed type
+      const extractedImages: any[] = []
 
       for (const [name, entry] of Object.entries(zip.files)) {
-        if (
-          !entry.dir &&
-          (name.endsWith('.jpg') || name.endsWith('.png') || name.endsWith('.jpeg'))
-        ) {
+        if (!entry.dir && /\.(jpg|jpeg|png)$/i.test(name)) {
           if (
             images.some((img) => img.name === name) ||
             extractedImages.some((img) => img.name === name)
@@ -47,7 +46,7 @@ const ImageBulkUpload: React.FC = () => {
 
           const blob = await entry.async('blob')
           const url = URL.createObjectURL(blob)
-          extractedImages.push({ name, url, blob }) // ✅ valid now
+          extractedImages.push({ name, url, blob, uploading: false, progress: 0 })
         }
       }
 
@@ -76,8 +75,6 @@ const ImageBulkUpload: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` }
         }
       )
-      console.log('response', response)
-
       return response.data.results
     } catch (error: any) {
       toast.current?.show({
@@ -89,12 +86,24 @@ const ImageBulkUpload: React.FC = () => {
     }
   }
 
-  const uploadToMinio = async (url: string, blob: Blob) => {
-    await fetch(url, {
-      method: 'PUT',
+  const uploadToMinio = async (url: string, blob: Blob, index: number) => {
+    setImages((prev) =>
+      prev.map((img, i) => (i === index ? { ...img, uploading: true, progress: 0 } : img))
+    )
+
+    await axios.put(url, blob, {
       headers: { 'Content-Type': blob.type || 'application/octet-stream' },
-      body: blob
+      onUploadProgress: (progressEvent) => {
+        const percent = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1))
+        setImages((prev) =>
+          prev.map((img, i) => (i === index ? { ...img, progress: percent } : img))
+        )
+      }
     })
+
+    setImages((prev) =>
+      prev.map((img, i) => (i === index ? { ...img, uploading: false, progress: 100 } : img))
+    )
   }
 
   const handleSubmit = async () => {
@@ -102,16 +111,11 @@ const ImageBulkUpload: React.FC = () => {
     const presignedData = await generatePresignedURLs(fileNames)
     if (!presignedData) return
 
-    const mappingsArr: any[] = []
-
-    for (const img of images) {
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i]
       const match = presignedData.find((p: any) => p.fileName === img.name.toUpperCase())
       if (match) {
-        await uploadToMinio(match.uploadUrl, img.blob)
-        mappingsArr.push({
-          fileName: img.name,
-          viewUrl: match.viewUrl
-        })
+        await uploadToMinio(match.uploadUrl, img.blob, i)
       }
     }
 
@@ -120,6 +124,7 @@ const ImageBulkUpload: React.FC = () => {
       summary: 'Upload Complete',
       detail: 'All images uploaded successfully!'
     })
+    setImages([])
   }
 
   return (
@@ -166,34 +171,62 @@ const ImageBulkUpload: React.FC = () => {
               }}
             >
               {/* Delete Icon */}
-              <button
-                onClick={() => handleDelete(img.name)}
-                style={{
-                  position: 'absolute',
-                  top: '6px',
-                  right: '6px',
-                  background: 'rgba(0,0,0,0.5)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '50%',
-                  padding: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                <X size={14} />
-              </button>
+              {!img.uploading && (
+                <button
+                  onClick={() => handleDelete(img.name)}
+                  style={{
+                    position: 'absolute',
+                    top: '6px',
+                    right: '6px',
+                    background: 'rgba(0,0,0,0.5)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '50%',
+                    padding: '4px',
+                    cursor: 'pointer',
+                    zIndex: '10'
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              )}
 
               {/* Image Preview */}
-              <img
-                src={img.url}
-                alt={img.name}
-                style={{
-                  width: '100%',
-                  height: '150px',
-                  objectFit: 'cover',
-                  borderRadius: '4px'
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <img
+                  src={img.url}
+                  alt={img.name}
+                  style={{
+                    width: '100%',
+                    height: '150px',
+                    objectFit: 'cover',
+                    borderRadius: '4px',
+                    opacity: img.uploading ? 0.6 : 1
+                  }}
+                />
+                {img.uploading && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(0, 0, 0, 0.4)'
+                    }}
+                  >
+                    <ProgressBar
+                      value={img.progress}
+                      showValue
+                      style={{ width: '80%' }}
+                      mode="determinate"
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Image Name */}
               <p
