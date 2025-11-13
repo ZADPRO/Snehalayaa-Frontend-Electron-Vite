@@ -4,10 +4,10 @@ import { Toolbar } from 'primereact/toolbar'
 import { Tooltip } from 'primereact/tooltip'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
-import { Dropdown } from 'primereact/dropdown'
+import { MultiSelect } from 'primereact/multiselect'
 import { Button } from 'primereact/button'
 import { InputText } from 'primereact/inputtext'
-import { FileDown, FileSpreadsheet } from 'lucide-react'
+import { Eye, FileDown, FileSpreadsheet } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
 import { baseURL } from '../../../utils/helper'
@@ -21,10 +21,10 @@ const InventoryProducts: React.FC = () => {
   const [products, setProducts] = useState<Products[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Products[]>([])
 
-  // Dropdown filter states
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
-  const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null)
-  const [selectedBranch, setSelectedBranch] = useState<number | null>(null)
+  // ✅ Multi-select filter states
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([])
+  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([])
+  const [selectedBranches, setSelectedBranches] = useState<number[]>([])
   const [searchTerm, setSearchTerm] = useState('')
 
   const [categories, setCategories] = useState<any[]>([])
@@ -51,7 +51,7 @@ const InventoryProducts: React.FC = () => {
     }
   }
 
-  // ✅ Load dropdown data
+  // ✅ Load Dropdown Data
   const loadDropdownData = async () => {
     try {
       const [catData, subCatData, branchData] = await Promise.all([
@@ -77,16 +77,16 @@ const InventoryProducts: React.FC = () => {
     loadDropdownData()
   }, [])
 
-  // ✅ Filtering logic
+  // ✅ Filtering logic (supports multiple selections)
   useEffect(() => {
     let filtered = [...products]
 
-    if (selectedCategory)
-      filtered = filtered.filter((p) => Number(p.categoryId) === Number(selectedCategory))
-    if (selectedSubCategory)
-      filtered = filtered.filter((p) => Number(p.subCategoryId) === Number(selectedSubCategory))
-    if (selectedBranch)
-      filtered = filtered.filter((p) => Number(p.productBranchId) === Number(selectedBranch))
+    if (selectedCategories.length > 0)
+      filtered = filtered.filter((p) => selectedCategories.includes(Number(p.categoryId)))
+    if (selectedSubCategories.length > 0)
+      filtered = filtered.filter((p) => selectedSubCategories.includes(Number(p.subCategoryId)))
+    if (selectedBranches.length > 0)
+      filtered = filtered.filter((p) => selectedBranches.includes(Number(p.productBranchId)))
 
     if (searchTerm.trim() !== '') {
       const term = searchTerm.toLowerCase()
@@ -99,7 +99,7 @@ const InventoryProducts: React.FC = () => {
     }
 
     setFilteredProducts(filtered)
-  }, [selectedCategory, selectedSubCategory, selectedBranch, searchTerm, products])
+  }, [selectedCategories, selectedSubCategories, selectedBranches, searchTerm, products])
 
   // ✅ Serial number column template
   const serialNumberBody = (_rowData: Products, { rowIndex }: { rowIndex: number }) => rowIndex + 1
@@ -173,7 +173,7 @@ const InventoryProducts: React.FC = () => {
     </div>
   )
 
-  // ✅ Right Toolbar Template
+  // ✅ Right Toolbar Template with MultiSelect filters
   const rightToolbarTemplate = () => (
     <div className="flex gap-3 align-items-center">
       <InputText
@@ -181,38 +181,41 @@ const InventoryProducts: React.FC = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <Dropdown
-        value={selectedCategory}
+      <MultiSelect
+        value={selectedCategories}
         options={categories}
         optionLabel="categoryName"
         optionValue="refCategoryId"
-        onChange={(e) => setSelectedCategory(e.value)}
-        placeholder="Select Category"
-        className="w-12rem"
-        showClear
+        onChange={(e) => setSelectedCategories(e.value)}
+        placeholder="Select Categories"
+        display="chip"
         filter
+        showClear
+        className="w-14rem"
       />
-      <Dropdown
-        value={selectedSubCategory}
+      <MultiSelect
+        value={selectedSubCategories}
         options={subCategories}
         optionLabel="subCategoryName"
         optionValue="refSubCategoryId"
-        onChange={(e) => setSelectedSubCategory(e.value)}
-        placeholder="Select Sub Category"
-        className="w-14rem"
-        showClear
+        onChange={(e) => setSelectedSubCategories(e.value)}
+        placeholder="Select Sub Categories"
+        display="chip"
         filter
+        showClear
+        className="w-16rem"
       />
-      <Dropdown
-        value={selectedBranch}
+      <MultiSelect
+        value={selectedBranches}
         options={branches}
         optionLabel="refBranchName"
         optionValue="refBranchId"
-        onChange={(e) => setSelectedBranch(e.value)}
-        placeholder="Select Branch"
-        className="w-12rem"
-        showClear
+        onChange={(e) => setSelectedBranches(e.value)}
+        placeholder="Select Branches"
+        display="chip"
         filter
+        showClear
+        className="w-14rem"
       />
     </div>
   )
@@ -236,6 +239,18 @@ const InventoryProducts: React.FC = () => {
       >
         <Column header="S.No" body={serialNumberBody} frozen style={{ minWidth: '6rem' }} />
         <Column field="sku" sortable header="SKU" frozen style={{ minWidth: '12rem' }} />
+        <Column
+          header="View"
+          frozen
+          style={{ minWidth: '6rem' }}
+          body={(rowData: Products) => (
+            <Button
+              icon={<Eye size={16} />}
+              text
+              onClick={() => console.log('Row data:', rowData)}
+            />
+          )}
+        />
         <Column field="productName" sortable header="Product Name" style={{ minWidth: '14rem' }} />
         <Column
           field="invoiceFinalNumber"
@@ -255,6 +270,7 @@ const InventoryProducts: React.FC = () => {
           sortable
           style={{ minWidth: '12rem' }}
         />
+        <Column field="quantity" header="Quantity" sortable style={{ minWidth: '10rem' }} />
         <Column field="branchName" header="Branch" sortable style={{ minWidth: '10rem' }} />
         <Column field="createdAt" header="Created At" sortable style={{ minWidth: '12rem' }} />
       </DataTable>
