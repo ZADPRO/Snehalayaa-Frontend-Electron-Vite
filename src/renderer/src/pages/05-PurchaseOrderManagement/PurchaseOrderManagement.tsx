@@ -7,7 +7,7 @@ import { PackagePlus } from 'lucide-react'
 // import NewPurchaseOrderGRN from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderGRN/NewPurchaseOrderGRN'
 // import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
 // import NewPurchaseOrderProductsAccept from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderProductsAccept/NewPurchaseOrderProductsAccept'
-import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
+// import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
 import NewPurchaseOrderList from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderList/NewPurchaseOrderList'
 
 // Sidebar items config
@@ -29,19 +29,19 @@ const sidebarItems = [
     label: 'Purchase Order',
     icon: <PackagePlus size={20} className="sidebar-icon" />,
     component: <NewPurchaseOrderList />
-  },
+  }
   // {
   //   key: 'goodsReceivedNotes',
   //   label: 'GRN',
   //   icon: <PackagePlus size={20} className="sidebar-icon" />,
   //   component: <NewPurchaseOrderGRN />
   // },
-  {
-    key: 'grnCatalog',
-    label: 'Products',
-    icon: <PackagePlus size={20} className="sidebar-icon" />,
-    component: <NewPurchaseOrderCatalog />
-  }
+  // {
+  //   key: 'grnCatalog',
+  //   label: 'Products',
+  //   icon: <PackagePlus size={20} className="sidebar-icon" />,
+  //   component: <NewPurchaseOrderCatalog />
+  // }
 ]
 
 const PurchaseOrderManagement: React.FC = () => {

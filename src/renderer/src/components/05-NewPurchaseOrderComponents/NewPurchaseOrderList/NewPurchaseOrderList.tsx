@@ -34,6 +34,9 @@ const NewPurchaseOrderList: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<any[]>([])
   const [selectedRowData, setSelectedRowData] = useState<any>()
 
+  const [productSearch, setProductSearch] = useState('')
+  const [filteredAcceptedProducts, setFilteredAcceptedProducts] = useState<any[]>([])
+
   // Filters
   const [selectedBranch, setSelectedBranch] = useState<any>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
@@ -131,6 +134,21 @@ const NewPurchaseOrderList: React.FC = () => {
     loadData()
   }, [])
 
+  useEffect(() => {
+    if (!productSearch.trim()) {
+      setFilteredAcceptedProducts(acceptedProducts)
+    } else {
+      const search = productSearch.toLowerCase()
+      const filtered = acceptedProducts.filter(
+        (p) =>
+          p.productName?.toLowerCase().includes(search) ||
+          p.SKU?.toLowerCase().includes(search) ||
+          p.productDescription?.toLowerCase().includes(search)
+      )
+      setFilteredAcceptedProducts(filtered)
+    }
+  }, [productSearch, acceptedProducts])
+
   const loadData = async () => {
     const [branchData, supplierData, purchaseOrderData] = await Promise.all([
       fetchBranches(),
@@ -143,7 +161,7 @@ const NewPurchaseOrderList: React.FC = () => {
     setFilteredOrders(purchaseOrderData || [])
   }
 
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [_isGenerating, setIsGenerating] = useState(false)
 
   const printLabels = () => {
     if (!selectedRows.length) return
@@ -354,40 +372,56 @@ const NewPurchaseOrderList: React.FC = () => {
         maximizable
       >
         <div className="flex justify-content-between">
-          <InputText />
+          <InputText
+            placeholder="Search by Product / SKU / Description"
+            value={productSearch}
+            onChange={(e) => setProductSearch(e.target.value)}
+            className="w-20rem"
+          />{' '}
           <div className="flex gap-3">
-            <Button label="Generate Invoice" />
+            <Button label="Generate PDF Invoice" />
             <Button label="Print Barcode" onClick={printLabels} />
           </div>
         </div>
         <div className="">
           <DataTable
-            value={acceptedProducts}
+            value={filteredAcceptedProducts}
             selection={selectedRows}
             onSelectionChange={(e) => setSelectedRows(e.value)}
             scrollable
             showGridlines
             dataKey="SKU"
-            className="mt-3"
+            className="mt-3 productPreviewTableUI"
             selectionMode="multiple"
             paginator
-            rowsPerPageOptions={[10, 25, 50]}
-            rows={10}
+            rowsPerPageOptions={[20, 50, 100]}
+            rows={20}
           >
             <Column
               selectionMode="multiple"
               headerStyle={{ textAlign: 'center' }}
-              style={{ minWidth: '50px' }}
+              style={{ minWidth: '20px' }}
             />
             <Column header="S.No" body={(_, { rowIndex }) => rowIndex + 1} />
             <Column field="SKU" header="SKU" />
             <Column field="productName" header="Product Name" />
-            <Column field="productDescription" header="Description" />
+            <Column
+              field="productDescription"
+              header="Description"
+              body={(rowData) => rowData.productDescription || '-'}
+            />
             <Column field="unitPrice" header="Unit Price" />
             <Column field="discount" header="Discount (%)" />
             <Column field="discountPrice" header="Discount Price" />
             <Column field="margin" header="Margin (%)" />
             <Column field="totalAmount" header="Total Amount" />
+            <Column field="createdAt" header="Created At" />
+            <Column field="createdBy" header="Created By" />
+            <Column
+              field="quantity"
+              header="Quantity"
+              body={(rowData) => rowData.quantity || '-'}
+            />
           </DataTable>
         </div>
       </Dialog>
