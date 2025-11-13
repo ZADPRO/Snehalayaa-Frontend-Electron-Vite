@@ -4,7 +4,7 @@ import { Divider } from 'primereact/divider'
 import NewPurchaseOrderCreation from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCreation/NewPurchaseOrderCreation'
 // import NewPurchaseOrderOverview from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderOverview/NewPurchaseOrderOverview'
 import { PackagePlus } from 'lucide-react'
-import NewPurchaseOrderGRN from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderGRN/NewPurchaseOrderGRN'
+// import NewPurchaseOrderGRN from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderGRN/NewPurchaseOrderGRN'
 // import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
 // import NewPurchaseOrderProductsAccept from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderProductsAccept/NewPurchaseOrderProductsAccept'
 import NewPurchaseOrderCatalog from '../../components/05-NewPurchaseOrderComponents/NewPurchaseOrderCatalog/NewPurchaseOrderCatalog'
@@ -30,12 +30,12 @@ const sidebarItems = [
     icon: <PackagePlus size={20} className="sidebar-icon" />,
     component: <NewPurchaseOrderList />
   },
-  {
-    key: 'goodsReceivedNotes',
-    label: 'GRN',
-    icon: <PackagePlus size={20} className="sidebar-icon" />,
-    component: <NewPurchaseOrderGRN />
-  },
+  // {
+  //   key: 'goodsReceivedNotes',
+  //   label: 'GRN',
+  //   icon: <PackagePlus size={20} className="sidebar-icon" />,
+  //   component: <NewPurchaseOrderGRN />
+  // },
   {
     key: 'grnCatalog',
     label: 'Products',

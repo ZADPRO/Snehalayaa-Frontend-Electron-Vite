@@ -330,6 +330,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     const payload = {
       purchaseOrderId: purchaseOrder.purchaseOrderId,
       products: rows.map((r) => ({
+        productBranchId: purchaseOrder.branchId,
         sNo: r.sNo,
         lineNumber: r.lineNumber,
         productName: r.productName,
