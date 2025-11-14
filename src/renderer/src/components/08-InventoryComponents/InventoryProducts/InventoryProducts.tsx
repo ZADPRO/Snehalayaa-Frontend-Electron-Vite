@@ -7,7 +7,7 @@ import { Column } from 'primereact/column'
 import { MultiSelect } from 'primereact/multiselect'
 import { Button } from 'primereact/button'
 import { InputText } from 'primereact/inputtext'
-import { Eye, FileDown, FileSpreadsheet } from 'lucide-react'
+import { Eye, File, FileDown, FileSpreadsheet } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
 import { baseURL } from '../../../utils/helper'
@@ -15,11 +15,15 @@ import { Products } from './InventoryProducts.interface'
 import { fetchCategories } from '../../../components/03-SettingsComponents/SettingsCategories/SettingsCategories.function'
 import { fetchSubCategories } from '../../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories.function'
 import { fetchBranch } from '../../../components/03-SettingsComponents/SettingsBranch/SettingsBranch.function'
+import { Dialog } from 'primereact/dialog'
 
 const InventoryProducts: React.FC = () => {
   const toast = useRef<Toast>(null)
   const [products, setProducts] = useState<Products[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Products[]>([])
+
+  const [visibleDialog, setVisibleDialog] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null)
 
   // ✅ Multi-select filter states
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
@@ -247,10 +251,14 @@ const InventoryProducts: React.FC = () => {
             <Button
               icon={<Eye size={16} />}
               text
-              onClick={() => console.log('Row data:', rowData)}
+              onClick={() => {
+                setSelectedProduct(rowData)
+                setVisibleDialog(true)
+              }}
             />
           )}
         />
+
         <Column field="productName" sortable header="Product Name" style={{ minWidth: '14rem' }} />
         <Column
           field="invoiceFinalNumber"
@@ -274,6 +282,97 @@ const InventoryProducts: React.FC = () => {
         <Column field="branchName" header="Branch" sortable style={{ minWidth: '10rem' }} />
         <Column field="createdAt" header="Created At" sortable style={{ minWidth: '12rem' }} />
       </DataTable>
+
+      <Dialog
+        header="Product Details"
+        visible={visibleDialog}
+        style={{ width: '800px', maxWidth: '95%' }}
+        modal
+        onHide={() => setVisibleDialog(false)}
+      >
+        {selectedProduct && (
+          <div className="flex flex-column gap-4">
+            {/* Image and Basic Info */}
+            <div className="flex flex-column gap-4">
+              {/* Image Preview */}
+              <div className="flex justify-content-center flex-1">
+                {selectedProduct.imageUrl ? (
+                  <img
+                    src={selectedProduct.imageUrl}
+                    alt={selectedProduct.productName}
+                    style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                    onError={(e) => ((e.target as HTMLImageElement).src = '')}
+                  />
+                ) : (
+                  <File size={64} />
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <strong>SKU:</strong> {selectedProduct.sku}
+                </div>
+                <div className="flex-1">
+                  <strong>Product Name:</strong> {selectedProduct.productName}
+                </div>
+                <div className="flex-1">
+                  <strong>Invoice Number:</strong> {selectedProduct.invoiceFinalNumber}
+                </div>
+              </div>
+              <div className="flex flex-1 gap-3">
+                <div className="flex-1">
+                  <strong>Unit Price:</strong> {selectedProduct.unitPrice}
+                </div>
+                <div className="flex-1">
+                  <strong>Discount:</strong> {selectedProduct.discount}%
+                </div>
+                <div className="flex-1">
+                  <strong>Discount Price:</strong> {selectedProduct.discountPrice}
+                </div>
+              </div>
+              <div className="flex flex-1 gap-3">
+                <div className="flex-1">
+                  <strong>Margin:</strong> {selectedProduct.margin}%
+                </div>
+                <div className="flex-1">
+                  <strong>Total Amount:</strong> {selectedProduct.totalAmount}
+                </div>
+                <div className="flex-1">
+                  <strong>Quantity:</strong> {selectedProduct.quantity}
+                </div>
+              </div>
+              <div className="flex flex-1 gap-3">
+                <div className="flex-1">
+                  <strong>Category:</strong> {selectedProduct.categoryName}
+                </div>
+                <div className="flex-1">
+                  <strong>Sub Category:</strong> {selectedProduct.subCategoryName}
+                </div>
+                <div className="flex-1">
+                  <strong>Branch:</strong> {selectedProduct.branchName}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <strong>Audit Log:</strong>
+              <DataTable
+                value={selectedProduct?.audit || []}
+                size="small"
+                scrollable
+                scrollHeight="200px"
+              >
+                <Column field="changedBy" header="Changed By" style={{ minWidth: '120px' }} />
+                <Column field="changeDate" header="Date" style={{ minWidth: '120px' }} />
+                <Column field="fieldName" header="Field" style={{ minWidth: '120px' }} />
+                <Column field="oldValue" header="Old Value" style={{ minWidth: '120px' }} />
+                <Column field="newValue" header="New Value" style={{ minWidth: '120px' }} />
+                <Column field="remarks" header="Remarks" style={{ minWidth: '150px' }} />
+              </DataTable>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </div>
   )
 }

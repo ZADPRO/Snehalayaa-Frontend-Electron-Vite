@@ -35,11 +35,11 @@ const topRoutes = [
   //   name: 'Shopify Inventory',
   //   icon: <Store size={20} />
   // },
-  {
-    path: '/pomgmt',
-    name: 'Purchase Orders-Old',
-    icon: <ShoppingCart size={20} />
-  },
+  // {
+  //   path: '/pomgmt',
+  //   name: 'Purchase Orders-Old',
+  //   icon: <ShoppingCart size={20} />
+  // },
   {
     path: '/purchaseOrder',
     name: 'Purchase Order',

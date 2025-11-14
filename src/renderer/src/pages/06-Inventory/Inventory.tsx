@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {
   FolderKanban,
   Layers3,
-  PanelsTopLeft,
+  // PanelsTopLeft,
   PackageCheck,
   ImageUp,
   TableOfContents
@@ -11,22 +11,23 @@ import { Divider } from 'primereact/divider'
 
 import './Inventory.css'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
-import InventoryOverview from '../../components/08-InventoryComponents/InventoryOverview/InventoryOverview'
+// import InventoryOverview from '../../components/08-InventoryComponents/InventoryOverview/InventoryOverview'
 import InventoryStockTake from '../../components/08-InventoryComponents/InventoryStockTake/InventoryStockTake'
 // import InventoryTracker from '../../components/08-InventoryComponents/InventoryTracker/InventoryTracker'
 import InventoryStockTransfer from '../../components/08-InventoryComponents/InventoryStockTransfer/InventoryStockTransfer'
 import InventoryProducts from '../../components/08-InventoryComponents/InventoryProducts/InventoryProducts'
 import InventoryBulkUpdate from '../../components/08-InventoryComponents/InventoryBulkUpdate/InventoryBulkUpdate'
 import ImageBulkUpload from '../../components/08-InventoryComponents/ImageBulkUpload/ImageBulkUpload'
+import ShopifyProducts from '../../components/08-InventoryComponents/ShopifyProducts/ShopifyProducts'
 
 // Sidebar items config
 const sidebarItems = [
-  {
-    key: 'overview',
-    label: 'Overview',
-    icon: <PanelsTopLeft size={20} className="sidebar-icon" />,
-    component: <InventoryOverview />
-  },
+  // {
+  //   key: 'overview',
+  //   label: 'Overview',
+  //   icon: <PanelsTopLeft size={20} className="sidebar-icon" />,
+  //   component: <InventoryOverview />
+  // },
   {
     key: 'stockTransfer',
     label: 'Stock Take',
@@ -62,6 +63,12 @@ const sidebarItems = [
     label: 'Image Upload',
     icon: <ImageUp size={20} className="sidebar-icon" />,
     component: <ImageBulkUpload />
+  },
+  {
+    key: 'shopify',
+    label: 'Shopify Products',
+    icon: <PackageCheck size={20} className="sidebar-icon" />,
+    component: <ShopifyProducts />
   }
 ]
 

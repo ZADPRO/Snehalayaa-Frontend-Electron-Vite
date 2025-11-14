@@ -1,4 +1,5 @@
 export interface Products {
+  imageUrl: string
   productInstanceId: number
   poProductId: number
   lineNumber: string

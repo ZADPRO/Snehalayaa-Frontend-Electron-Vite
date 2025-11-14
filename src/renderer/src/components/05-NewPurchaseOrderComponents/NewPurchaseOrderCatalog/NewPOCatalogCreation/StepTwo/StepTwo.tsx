@@ -382,14 +382,42 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
 
   const getProductDataFromDB = async () => {
     try {
-      const response = await api.get(`/admin/getAcceptedProducts/${purchaseOrder.purchaseOrderId}`)
-      console.log('response', response)
+      const response = await api.get(`/admin/indivPODetails/${purchaseOrder.purchaseOrderId}`)
+      const data = response.data?.data
+
+      if (!data?.products?.length) return
+
+      const mappedRows: TableRow[] = data.products.map((p: any, index: number) => ({
+        id: Date.now() + index,
+        sNo: p.sNo || index + 1,
+        lineNumber: p.lineNumber,
+        productName: p.productName,
+        brand: p.brand || 'Snehalayaa',
+        taxClass: p.taxClass,
+        quantity: p.quantity,
+        cost: p.cost,
+        mrp: p.mrp,
+        profitMargin: p.profitMargin,
+        sellingPrice: p.sellingPrice,
+        discountPercent: p.discountPercent,
+        discountPrice: p.discountPrice,
+        category: categoryOptions.find((c) => c.refCategoryId === p.categoryId) || null,
+        subCategory:
+          subCategoryOptions.find((sc) => sc.refSubCategoryId === p.subCategoryId) || null,
+        dialogRows: p.dialogRows.map((d: any, i: number) => ({
+          ...d,
+          sNo: i + 1,
+          totalAmount: Number(d.totalAmount).toFixed(2)
+        }))
+      }))
+
+      setRows(mappedRows)
     } catch (error) {
-      console.error('❌ Error saving products:', error)
+      console.error('❌ Error fetching products:', error)
       toast.current?.show({
         severity: 'error',
-        summary: 'Save Failed',
-        detail: 'Failed to save products. Please try again.'
+        summary: 'Fetch Failed',
+        detail: 'Failed to load products. Please try again.'
       })
     }
   }
