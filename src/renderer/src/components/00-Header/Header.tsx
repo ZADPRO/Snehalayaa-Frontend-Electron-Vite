@@ -35,11 +35,11 @@ const topRoutes = [
   //   name: 'Shopify Inventory',
   //   icon: <Store size={20} />
   // },
-  {
-    path: '/pomgmt',
-    name: 'Purchase Orders-Old',
-    icon: <ShoppingCart size={20} />
-  },
+  // {
+  //   path: '/pomgmt',
+  //   name: 'Purchase Orders-Old',
+  //   icon: <ShoppingCart size={20} />
+  // },
   {
     path: '/purchaseOrder',
     name: 'Purchase Order',
@@ -157,7 +157,7 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
               </div>
             </div>
 
-            <main style={{ width: isOpen ? '85vw' : '95vw', marginLeft: '75px' }}>{children}</main>
+            <main style={{ width: isOpen ? '85vw' : '94vw', marginLeft: '75px' }}>{children}</main>
           </>
         )}
         {hideSidebarPaths.includes(location.pathname) && (

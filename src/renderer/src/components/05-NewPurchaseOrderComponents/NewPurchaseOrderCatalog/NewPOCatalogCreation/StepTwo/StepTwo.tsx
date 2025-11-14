@@ -44,7 +44,6 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   const [discountPrice, setDiscountPrice] = useState<number>(0)
   const [dialogRows, setDialogRows] = useState<DialogRow[]>([])
 
-  console.log('purchaseOrder', purchaseOrder)
   const totalOrderedQuantity =
     purchaseOrder.products?.reduce((sum: number, p: any) => sum + Number(p.quantity || 0), 0) || 0
 
@@ -52,37 +51,6 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
 
   // Remaining quantity available for adding products
   const remainingQuantity = totalOrderedQuantity - usedQuantity + (editingRow?.quantity || 0)
-
-  useEffect(() => {
-    const loadOptions = async () => {
-      const categories = await fetchCategories()
-      const subCategories = await fetchSubCategories()
-      setCategoryOptions(categories)
-      setSubCategoryOptions(subCategories)
-    }
-    loadOptions()
-  }, [])
-
-  useEffect(() => {
-    const sp = cost + (cost * profitMargin) / 100
-    setSellingPrice(Number(sp.toFixed(2)))
-    setMrp(Number(sp.toFixed(2)))
-  }, [cost, profitMargin])
-
-  // Discount price auto-calculation both ways
-  useEffect(() => {
-    if (discountPercent > 0 && cost > 0) {
-      const discounted = cost - (cost * discountPercent) / 100
-      setDiscountPrice(Number(discounted.toFixed(2)))
-    }
-  }, [discountPercent])
-
-  useEffect(() => {
-    if (discountPrice > 0 && cost > 0 && discountPrice < cost) {
-      const percent = ((cost - discountPrice) / cost) * 100
-      setDiscountPercent(Number(percent.toFixed(2)))
-    }
-  }, [discountPrice])
 
   const filteredSubCategories = selectedCategory
     ? subCategoryOptions.filter((sub) => sub.refCategoryId === selectedCategory.refCategoryId)
@@ -248,65 +216,89 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
       : [...rows, newRow]
 
     setRows(updatedRows)
-    localStorage.setItem(`po_${purchaseOrder.purchase_order_id}`, JSON.stringify(updatedRows))
+    localStorage.setItem(`po_${purchaseOrder.purchaseOrderId}`, JSON.stringify(updatedRows))
     setDialogVisible(false)
     toast.current?.show({ severity: 'success', summary: 'Saved', detail: 'Row saved successfully' })
   }
 
+  const focusNextInputForm = (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement | HTMLElement>
+  ) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+
+    const container = e.currentTarget.closest('.p-dialog-content')
+    if (!container) return
+
+    const focusable = Array.from(
+      container.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>(
+        '.p-inputtext, .p-inputnumber-input, .p-dropdown, button'
+      )
+    )
+
+    const currentIndex = focusable.indexOf(e.currentTarget as HTMLInputElement)
+    let next = focusable[currentIndex + 1]
+
+    // Skip disabled/hidden
+    while (next && (next.disabled || next.getAttribute('aria-hidden') === 'true')) {
+      next = focusable[focusable.indexOf(next) + 1]
+    }
+
+    if (next) {
+      next.focus()
+      ;(next as HTMLInputElement).select?.()
+    }
+  }
+
   const focusNextInput = (
     e: React.KeyboardEvent<HTMLInputElement | HTMLButtonElement>,
-    rowIndex: number,
-    field: keyof DialogRow
+    _rowIndex: number,
+    _field: keyof DialogRow
   ) => {
-    console.log('field', field)
     if (e.key !== 'Enter') return
     e.preventDefault()
 
     const table = e.currentTarget.closest('.p-datatable-wrapper')
     if (!table) return
 
-    // include buttons in tab order
-    const focusableElements = Array.from(
+    const focusable = Array.from(
       table.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
         '.p-inputtext, .p-inputnumber-input, button'
       )
     )
 
-    const currentIndex = focusableElements.indexOf(e.currentTarget as HTMLInputElement)
-    let nextElement = focusableElements[currentIndex + 1]
+    const currentIndex = focusable.indexOf(e.currentTarget as HTMLInputElement)
+    let nextElement = focusable[currentIndex + 1]
 
-    // Skip disabled or hidden ones
-    while (
-      nextElement &&
-      (nextElement.disabled || nextElement.getAttribute('aria-hidden') === 'true')
-    ) {
-      nextElement = focusableElements[focusableElements.indexOf(nextElement) + 1]
+    while (nextElement && nextElement.closest('.productGRNTableAction')) {
+      const nextIndex = focusable.indexOf(nextElement) + 1
+      console.log('nextIndex', nextIndex)
+      nextElement = focusable[nextIndex]
+    }
+
+    const currentRow = e.currentTarget.closest('tr') as HTMLElement
+    const nextRow = currentRow?.nextElementSibling as HTMLElement | null
+
+    if (!nextElement || (nextRow && !currentRow.contains(nextElement))) {
+      console.log('nextElement', nextElement)
+      const nextRowInputs = Array.from(
+        nextRow?.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+          '.p-inputtext, .p-inputnumber-input, button'
+        ) || []
+      ).filter((el) => !el.closest('.productGRNTableAction')) // ✅ Skip action buttons in next row too
+      if (nextRowInputs.length > 0) {
+        console.log('nextRowInputs', nextRowInputs)
+        const firstInput = nextRowInputs[0]
+        console.log('firstInput', firstInput)
+        firstInput.focus()
+        ;(firstInput as HTMLInputElement).select?.()
+        return
+      }
     }
 
     if (nextElement) {
       nextElement.focus()
       ;(nextElement as HTMLInputElement).select?.()
-    } else {
-      const nextRowInputs = Array.from(
-        table.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
-          '.p-inputtext, .p-inputnumber-input, button'
-        )
-      ).filter((el) => {
-        const row = el.closest('tr')
-        return row && Number(row.getAttribute('data-p-rowindex')) === rowIndex + 1
-      })
-
-      if (nextRowInputs.length > 0) {
-        const firstInNextRow = nextRowInputs[0]
-        firstInNextRow.focus()
-        ;(firstInNextRow as HTMLInputElement).select?.()
-      } else {
-        const firstInput = focusableElements[0]
-        if (firstInput) {
-          firstInput.focus()
-          ;(firstInput as HTMLInputElement).select?.()
-        }
-      }
     }
   }
 
@@ -338,6 +330,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     const payload = {
       purchaseOrderId: purchaseOrder.purchaseOrderId,
       products: rows.map((r) => ({
+        productBranchId: purchaseOrder.branchId,
         sNo: r.sNo,
         lineNumber: r.lineNumber,
         productName: r.productName,
@@ -386,6 +379,80 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
       })
     }
   }
+
+  const getProductDataFromDB = async () => {
+    try {
+      const response = await api.get(`/admin/indivPODetails/${purchaseOrder.purchaseOrderId}`)
+      const data = response.data?.data
+
+      if (!data?.products?.length) return
+
+      const mappedRows: TableRow[] = data.products.map((p: any, index: number) => ({
+        id: Date.now() + index,
+        sNo: p.sNo || index + 1,
+        lineNumber: p.lineNumber,
+        productName: p.productName,
+        brand: p.brand || 'Snehalayaa',
+        taxClass: p.taxClass,
+        quantity: p.quantity,
+        cost: p.cost,
+        mrp: p.mrp,
+        profitMargin: p.profitMargin,
+        sellingPrice: p.sellingPrice,
+        discountPercent: p.discountPercent,
+        discountPrice: p.discountPrice,
+        category: categoryOptions.find((c) => c.refCategoryId === p.categoryId) || null,
+        subCategory:
+          subCategoryOptions.find((sc) => sc.refSubCategoryId === p.subCategoryId) || null,
+        dialogRows: p.dialogRows.map((d: any, i: number) => ({
+          ...d,
+          sNo: i + 1,
+          totalAmount: Number(d.totalAmount).toFixed(2)
+        }))
+      }))
+
+      setRows(mappedRows)
+    } catch (error) {
+      console.error('❌ Error fetching products:', error)
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Fetch Failed',
+        detail: 'Failed to load products. Please try again.'
+      })
+    }
+  }
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      const categories = await fetchCategories()
+      const subCategories = await fetchSubCategories()
+      setCategoryOptions(categories)
+      setSubCategoryOptions(subCategories)
+    }
+    loadOptions()
+    getProductDataFromDB()
+  }, [])
+
+  useEffect(() => {
+    const sp = cost + (cost * profitMargin) / 100
+    setSellingPrice(Number(sp.toFixed(2)))
+    setMrp(Number(sp.toFixed(2)))
+  }, [cost, profitMargin])
+
+  // Discount price auto-calculation both ways
+  useEffect(() => {
+    if (discountPercent > 0 && cost > 0) {
+      const discounted = cost - (cost * discountPercent) / 100
+      setDiscountPrice(Number(discounted.toFixed(2)))
+    }
+  }, [discountPercent])
+
+  useEffect(() => {
+    if (discountPrice > 0 && cost > 0 && discountPrice < cost) {
+      const percent = ((cost - discountPrice) / cost) * 100
+      setDiscountPercent(Number(percent.toFixed(2)))
+    }
+  }, [discountPrice])
 
   return (
     <div>
@@ -447,6 +514,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                 setSelectedCategory(e.value)
                 setSelectedSubCategory(null)
               }}
+              onKeyDown={focusNextInputForm}
               className="w-full"
             />
             <label>Category</label>
@@ -459,6 +527,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
               optionLabel="subCategoryName"
               onChange={(e) => setSelectedSubCategory(e.value)}
               className="w-full"
+              onKeyDown={focusNextInputForm}
               disabled={!selectedCategory}
             />
             <label>Sub Category</label>
@@ -469,6 +538,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
               value={lineNumber}
               onValueChange={(e) => setLineNumber(e.value || 1)}
               className="w-full"
+              onKeyDown={focusNextInputForm}
             />
             <label>Line No.</label>
           </FloatLabel>
@@ -477,6 +547,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             <InputText
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
+              onKeyDown={focusNextInputForm}
               className="w-full"
             />
             <label>Product</label>
@@ -489,6 +560,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             <InputText
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
+              onKeyDown={focusNextInputForm}
               className="w-full"
             />
             <label>Brand</label>
@@ -498,6 +570,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
             <InputText
               value={taxClass}
               onChange={(e) => setTaxClass(e.target.value)}
+              onKeyDown={focusNextInputForm}
               className="w-full"
             />
             <label>Tax Class</label>
@@ -505,6 +578,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
           <FloatLabel className="flex-1 always-float">
             <InputNumber
               value={cost}
+              onKeyDown={focusNextInputForm}
               onValueChange={(e) => setCost(e.value || 0)}
               min={0}
               className="w-full"
@@ -518,6 +592,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
               onValueChange={(e) => setProfitMargin(e.value || 0)}
               min={0}
               max={100}
+              onKeyDown={focusNextInputForm}
               className="w-full"
             />
             <label>Profit %</label>
@@ -535,6 +610,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
               className="w-full"
               onValueChange={(e) => handleQuantityChange(e.value || 0)}
               min={0}
+              onKeyDown={focusNextInputForm}
               max={remainingQuantity}
             />
             <label>Quantity</label>
@@ -547,6 +623,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
               onValueChange={(e) => setDiscountPercent(e.value || 0)}
               min={0}
               max={100}
+              onKeyDown={focusNextInputForm}
             />
             <label>Discount %</label>
           </FloatLabel>
@@ -557,6 +634,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
               className="w-full"
               onValueChange={(e) => setDiscountPrice(e.value || 0)}
               min={0}
+              onKeyDown={focusNextInputForm}
             />
             <label>Discount Price</label>
           </FloatLabel>
@@ -704,10 +782,10 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
                 icon={<Trash2 size={16} />}
                 className="p-button-danger productGRNTableAction"
                 onClick={() => {
-                  const updatedRows = [...dialogRows]
-                  updatedRows.splice(rowIndex, 1)
-                  setDialogRows(updatedRows)
-                  setQuantity(updatedRows.length)
+                  setDialogRows((prev) => {
+                    const updated = prev.filter((_, i) => i !== rowIndex)
+                    return updated.map((r, i) => ({ ...r, sNo: i + 1 }))
+                  })
                 }}
               />
             )}

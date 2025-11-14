@@ -18,14 +18,11 @@ interface PurchaseOrderProductDetailsProps {
 const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = ({
   purchaseOrder
 }) => {
+  console.log('purchaseOrder', purchaseOrder)
   const toastRef = useRef<Toast>(null)
-  const [activeStep, setActiveStep] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [receivedBatches, setReceivedBatches] = useState<any[]>([])
-  const [confirmedData, setConfirmedData] = useState<any[]>([])
-  console.log('confirmedData', confirmedData)
 
-  // ✅ Initialize product data with backend accepted/rejected
+  // ✅ Initialize product data
   const [products, setProducts] = useState(() =>
     purchaseOrder.products.map((p: any) => {
       const quantity = Number(p.quantity) || 0
@@ -33,6 +30,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
       const rejected = Number(p.rejected_quantity) || 0
       const status =
         accepted === quantity ? 'Completed' : accepted > 0 ? 'Partially Received' : 'Pending'
+
       return {
         ...p,
         received: accepted,
@@ -42,8 +40,11 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
     })
   )
 
-  // ✅ Check if PO already has received/rejected data
-  const hasExistingData = products.some((p) => p.received > 0 || p.rejected > 0)
+  // ✅ Check if any data already exists (backend accepted or rejected quantities)
+  const hasExistingData = products.some((p) => Number(p.received) > 0 || Number(p.rejected) < 0)
+  console.log('hasExistingData', hasExistingData)
+
+  const [activeStep, setActiveStep] = useState(hasExistingData ? 1 : 0)
 
   // ✅ Handle quantity edits
   const handleReceivedChange = (value: number, rowIndex: number) => {
@@ -59,19 +60,17 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
     )
   }
 
-  // ✅ Save PO handler
+  // Save PO handler
   const handleSavePO = async () => {
     const payload = products.map((p) => ({
       purchase_order_id: purchaseOrder.purchaseOrderId,
       purchase_order_number: purchaseOrder.purchaseOrderNumber,
       category_id: p.categoryDetails?.initialCategoryId || null,
       po_product_id: p.poProductId,
-      accepted_quantity: p.received,
-      rejected_quantity: p.rejected,
+      accepted_quantity: String(p.received),
+      rejected_quantity: String(p.rejected),
       status: p.status
     }))
-
-    console.log('🧾 Sending payload:', payload)
 
     try {
       setLoading(true)
@@ -84,14 +83,6 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
           summary: 'Saved Successfully',
           detail: 'Purchase Order products updated successfully.'
         })
-
-        const currentBatch = {
-          id: Date.now(),
-          timestamp: new Date().toLocaleString(),
-          data: [...products]
-        }
-        setReceivedBatches((prev) => [currentBatch, ...prev])
-        setConfirmedData(payload)
       }
     } catch (err: any) {
       setLoading(false)
@@ -101,6 +92,20 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
         detail: err.message || 'Failed to save purchase order products.'
       })
     }
+  }
+
+  // ✅ Stepper navigation validation
+  const handleNextStep = () => {
+    const hasReceived = products.some((p) => Number(p.received) > 0)
+    if (!hasReceived) {
+      toastRef.current?.show({
+        severity: 'warn',
+        summary: 'Validation Error',
+        detail: 'Please enter at least one received quantity before proceeding to confirmation.'
+      })
+      return
+    }
+    setActiveStep(1)
   }
 
   return (
@@ -125,7 +130,8 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
             <strong>Total Ordered Qty:</strong> {purchaseOrder.totalOrderedQuantity}
           </p>
           <p className="flex-1">
-            <strong>Total Received Qty:</strong> {products.reduce((sum, p) => sum + p.received, 0)}
+            <strong>Total Received Qty:</strong>{' '}
+            {products.reduce((sum, p) => sum + Number(p.received), 0)}
           </p>
           <p className="flex-1">
             <strong>Total Amount:</strong> {formatINR(Number(purchaseOrder.totalAmount))}
@@ -135,10 +141,12 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
 
       <Divider />
 
+      {/* ✅ Stepper */}
       <Stepper activeStep={activeStep} onChange={(e: any) => setActiveStep(e.index)}>
         {/* STEP 1 — Product Receiving */}
         <StepperPanel header="Receive Products">
           <div className="flex justify-content-end mb-3 gap-2">
+            {/* {!hasExistingData && ( */}
             <Button
               label="Save PO"
               severity="success"
@@ -146,41 +154,10 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
               onClick={handleSavePO}
               loading={loading}
             />
-            {hasExistingData && (
-              <Button
-                label="Next → Confirmation"
-                onClick={() => setActiveStep(1)}
-                severity="info"
-              />
-            )}
-          </div>
+            {/* )} */}
 
-          {/* Previous Batches */}
-          {receivedBatches.length > 0 && (
-            <div className="mb-4">
-              <p className="font-bold text-lg mb-2">Received Batches</p>
-              {receivedBatches.map((batch, idx) => (
-                <div key={batch.id} className="mb-4 surface-border">
-                  <p className="font-semibold mb-2">
-                    Batch {receivedBatches.length - idx} — {batch.timestamp}
-                  </p>
-                  <DataTable value={batch.data} showGridlines responsiveLayout="scroll" scrollable>
-                    <Column header="S.No" body={(_, { rowIndex }) => rowIndex + 1} />
-                    <Column field="categoryDetails.initialCategoryName" header="Category" />
-                    <Column field="description" header="Product" />
-                    <Column field="quantity" header="Ordered Qty" />
-                    <Column field="received" header="Received Qty" />
-                    <Column field="rejected" header="Rejected Qty" />
-                    <Column
-                      header="Amount"
-                      body={(rowData) => formatINR(rowData.unitPrice * rowData.received)}
-                    />
-                  </DataTable>
-                </div>
-              ))}
-              <Divider />
-            </div>
-          )}
+            <Button label="Next → Confirmation" onClick={handleNextStep} severity="info" />
+          </div>
 
           {/* Editable Table */}
           <DataTable value={products} showGridlines responsiveLayout="scroll" scrollable>
@@ -195,7 +172,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
             <Column
               field="unitPrice"
               header="Unit Price"
-              body={(rowData) => formatINR(rowData.unitPrice)}
+              body={(rowData) => formatINR(Number(rowData.unitPrice))}
             />
             <Column
               header="Received Qty"
@@ -205,19 +182,24 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
                   onValueChange={(e) => handleReceivedChange(e.value || 0, rowIndex)}
                   min={0}
                   max={rowData.quantity}
+                  disabled={hasExistingData || Number(rowData.received) > 0}
                 />
               )}
             />
             <Column field="rejected" header="Rejected Qty" />
             <Column
               header="Amount"
-              body={(rowData) => formatINR(rowData.unitPrice * rowData.received)}
+              body={(rowData) => formatINR(Number(rowData.unitPrice) * Number(rowData.received))}
             />
           </DataTable>
         </StepperPanel>
 
         {/* STEP 2 — Confirmation */}
         <StepperPanel header="Confirmation">
+          <div className="flex justify-content-between mb-3">
+            <Button label="← Back" outlined severity="secondary" onClick={() => setActiveStep(0)} />
+          </div>
+
           <StepTwo purchaseOrder={purchaseOrder} />
         </StepperPanel>
       </Stepper>

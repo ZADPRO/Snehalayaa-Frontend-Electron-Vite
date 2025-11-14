@@ -318,3 +318,23 @@ Specificity: (0,2,2)
 .grnTableUI .p-datatable-wrapper table tbody tr td {
   padding: 2px;
 }
+
+.p-datatable-wrapper table thead tr th,
+.p-datatable-wrapper table tbody tr td {
+  padding: 5px;
+}
+
+.p-datatable .p-checkbox {
+  transform: scale(1);
+  align-items: center;
+  justify-content: center;
+}
+
+.p-datatable .p-checkbox-box {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.p-datatable .p-checkbox-icon {
+  font-size: 10px !important;
+}

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import './Login.css'
 import { InputText } from 'primereact/inputtext'
 import { KeyRound, UserRound } from 'lucide-react'
@@ -19,8 +19,30 @@ const Login: React.FC = () => {
   const toast = useRef<Toast>(null)
   const navigate = useNavigate()
 
+  useEffect(() => {
+    const userDetailsStr = localStorage.getItem('userDetails')
+
+    if (userDetailsStr) {
+      try {
+        const userDetails = JSON.parse(userDetailsStr)
+
+        if (userDetails.refUserId && userDetails.refUACUsername) {
+          toast.current?.show({
+            severity: 'info',
+            summary: 'Auto Login',
+            detail: `Welcome back, ${userDetails.refUACUsername}!`,
+            life: 2000
+          })
+          setTimeout(() => navigate('/dashboard'), 1000)
+        }
+      } catch (error) {
+        console.error('Error parsing stored user details:', error)
+      }
+    }
+  }, [navigate])
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault() // prevent page refresh
+    e.preventDefault()
 
     if (!username || !password) {
       toast.current?.show({
@@ -33,7 +55,6 @@ const Login: React.FC = () => {
     }
 
     setLoading(true)
-
     const result = await handleLogin(username, password)
     setLoading(false)
 

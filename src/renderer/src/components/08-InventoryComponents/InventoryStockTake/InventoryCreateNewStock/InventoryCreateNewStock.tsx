@@ -17,7 +17,7 @@ import {
   createPurchaseOrder
 } from './InventoryCreateNewStock.function'
 import { Branch, Category, SubCategory } from './InventoryCreateNewStock.interface'
-import { Box, Check, CheckCheck, Download, Eye, Pencil, Plus, Printer, Trash2 } from 'lucide-react'
+import { Check, CheckCheck, Download, Pencil, Plus, Printer, Trash2 } from 'lucide-react'
 import { Sidebar } from 'primereact/sidebar'
 import { InputText } from 'primereact/inputtext'
 import { Tooltip } from 'primereact/tooltip'
@@ -191,6 +191,15 @@ const AddNewStockProductOrder: React.FC = () => {
       return
     }
 
+    if (tableData.length === 0) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'No Products',
+        detail: 'Please add at least one product before initiating stock transfer.'
+      })
+      return
+    }
+
     try {
       const payload = buildPayload()
       console.log('payload', payload)
@@ -199,13 +208,13 @@ const AddNewStockProductOrder: React.FC = () => {
 
       toast.current?.show({
         severity: 'success',
-        summary: 'Purchase Order Saved',
-        detail: res.message || 'Your purchase order has been saved successfully.'
+        summary: 'Stock Transfer Initiated',
+        detail: res.message || 'Your stock transfer has been saved successfully.'
       })
 
       setIsSaved(true)
     } catch (error) {
-      console.error('Error saving purchase order:', error)
+      console.error('Error saving stock transfer:', error)
       toast.current?.show({
         severity: 'error',
         summary: 'Save Failed',
@@ -253,28 +262,31 @@ const AddNewStockProductOrder: React.FC = () => {
   // setSelectedRows([])
   // }
 
-  const handleAddProduct = (newItems: any[]) => {
-    if (!Array.isArray(newItems) || newItems.length === 0) return
+  const handleAddProduct = (newProducts: any[]) => {
+    if (!Array.isArray(newProducts) || newProducts.length === 0) return
 
-    // If you're editing a single product, we shouldn't handle bulk add
-    if (editProduct) {
-      console.warn('Cannot perform bulk add while editing a product.')
-      return
-    }
-
-    const updatedItems = newItems.map((item) => {
+    const transformedProducts = newProducts.map((item) => {
       const category = categories.find((c) => c.refCategoryId === item.refCategoryId)
       const subCategory = subCategories.find((sc) => sc.refSubCategoryId === item.refSubCategoryId)
 
       return {
-        id: Date.now() + Math.random(), // generate a unique ID
-        ...item,
+        id: Date.now() + Math.random(), // unique ID for table
+        productName: item.productName,
+        refCategoryId: item.refCategoryId,
+        refSubCategoryId: item.refSubCategoryId,
         category: category?.categoryName || '',
-        subCategory: subCategory?.subCategoryName || ''
+        subCategory: subCategory?.subCategoryName || '',
+        quantity: item.quantity,
+        purchasePrice: item.unitPrice,
+        discountPrice: item.discountPrice || 0,
+        totalAmount: item.totalAmount || item.unitPrice * item.quantity,
+        SKU: item.SKU,
+        productBranchId: selectedBranch?.refBranchId,
+        ...item // in case there are extra fields you need
       }
     })
 
-    setTableData((prev) => [...prev, ...updatedItems])
+    setTableData((prev) => [...prev, ...transformedProducts])
     setSelectedRows([])
   }
 
@@ -484,11 +496,11 @@ const AddNewStockProductOrder: React.FC = () => {
             className="w-full gap-2 p-button-primary"
             onClick={handleSave}
           />
-          <Button
+          {/* <Button
             label="Preview"
             icon={<Eye size={20} />}
             className="w-full gap-2 p-button-primary"
-          />
+          /> */}
 
           <Button
             label="Download"
@@ -547,12 +559,12 @@ const AddNewStockProductOrder: React.FC = () => {
               }
             }}
           />
-          <Button
+          {/* <Button
             label="Box Count"
             icon={<Box size={20} />}
             className="w-full gap-2 p-button-primary"
             onClick={() => setShowBoxDialog(true)}
-          />
+          /> */}
         </div>
         <div className="flex flex-column gap-2 pb-3 surface-100 border-round mt-20">
           <h4 className="mb-2 ">Payment Summary</h4>
@@ -599,14 +611,15 @@ const AddNewStockProductOrder: React.FC = () => {
           </span>
         }
         onHide={() => setVisibleRight(false)}
-        style={{ width: '50vw' }}
+        style={{ width: '80vw' }}
       >
         <InventoryCreateNewProductForStock
-          categories={categories}
-          subCategories={subCategories}
           fromAddress={selectedBranch}
           toAddress={selectedSupplier}
-          onAdd={handleAddProduct}
+          onAdd={(products) => {
+            handleAddProduct(products) // <-- main table updates here
+            setVisibleRight(false) // close sidebar
+          }}
           onClose={() => {
             setVisibleRight(false)
             setEditProduct(null)

@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   header: {
+    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10
@@ -197,8 +198,9 @@ export const PurchaseOrderPdf = ({
         </View>
 
         {/* Supplier Reference */}
-        <Text style={[styles.sectionTitle, { marginBottom: 2 }]}>Supplier Reference Code:</Text>
-        <Text style={{ marginBottom: 6 }}>{from.supplierCode || '-'}</Text>
+        <Text style={[styles.sectionTitle, { marginBottom: 2 }]}>
+          Supplier Reference Code:{from.supplierCode || '-'}
+        </Text>
 
         {/* Dispatched From / To */}
         <View style={styles.supplierBranchContainer}>

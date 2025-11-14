@@ -7,7 +7,7 @@ import {
   // UsersRound,
   IdCard,
   // SlidersVertical,
-  LayoutDashboard,
+  // LayoutDashboard,
   // UsersRound,
   SlidersVertical,
   GalleryHorizontalEnd
@@ -16,7 +16,7 @@ import { Divider } from 'primereact/divider'
 
 import './Settings.css'
 import ComponentHeader from '../../components/00-Header/ComponentHeader'
-import SettingsOverview from '../../components/03-SettingsComponents/SettingsOverview/SettingsOverview'
+// import SettingsOverview from '../../components/03-SettingsComponents/SettingsOverview/SettingsOverview'
 import SettingsCategories from '../../components/03-SettingsComponents/SettingsCategories/SettingsCategories'
 import SettingsSubCategories from '../../components/03-SettingsComponents/SettingsSubCategories/SettingsSubCategories'
 import SettingsSuppliers from '../../components/03-SettingsComponents/SettingsSuppliers/SettingsSuppliers'
@@ -30,12 +30,12 @@ import SettingsInitialCategories from '../../components/03-SettingsComponents/Se
 
 // Sidebar items config
 const sidebarItems = [
-  {
-    key: 'overview',
-    label: 'Overview',
-    icon: <LayoutDashboard size={20} className="sidebar-icon" />,
-    component: <SettingsOverview />
-  },
+  // {
+  //   key: 'overview',
+  //   label: 'Overview',
+  //   icon: <LayoutDashboard size={20} className="sidebar-icon" />,
+  //   component: <SettingsOverview />
+  // },
   {
     key: 'initialCategories',
     label: 'Initial Categories',
