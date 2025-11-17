@@ -35,6 +35,10 @@ const InventoryProducts: React.FC = () => {
   const [subCategories, setSubCategories] = useState<any[]>([])
   const [branches, setBranches] = useState<any[]>([])
 
+  const emptyValueTemplate = (data: any) => {
+    return data ? data : '-'
+  }
+
   // ✅ Load Products
   const loadProducts = async () => {
     try {
@@ -242,7 +246,14 @@ const InventoryProducts: React.FC = () => {
         scrollable
       >
         <Column header="S.No" body={serialNumberBody} frozen style={{ minWidth: '6rem' }} />
-        <Column field="sku" sortable header="SKU" frozen style={{ minWidth: '12rem' }} />
+        <Column
+          field="sku"
+          sortable
+          header="SKU"
+          body={(row) => emptyValueTemplate(row.sku)}
+          frozen
+          style={{ minWidth: '12rem' }}
+        />
         <Column
           header="View"
           frozen
@@ -259,28 +270,85 @@ const InventoryProducts: React.FC = () => {
           )}
         />
 
-        <Column field="productName" sortable header="Product Name" style={{ minWidth: '14rem' }} />
+        <Column
+          field="productName"
+          sortable
+          header="Product Name"
+          style={{ minWidth: '14rem' }}
+          body={(row) => emptyValueTemplate(row.productName)}
+        />
         <Column
           field="invoiceFinalNumber"
           sortable
           header="Invoice Number"
           style={{ minWidth: '14rem' }}
+          body={(row) => emptyValueTemplate(row.invoiceFinalNumber)}
         />
-        <Column field="unitPrice" header="Unit Price" style={{ minWidth: '8rem' }} />
-        <Column field="discount" header="Discount (%)" style={{ minWidth: '8rem' }} />
-        <Column field="discountPrice" header="Discount Price" style={{ minWidth: '10rem' }} />
-        <Column field="margin" header="Margin (%)" style={{ minWidth: '8rem' }} />
-        <Column field="totalAmount" header="Total Amount" style={{ minWidth: '10rem' }} />
-        <Column field="categoryName" header="Category" sortable style={{ minWidth: '10rem' }} />
+        <Column
+          field="unitPrice"
+          header="Unit Price"
+          style={{ minWidth: '8rem' }}
+          body={(row) => emptyValueTemplate(row.unitPrice)}
+        />
+        <Column
+          field="discount"
+          header="Discount (%)"
+          style={{ minWidth: '8rem' }}
+          body={(row) => emptyValueTemplate(row.discount)}
+        />
+        <Column
+          field="discountPrice"
+          header="Discount Price"
+          style={{ minWidth: '10rem' }}
+          body={(row) => emptyValueTemplate(row.discountPrice)}
+        />
+        <Column
+          field="margin"
+          header="Margin (%)"
+          style={{ minWidth: '8rem' }}
+          body={(row) => emptyValueTemplate(row.margin)}
+        />
+        <Column
+          field="totalAmount"
+          header="Total Amount"
+          style={{ minWidth: '10rem' }}
+          body={(row) => emptyValueTemplate(row.totalAmount)}
+        />
+        <Column
+          field="categoryName"
+          header="Category"
+          sortable
+          style={{ minWidth: '10rem' }}
+          body={(row) => emptyValueTemplate(row.categoryName)}
+        />
         <Column
           field="subCategoryName"
           header="Sub Category"
           sortable
           style={{ minWidth: '12rem' }}
+          body={(row) => emptyValueTemplate(row.subCategoryName)}
         />
-        <Column field="quantity" header="Quantity" sortable style={{ minWidth: '10rem' }} />
-        <Column field="branchName" header="Branch" sortable style={{ minWidth: '10rem' }} />
-        <Column field="createdAt" header="Created At" sortable style={{ minWidth: '12rem' }} />
+        <Column
+          field="quantity"
+          header="Quantity"
+          sortable
+          style={{ minWidth: '10rem' }}
+          body={(row) => emptyValueTemplate(row.quantity)}
+        />
+        <Column
+          field="branchName"
+          header="Branch"
+          sortable
+          style={{ minWidth: '10rem' }}
+          body={(row) => emptyValueTemplate(row.branchName)}
+        />
+        <Column
+          field="createdAt"
+          header="Created At"
+          sortable
+          style={{ minWidth: '12rem' }}
+          body={(row) => emptyValueTemplate(row.createdAt)}
+        />
       </DataTable>
 
       <Dialog

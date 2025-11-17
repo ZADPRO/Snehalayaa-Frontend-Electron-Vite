@@ -12,7 +12,8 @@ import { Button } from 'primereact/button'
 import { Check } from 'lucide-react'
 import {
   createInitialCategory,
-  updateInitialCategory
+  updateInitialCategory,
+  fetchInitialCategoryCode
 } from './SettingsAddEditInitialCategories.function'
 
 const SettingsAddEditInitialCategories: React.FC<SettingsAddEditInitialCategoriesProps> = ({
@@ -21,6 +22,7 @@ const SettingsAddEditInitialCategories: React.FC<SettingsAddEditInitialCategorie
   reloadData
 }) => {
   const toast = useRef<Toast>(null)
+  const typingTimer = useRef<any>(null)
 
   const [formData, setFormData] = useState<CategoryFormData>({
     initialCategoryName: selectedInitialCategory?.initialCategoryName || '',
@@ -38,6 +40,26 @@ const SettingsAddEditInitialCategories: React.FC<SettingsAddEditInitialCategorie
       ...prevData,
       [field]: value
     }))
+
+    if (field === 'initialCategoryName' && !selectedInitialCategory) {
+      clearTimeout(typingTimer.current)
+
+      typingTimer.current = setTimeout(async () => {
+        if (value && value.toString().trim() !== '') {
+          try {
+            const res = await fetchInitialCategoryCode(value.toString().trim())
+            if (res.data.status) {
+              setFormData((prev) => ({
+                ...prev,
+                initialCategoryCode: res.data.generatedCategoryCode
+              }))
+            }
+          } catch (err) {
+            console.error('Error generating code:', err)
+          }
+        }
+      }, 500) // debounce = 500ms
+    }
   }
 
   // Simple validation logic
@@ -155,6 +177,7 @@ const SettingsAddEditInitialCategories: React.FC<SettingsAddEditInitialCategorie
               value={formData.initialCategoryCode}
               className="w-full"
               onChange={(e) => handleInputChange('initialCategoryCode', e.target.value)}
+              readOnly={!selectedInitialCategory}
             />
             <label htmlFor="initialCategoryCode">Initial Category Code</label>
           </FloatLabel>

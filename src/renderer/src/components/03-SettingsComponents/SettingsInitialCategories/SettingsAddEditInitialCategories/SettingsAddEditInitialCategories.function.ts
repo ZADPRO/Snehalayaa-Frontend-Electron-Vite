@@ -12,3 +12,9 @@ export const updateInitialCategory = async (payload: Partial<InitialCategory>) =
   console.log('\n\n\nUpdate Initial Category Response', response)
   return response.data
 }
+
+export const fetchInitialCategoryCode = async (initialCategoryName: string) => {
+  return await api.post(`/admin/settings/initialCategoryCode`, {
+    initialCategoryName
+  })
+}

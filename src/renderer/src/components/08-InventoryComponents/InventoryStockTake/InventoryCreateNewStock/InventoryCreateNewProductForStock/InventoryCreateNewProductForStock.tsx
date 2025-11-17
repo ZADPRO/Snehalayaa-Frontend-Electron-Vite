@@ -6,6 +6,7 @@ import { Column } from 'primereact/column'
 import { X } from 'lucide-react'
 import { Branch } from '../InventoryCreateNewStock.interface'
 import { fetchProducts, formatINRCurrency } from './InventoryCreateNewProductForStock.function'
+import { Dialog } from 'primereact/dialog'
 
 interface Props {
   fromAddress: Branch | null
@@ -14,6 +15,12 @@ interface Props {
   onClose: () => void
   onTotalChange?: (total: number) => void
   productToEdit?: any
+}
+
+interface ConfirmDialogState {
+  visible: boolean
+  product: any | null
+  branchName: string
 }
 
 const InventoryCreateNewProductForStock: React.FC<Props> = ({
@@ -26,14 +33,37 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
   const toast = useRef<Toast>(null)
   const scannerRef = useRef<HTMLInputElement>(null)
   const [products, setProducts] = useState<any[]>([])
-  // const [manualSKU, setManualSKU] = useState('')
+  const [manualSKU, setManualSKU] = useState('')
+
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState>({
+    visible: false,
+    product: null,
+    branchName: ''
+  })
 
   // Focus scanner input on mount
   useEffect(() => {
     scannerRef.current?.focus()
   }, [])
 
-  // Shared function to add product by SKU
+  const handleAddToTable = (product: any) => {
+    setProducts((prev) => {
+      if (prev.some((p) => p.SKU === product.SKU)) {
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Duplicate SKU',
+          detail: product.SKU
+        })
+        return prev
+      }
+
+      const updated = [...prev, product]
+      const total = updated.reduce((sum, p) => sum + Number(p.unitPrice || 0), 0)
+      onTotalChange?.(total)
+      return updated
+    })
+  }
+
   const addProductBySKU = async (sku: string) => {
     if (!sku || !fromAddress?.refBranchId) {
       toast.current?.show({
@@ -46,31 +76,40 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
 
     try {
       const res = await fetchProducts(fromAddress.refBranchId, sku)
-      if (res.status) {
-        setProducts((prev) => {
-          if (prev.some((p) => p.SKU === res.data.SKU)) {
-            toast.current?.show({
-              severity: 'warn',
-              summary: 'Duplicate SKU',
-              detail: sku
-            })
-            return prev
-          }
-          const updated = [...prev, res.data]
-          const total = updated.reduce((sum, p) => sum + Number(p.unitPrice || 0), 0)
-          onTotalChange?.(total)
-          return updated
-        })
-        toast.current?.show({ severity: 'success', summary: 'Product Added', detail: sku })
-      } else {
+
+      if (!res.status) {
         toast.current?.show({
           severity: 'error',
           summary: 'Error',
-          detail: res.message || 'SKU not found'
+          detail: res.message
+        })
+        return
+      }
+
+      // CASE 1: Product in this branch
+      if (res.isPresent) {
+        handleAddToTable(res.data)
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Product Added',
+          detail: sku
+        })
+      }
+
+      // CASE 2: Product found in another branch
+      else {
+        setConfirmDialog({
+          visible: true,
+          product: res.data,
+          branchName: res.branchName // ALWAYS string now
         })
       }
     } catch (err) {
-      toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Something went wrong' })
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Something went wrong'
+      })
     }
   }
 
@@ -83,21 +122,18 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
     }
   }
 
-  // Manual input enter key handler
-  // const handleManualEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === 'Enter') {
-  //     addProductBySKU(manualSKU.trim())
-  //     setManualSKU('')
-  //   }
-  // }
+  const handleManualEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      addProductBySKU(manualSKU.trim())
+      setManualSKU('')
+    }
+  }
 
-  // // Manual Add button handler
-  // const handleAddManualSKU = () => {
-  //   addProductBySKU(manualSKU.trim())
-  //   setManualSKU('')
-  // }
+  const handleAddManualSKU = () => {
+    addProductBySKU(manualSKU.trim())
+    setManualSKU('')
+  }
 
-  // Delete product from table
   const handleDelete = (sku: string) => {
     const updated = products.filter((p) => p.SKU !== sku)
     setProducts(updated)
@@ -106,7 +142,6 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
     scannerRef.current?.focus()
   }
 
-  // Add Products button handler
   const handleAddProductsClick = () => {
     if (products.length === 0) {
       toast.current?.show({
@@ -124,7 +159,6 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
     <div className="flex flex-column gap-3">
       <Toast ref={toast} />
 
-      {/* Hidden input for scanner */}
       <input
         ref={scannerRef}
         type="text"
@@ -133,7 +167,40 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
         autoFocus
       />
 
-      {/* Branch details */}
+      <Dialog
+        header="Product Not Found in Branch"
+        visible={confirmDialog.visible}
+        style={{ width: '450px' }}
+        modal
+        onHide={() => setConfirmDialog({ visible: false, product: null, branchName: '' })}
+      >
+        <p>
+          The product exists but <strong>not in this branch</strong>.
+        </p>
+        <p>
+          It is available in: <strong>{confirmDialog.branchName}</strong>
+        </p>
+
+        <p>Are you sure you want to proceed?</p>
+
+        <div className="flex justify-content-end gap-3 mt-4">
+          <Button
+            label="Cancel"
+            className="p-button-secondary"
+            onClick={() => setConfirmDialog({ visible: false, product: null, branchName: '' })}
+          />
+
+          <Button
+            label="Proceed Anyway"
+            className="p-button-danger"
+            onClick={() => {
+              handleAddToTable(confirmDialog.product)
+              setConfirmDialog({ visible: false, product: null, branchName: '' })
+            }}
+          />
+        </div>
+      </Dialog>
+
       <div className="grid mb-2">
         <div className="col-6 p-3 surface-100">
           <p className="mb-3">From Branch Details</p>
@@ -160,7 +227,7 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
       </div>
 
       {/* Manual SKU input */}
-      {/* <div className="flex gap-2 align-items-center mb-3">
+      <div className="flex gap-2 align-items-center mb-3">
         <input
           type="text"
           placeholder="Enter SKU manually"
@@ -170,7 +237,7 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
           className="p-inputtext p-component"
         />
         <Button label="Add SKU" className="p-button-primary" onClick={handleAddManualSKU} />
-      </div> */}
+      </div>
 
       {/* Action buttons */}
       <div className="flex justify-content-between align-items-center gap-2 mb-3">
@@ -211,6 +278,40 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
           )}
         />
       </DataTable>
+
+      {/* <Dialog
+        header="Product Not Found in Branch"
+        visible={confirmDialog.visible}
+        style={{ width: '450px' }}
+        modal
+        onHide={() => setConfirmDialog({ visible: false, product: null, branchName: '' })}
+      >
+        <p>
+          The product exists but <strong>not in this branch</strong>.
+        </p>
+        <p>
+          It is available in: <strong>{confirmDialog.branchName}</strong>
+        </p>
+
+        <p>Are you sure you want to proceed with transferring this product?</p>
+
+        <div className="flex justify-content-end gap-3 mt-4">
+          <Button
+            label="Cancel"
+            className="p-button-secondary"
+            onClick={() => setConfirmDialog({ visible: false, product: null, branchName: '' })}
+          />
+
+          <Button
+            label="Proceed Anyway"
+            className="p-button-danger"
+            onClick={() => {
+              handleAddToTable(confirmDialog.product)
+              setConfirmDialog({ visible: false, product: null, branchName: '' })
+            }}
+          />
+        </div>
+      </Dialog> */}
     </div>
   )
 }

@@ -11,18 +11,22 @@ export const formatINRCurrency = (value: string | number) => {
     maximumFractionDigits: 2
   }).format(num)
 }
+export interface FetchProductResponse {
+  status: boolean
+  data?: any
+  message?: string
+  isPresent: boolean
+  branchName: string
+}
 
 export const fetchProducts = async (
   fromBranchId: number,
   sku: string
-): Promise<{ status: boolean; data?: any; message?: string }> => {
+): Promise<FetchProductResponse> => {
   try {
     const response = await axios.post(
       `${baseURL}/admin/products/check-sku`,
-      {
-        fromBranchId,
-        sku
-      },
+      { fromBranchId, sku },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -31,14 +35,21 @@ export const fetchProducts = async (
       }
     )
 
-    const resData = response.data
-    if (resData.status) {
-      return { status: true, data: resData.data }
-    } else {
-      return { status: false, message: resData.message || 'SKU not found' }
+    const res = response.data
+
+    return {
+      status: res.status ?? false,
+      data: res.data,
+      isPresent: res.isPresent ?? false,
+      branchName: res.branchName ?? '',
+      message: res.message ?? ''
     }
   } catch (error) {
-    console.error('Error fetching product by SKU:', error)
-    return { status: false, message: 'Failed to fetch product' }
+    return {
+      status: false,
+      isPresent: false,
+      branchName: '',
+      message: 'Failed to fetch product'
+    }
   }
 }

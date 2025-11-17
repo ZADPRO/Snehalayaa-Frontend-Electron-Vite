@@ -24,6 +24,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   const [rows, setRows] = useState<TableRow[]>([])
   const [dialogVisible, setDialogVisible] = useState(false)
   const [editingRow, setEditingRow] = useState<TableRow | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const [isUpdateMode, setIsUpdateMode] = useState(false)
 
@@ -313,138 +314,157 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   }
 
   const handleSaveAll = async () => {
-    const totalOrderedQuantity =
-      purchaseOrder.products?.reduce((sum: number, p: any) => sum + Number(p.quantity || 0), 0) || 0
-
-    const totalCreatedQuantity = rows.reduce((sum, r) => sum + Number(r.quantity || 0), 0)
-
-    if (totalCreatedQuantity < totalOrderedQuantity) {
-      const remaining = totalOrderedQuantity - totalCreatedQuantity
-      toast.current?.show({
-        severity: 'warn',
-        summary: 'Incomplete Product Creation',
-        detail: `You have created only ${totalCreatedQuantity} of ${totalOrderedQuantity} total products. Please create ${remaining} more before saving.`
-      })
-      return
-    }
-
-    if (totalCreatedQuantity > totalOrderedQuantity) {
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Quantity Mismatch',
-        detail: `Created quantity (${totalCreatedQuantity}) exceeds total ordered (${totalOrderedQuantity}). Please correct it.`
-      })
-      return
-    }
-
-    const payload = {
-      purchaseOrderId: purchaseOrder.purchaseOrderId,
-      products: rows.map((r) => ({
-        productBranchId: purchaseOrder.branchId,
-        sNo: r.sNo,
-        lineNumber: r.lineNumber,
-        productName: r.productName,
-        brand: r.brand,
-        categoryId: r.category?.refCategoryId,
-        subCategoryId: r.subCategory?.refSubCategoryId,
-        taxClass: r.taxClass,
-        quantity: r.quantity,
-        cost: r.cost,
-        profitMargin: r.profitMargin,
-        sellingPrice: r.sellingPrice,
-        mrp: r.mrp,
-        discountPercent: r.discountPercent,
-        discountPrice: r.discountPrice,
-        dialogRows: r.dialogRows.map((d) => ({
-          sNo: d.sNo,
-          lineNumber: d.lineNumber,
-          referenceNumber: d.referenceNumber,
-          productDescription: d.productDescription,
-          discount: d.discount,
-          price: d.price,
-          discountPrice: d.discountPrice,
-          margin: d.margin,
-          totalAmount: d.totalAmount
-        }))
-      }))
-    }
-
-    if (isUpdateMode) {
-      console.log('📌 UPDATE MODE: Updating existing PO products')
-      console.log('Payload:', payload)
-      return
-    }
-
-    console.log('🆕 SAVE MODE: Creating new PO products')
-    console.log('Payload:', payload)
-
-    console.log('✅ Validation Passed!')
-    console.log('📦 Final Payload to send to backend:', payload)
-
+    setLoading(true)
     try {
-      const response = await api.post('/admin/savePurchaseOrderProducts', payload)
-      console.log('📦 Save PO Products Response:', response)
-      toast.current?.show({
-        severity: 'success',
-        summary: 'Products Saved',
-        detail: 'All products saved successfully!'
-      })
-    } catch (error) {
-      console.error('❌ Error saving products:', error)
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Save Failed',
-        detail: 'Failed to save products. Please try again.'
-      })
+      const totalOrderedQuantity =
+        purchaseOrder.products?.reduce((sum: number, p: any) => sum + Number(p.quantity || 0), 0) ||
+        0
+
+      const totalCreatedQuantity = rows.reduce((sum, r) => sum + Number(r.quantity || 0), 0)
+
+      if (totalCreatedQuantity < totalOrderedQuantity) {
+        const remaining = totalOrderedQuantity - totalCreatedQuantity
+        toast.current?.show({
+          severity: 'warn',
+          summary: 'Incomplete Product Creation',
+          detail: `You have created only ${totalCreatedQuantity} of ${totalOrderedQuantity} total products. Please create ${remaining} more before saving.`
+        })
+        return
+      }
+
+      if (totalCreatedQuantity > totalOrderedQuantity) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Quantity Mismatch',
+          detail: `Created quantity (${totalCreatedQuantity}) exceeds total ordered (${totalOrderedQuantity}). Please correct it.`
+        })
+        return
+      }
+
+      const payload = {
+        purchaseOrderId: purchaseOrder.purchaseOrderId,
+        products: rows.map((r) => ({
+          productBranchId: purchaseOrder.branchId,
+          sNo: r.sNo,
+          lineNumber: r.lineNumber,
+          productName: r.productName,
+          brand: r.brand,
+          categoryId: r.category?.refCategoryId,
+          subCategoryId: r.subCategory?.refSubCategoryId,
+          taxClass: r.taxClass,
+          quantity: r.quantity,
+          cost: r.cost,
+          profitMargin: r.profitMargin,
+          sellingPrice: r.sellingPrice,
+          mrp: r.mrp,
+          discountPercent: r.discountPercent,
+          discountPrice: r.discountPrice,
+          dialogRows: r.dialogRows.map((d) => ({
+            sNo: d.sNo,
+            lineNumber: d.lineNumber,
+            referenceNumber: d.referenceNumber,
+            productDescription: d.productDescription,
+            discount: d.discount,
+            price: d.price,
+            discountPrice: d.discountPrice,
+            margin: d.margin,
+            totalAmount: d.totalAmount
+          }))
+        }))
+      }
+
+      if (isUpdateMode) {
+        console.log('📌 UPDATE MODE: Updating existing PO products')
+        console.log('Payload:', payload)
+        return
+      }
+
+      console.log('🆕 SAVE MODE: Creating new PO products')
+      console.log('Payload:', payload)
+
+      console.log('✅ Validation Passed!')
+      console.log('📦 Final Payload to send to backend:', payload)
+
+      try {
+        const response = await api.post('/admin/savePurchaseOrderProducts', payload)
+        console.log('📦 Save PO Products Response:', response)
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Products Saved',
+          detail: 'All products saved successfully!'
+        })
+      } catch (error) {
+        console.error('❌ Error saving products:', error)
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Save Failed',
+          detail: 'Failed to save products. Please try again.'
+        })
+      }
+    } catch (err) {
+      toast.current?.show({ severity: 'error', summary: 'Save Failed' })
+    } finally {
+      setLoading(false)
     }
   }
 
   const getProductDataFromDB = async (categories, subCategories) => {
-    const response = await api.get(`/admin/indivPODetails/${purchaseOrder.purchaseOrderId}`)
-    const data = response.data?.data
+    setLoading(true)
+    try {
+      const response = await api.get(`/admin/indivPODetails/${purchaseOrder.purchaseOrderId}`)
+      const data = response.data?.data
 
-    if (data?.products?.length > 0) {
-      setIsUpdateMode(true)
-    }
+      if (data?.products?.length > 0) {
+        setIsUpdateMode(true)
+      }
 
-    const mappedRows: TableRow[] = data.products.map((p: any, index: number) => ({
-      id: Date.now() + index,
-      sNo: index + 1,
+      const mappedRows: TableRow[] = data.products.map((p: any, index: number) => ({
+        id: Date.now() + index,
+        sNo: index + 1,
 
-      // FIXED MAPPING
-      category: categories.find((c) => c.refCategoryId === p.categoryId) || null,
-      subCategory: subCategories.find((sc) => sc.refSubCategoryId === p.subCategoryId) || null,
+        // FIXED MAPPING
+        category: categories.find((c) => c.refCategoryId === p.categoryId) || null,
+        subCategory: subCategories.find((sc) => sc.refSubCategoryId === p.subCategoryId) || null,
 
-      lineNumber: p.dialogRows[0]?.lineNumber || p.lineNumber,
-      productName: p.productName || '',
-      brand: p.brand || '',
-      taxClass: p.taxClass || '',
-      quantity: p.dialogRows?.length || 0,
-      cost: p.dialogRows?.[0]?.price || 0,
-      profitMargin: p.dialogRows?.[0]?.margin || 0,
-      sellingPrice: p.dialogRows?.[0]?.totalAmount || 0,
-      mrp: p.mrp || 0,
-      discountPercent: p.dialogRows?.[0]?.discount || 0,
-      discountPrice: p.dialogRows?.[0]?.discountPrice || 0,
+        lineNumber: p.dialogRows[0]?.lineNumber || p.lineNumber,
+        productName: p.productName || '',
+        brand: p.brand || '',
+        taxClass: p.taxClass || '',
+        quantity: p.dialogRows?.length || 0,
+        cost: p.dialogRows?.[0]?.price || 0,
+        profitMargin: p.dialogRows?.[0]?.margin || 0,
+        sellingPrice: p.dialogRows?.[0]?.totalAmount || 0,
+        mrp: p.mrp || 0,
+        discountPercent: p.dialogRows?.[0]?.discount || 0,
+        discountPrice: p.dialogRows?.[0]?.discountPrice || 0,
 
-      dialogRows: p.dialogRows.map((d: any, i: number) => ({
-        ...d,
-        sNo: i + 1
+        dialogRows: p.dialogRows.map((d: any, i: number) => ({
+          ...d,
+          sNo: i + 1
+        }))
       }))
-    }))
 
-    setRows(mappedRows)
+      setRows(mappedRows)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
     const load = async () => {
-      const categories = await fetchCategories()
-      const subCategories = await fetchSubCategories()
+      setLoading(true)
+      try {
+        const categories = await fetchCategories()
+        const subCategories = await fetchSubCategories()
 
-      setCategoryOptions(categories)
-      setSubCategoryOptions(subCategories)
+        setCategoryOptions(categories)
+        setSubCategoryOptions(subCategories)
 
-      await getProductDataFromDB(categories, subCategories)
+        await getProductDataFromDB(categories, subCategories)
+      } catch (err) {
+        console.error(err)
+      }
+      setLoading(false)
     }
 
     load()
@@ -500,7 +520,14 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
         </div>
       </div>
 
-      <DataTable value={rows} responsiveLayout="scroll" showGridlines rowHover>
+      <DataTable
+        value={rows}
+        responsiveLayout="scroll"
+        showGridlines
+        rowHover
+        loading={loading}
+        loadingIcon="pi pi-spinner pi-spin"
+      >
         <Column field="sNo" header="S.No." />
         <Column
           field="lineNumber"
@@ -689,6 +716,8 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
           responsiveLayout="scroll"
           showGridlines
           rowHover
+          loading={loading}
+          loadingIcon="pi pi-spinner pi-spin"
           className="p-datatable-sm grnTableUI"
         >
           {/* S.No */}
