@@ -55,3 +55,18 @@ export const createPurchaseOrder = async (payload: any): Promise<any> => {
   }
 }
 
+export const createStockTransfer = async (payload: any) => {
+  try {
+    const response = await axios.post(`${baseURL}/admin/products/stock-transfer`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    return response.data
+  } catch (error: any) {
+    console.error('Stock transfer error:', error)
+    throw error.response?.data || { message: 'Stock transfer failed' }
+  }
+}

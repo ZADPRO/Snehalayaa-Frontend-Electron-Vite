@@ -73,7 +73,7 @@ const sidebarItems = [
 ]
 
 const Settings: React.FC = () => {
-  const [activeKey, setActiveKey] = useState('bulkUpload')
+  const [activeKey, setActiveKey] = useState('stockIntake')
 
   return (
     <div className="settingsContainer">

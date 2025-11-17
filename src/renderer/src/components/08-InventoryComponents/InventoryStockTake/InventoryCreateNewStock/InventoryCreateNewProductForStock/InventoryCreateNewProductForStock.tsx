@@ -3,7 +3,7 @@ import { Toast } from 'primereact/toast'
 import { Button } from 'primereact/button'
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
-import { X } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { Branch } from '../InventoryCreateNewStock.interface'
 import { fetchProducts, formatINRCurrency } from './InventoryCreateNewProductForStock.function'
 import { Dialog } from 'primereact/dialog'
@@ -240,7 +240,7 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
       </div>
 
       {/* Action buttons */}
-      <div className="flex justify-content-between align-items-center gap-2 mb-3">
+      <div className="flex justify-content-between align-items-center gap-2">
         <p>Scan SKU to Transfer Products</p>
         <div className="flex gap-3">
           <Button label="Close" className="p-button-secondary" onClick={onClose} />
@@ -254,6 +254,12 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
 
       {/* Scanned/added products DataTable */}
       <DataTable value={products} showGridlines responsiveLayout="scroll">
+        <Column
+          header="#"
+          body={(_, { rowIndex }) => rowIndex + 1}
+          style={{ width: '60px', textAlign: 'center' }}
+        />
+
         <Column field="SKU" header="SKU" />
         <Column field="productName" header="Product Name" />
         <Column
@@ -271,47 +277,13 @@ const InventoryCreateNewProductForStock: React.FC<Props> = ({
           header="Actions"
           body={(row) => (
             <Button
-              icon={<X />}
+              icon={<Trash2 size={16} />}
               className="p-button-danger"
               onClick={() => handleDelete(row.SKU)}
             />
           )}
         />
       </DataTable>
-
-      {/* <Dialog
-        header="Product Not Found in Branch"
-        visible={confirmDialog.visible}
-        style={{ width: '450px' }}
-        modal
-        onHide={() => setConfirmDialog({ visible: false, product: null, branchName: '' })}
-      >
-        <p>
-          The product exists but <strong>not in this branch</strong>.
-        </p>
-        <p>
-          It is available in: <strong>{confirmDialog.branchName}</strong>
-        </p>
-
-        <p>Are you sure you want to proceed with transferring this product?</p>
-
-        <div className="flex justify-content-end gap-3 mt-4">
-          <Button
-            label="Cancel"
-            className="p-button-secondary"
-            onClick={() => setConfirmDialog({ visible: false, product: null, branchName: '' })}
-          />
-
-          <Button
-            label="Proceed Anyway"
-            className="p-button-danger"
-            onClick={() => {
-              handleAddToTable(confirmDialog.product)
-              setConfirmDialog({ visible: false, product: null, branchName: '' })
-            }}
-          />
-        </div>
-      </Dialog> */}
     </div>
   )
 }

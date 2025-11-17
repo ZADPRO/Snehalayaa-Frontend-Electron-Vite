@@ -14,7 +14,7 @@ import {
   fetchBranches,
   fetchCategories,
   fetchSubCategories,
-  createPurchaseOrder
+  createStockTransfer
 } from './InventoryCreateNewStock.function'
 import { Branch, Category, SubCategory } from './InventoryCreateNewStock.interface'
 import { Check, CheckCheck, Download, Pencil, Plus, Printer, Trash2 } from 'lucide-react'
@@ -28,12 +28,10 @@ import BoxDialog from '../../BoxDialog/BoxDialog'
 const AddNewStockProductOrder: React.FC = () => {
   const dt = useRef<DataTable<any[]>>(null)
   const toast = useRef<Toast>(null)
-  // const [productSelectionTotal, setProductSelectionTotal] = useState<number>(0)
 
   const [visibleRight, setVisibleRight] = useState<boolean>(false)
 
   const [branches, setBranches] = useState<Branch[]>([])
-  //   const [suppliers, setSuppliers] = useState<Branch[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
 
@@ -44,22 +42,19 @@ const AddNewStockProductOrder: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<any[]>([])
   const [isSaved, setIsSaved] = useState(false)
 
-  const [pendingAmountInput, _setPendingAmountInput] = useState('')
-  const [applyTax, _setApplyTax] = useState(false)
-
   const [editProduct, setEditProduct] = useState<any | null>(null)
 
-  const subTotal = tableData.reduce((sum, item) => sum + item.quantity * item.purchasePrice, 0)
-  const discountAmount = tableData.reduce((sum, item) => sum + (item.discount || 0), 0)
-  const taxAmount = applyTax ? (subTotal - discountAmount) * 0.05 : 0
-  const finalAmount = subTotal - discountAmount + taxAmount
-  const totalPaid = Number(pendingAmountInput || 0)
-  const pendingPayment = finalAmount - totalPaid
+  const subTotal = tableData.reduce(
+    (sum, item) => sum + Number(item.purchasePrice) * Number(item.quantity),
+    0
+  )
+
+  const discountAmount = tableData.reduce((sum, item) => sum + Number(item.discount || 0), 0)
+
+  const finalAmount = subTotal - discountAmount
+  const pendingPayment = finalAmount
 
   const [showBoxDialog, setShowBoxDialog] = useState(false)
-
-  // const [creditDate, setCreditDate] = useState<Date | null>(null)
-  // const [isPreviousPaymentDone, setIsPreviousPaymentDone] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -101,15 +96,11 @@ const AddNewStockProductOrder: React.FC = () => {
   }
 
   const buildPayload = () => {
-    const supplierDetails = selectedSupplier && {
+    const receivedBranchDetails = selectedSupplier && {
       supplierId: selectedSupplier.refBranchId,
       supplierName: selectedSupplier.refBranchName,
       supplierCompanyName: selectedSupplier.refEmail,
       supplierGSTNumber: selectedSupplier.refLocation
-      //   supplierAddress: formatSupplierAddress(selectedSupplier),
-      //   supplierPaymentTerms: selectedSupplier.supplierPaymentTerms,
-      //   supplierEmail: selectedSupplier.supplierEmail,
-      //   supplierContactNumber: selectedSupplier.supplierContactNumber
     }
 
     const branchDetails = selectedBranch && {
@@ -120,15 +111,16 @@ const AddNewStockProductOrder: React.FC = () => {
     }
 
     const productDetails = tableData.map((item) => ({
-      productName: item.productName,
+      productName: item.productName || '',
       refCategoryid: item.refCategoryId,
       refSubCategoryId: item.refSubCategoryId,
-      HSNCode: item.hsnCode,
+      HSNCode: item.hsnCode || '',
+      SKU: item.SKU,
       purchaseQuantity: item.quantity.toString(),
       purchasePrice: item.purchasePrice.toString(),
-      discountPrice: item.discountPrice?.toString() || '0',
-      discountAmount: (item.quantity * item.discountPrice || 0).toString(),
-      totalAmount: item.total.toString(),
+      discountPrice: item.discount?.toString() || '0',
+      discountAmount: (Number(item.quantity) * Number(item.discount || 0)).toString(),
+      totalAmount: item.totalAmount.toString(),
       isReceived: false,
       acceptanceStatus: '',
       createdAt: new Date().toISOString(),
@@ -140,19 +132,13 @@ const AddNewStockProductOrder: React.FC = () => {
 
     const totalSummary = {
       poNumber: invoiceNo,
-      //   supplierId: selectedSupplier?.supplierId,
       branchId: selectedBranch?.refBranchId,
       status: 1,
-      // expectedDate: creditDate?.toISOString() || new Date().toISOString(),
       modeOfTransport: 'Road',
       subTotal: subTotal.toString(),
       discountOverall: discountAmount.toString(),
       payAmount: finalAmount.toString(),
-      isTaxApplied: applyTax,
-      taxPercentage: applyTax ? '5' : '0',
-      taxedAmount: taxAmount.toString(),
       totalAmount: finalAmount.toString(),
-      totalPaid: totalPaid.toString(),
       paymentPending: pendingPayment.toString(),
       createdAt: new Date().toISOString(),
       createdBy: 'Admin',
@@ -162,7 +148,7 @@ const AddNewStockProductOrder: React.FC = () => {
     }
 
     return {
-      supplierDetails,
+      receivedBranchDetails,
       branchDetails,
       productDetails,
       totalSummary
@@ -202,91 +188,60 @@ const AddNewStockProductOrder: React.FC = () => {
 
     try {
       const payload = buildPayload()
-      console.log('payload', payload)
+      console.log('payload:', payload)
 
-      const res = await createPurchaseOrder(payload)
+      const res = await createStockTransfer(payload)
 
       toast.current?.show({
         severity: 'success',
-        summary: 'Stock Transfer Initiated',
-        detail: res.message || 'Your stock transfer has been saved successfully.'
+        summary: 'Stock Transfer Saved',
+        detail: res.message || 'Stock transfer created successfully.'
       })
 
       setIsSaved(true)
-    } catch (error) {
+      setTableData([])
+    } catch (error: any) {
       console.error('Error saving stock transfer:', error)
       toast.current?.show({
         severity: 'error',
         summary: 'Save Failed',
-        detail: (error as Error).message
+        detail: error.message || 'Unable to save the stock transfer.'
       })
     }
   }
 
-  // const handleAddProduct = (newItem: any) => {
-  //   console.log('newItem', newItem)
-  //   const category = categories.find((c) => c.refCategoryId === newItem.refCategoryId)
-  //   const subCategory = subCategories.find((sc) => sc.refSubCategoryId === newItem.refSubCategoryId)
-
-  //   if (editProduct) {
-  //     // Edit: replace existing
-  //     setTableData((prevData) =>
-  //       prevData.map((item) =>
-  //         item.id === editProduct.id
-  //           ? {
-  //               ...item,
-  //               ...newItem,
-  //               refCategoryId: newItem.refCategoryId,
-  //               refSubCategoryId: newItem.refSubCategoryId,
-  //               category: category?.categoryName || '',
-  //               subCategory: subCategory?.subCategoryName || ''
-  //             }
-  //           : item
-  //       )
-  //     )
-  //     setEditProduct(null)
-  //   } else {
-  //     // Add: as you have already
-  //     setTableData((prev) => [
-  //       ...prev,
-  //       {
-  //         id: prev.length + 1,
-  //         ...newItem,
-  //         refCategoryId: newItem.refCategoryId,
-  //         refSubCategoryId: newItem.refSubCategoryId,
-  //         category: category?.categoryName || '',
-  //         subCategory: subCategory?.subCategoryName || ''
-  //       }
-  //     ])
-  //   }
-  // setSelectedRows([])
-  // }
-
   const handleAddProduct = (newProducts: any[]) => {
+    console.log('newProducts', newProducts)
     if (!Array.isArray(newProducts) || newProducts.length === 0) return
 
-    const transformedProducts = newProducts.map((item) => {
-      const category = categories.find((c) => c.refCategoryId === item.refCategoryId)
-      const subCategory = subCategories.find((sc) => sc.refSubCategoryId === item.refSubCategoryId)
+    const transformed = newProducts.map((item) => {
+      const category = categories.find((c) => c.refCategoryId === item.categoryId)
+      const subCategory = subCategories.find((sc) => sc.refSubCategoryId === item.subCategoryId)
+
+      const quantity = Number(item.quantity) || 1
+      const unitPrice = Number(item.unitPrice) || 0
+      const discount = Number(item.discountPrice) || 0
+
+      const total = Number(item.totalAmount) || (unitPrice - discount) * quantity
 
       return {
-        id: Date.now() + Math.random(), // unique ID for table
-        productName: item.productName,
-        refCategoryId: item.refCategoryId,
-        refSubCategoryId: item.refSubCategoryId,
+        id: Date.now() + Math.random(),
+        productId: item.productInstanceId,
+        purchaseOrderId: item.poProductId,
+        productName: item.productName || '',
+        SKU: item.SKU,
+        quantity,
+        purchasePrice: unitPrice,
+        discount,
+        totalAmount: total,
         category: category?.categoryName || '',
         subCategory: subCategory?.subCategoryName || '',
-        quantity: item.quantity,
-        purchasePrice: item.unitPrice,
-        discountPrice: item.discountPrice || 0,
-        totalAmount: item.totalAmount || item.unitPrice * item.quantity,
-        SKU: item.SKU,
-        productBranchId: selectedBranch?.refBranchId,
-        ...item // in case there are extra fields you need
+        refCategoryId: item.categoryId,
+        refSubCategoryId: item.subCategoryId
       }
     })
 
-    setTableData((prev) => [...prev, ...transformedProducts])
+    setTableData((prev) => [...prev, ...transformed])
     setSelectedRows([])
   }
 
@@ -323,7 +278,7 @@ const AddNewStockProductOrder: React.FC = () => {
       detail: 'Selected product(s) deleted.'
     })
   }
-  const totalPurchasePrice = tableData.reduce((sum, item) => sum + (item.purchasePrice || 0), 0)
+  const totalPurchasePrice = tableData.reduce((sum, item) => sum + Number(item.totalAmount || 0), 0)
 
   return (
     <div className="pt-3 flex h-full w-full">
@@ -450,16 +405,12 @@ const AddNewStockProductOrder: React.FC = () => {
             headerStyle={{ textAlign: 'center' }}
             style={{ minWidth: '50px' }}
           />
-          <Column
-            header="SNo"
-            body={(_, opts) => opts.rowIndex + 1}
-            style={{ minWidth: '40px' }}
-            frozen
-          />
+          <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} frozen />
+
           <Column
             header="Name"
             body={(rowData) => {
-              const combined = `${rowData.category || ''} - ${rowData.subCategory || ''} - ${rowData.productName || ''}`
+              const combined = `${rowData.productName || ''}`
               return (
                 <span
                   className="name-tooltip"
@@ -471,14 +422,10 @@ const AddNewStockProductOrder: React.FC = () => {
                 </span>
               )
             }}
-            style={{ minWidth: '400px' }}
+            style={{ minWidth: '200px' }}
           />
-          <Column field="hsnCode" header="HSN" />
-          {/* <Column field="quantity" header="Quantity" /> */}
+          <Column field="SKU" header="SKU" style={{ minWidth: '150px' }} />
           <Column field="purchasePrice" header="Price" />
-          {/* <Column field="discount" header="Disc%" />
-          <Column field="discountPrice" header="Discount" />
-          <Column field="subTotal" header="Total" /> */}
         </DataTable>
       </div>
       <Divider layout="vertical" className="verticalDivider" />
@@ -496,11 +443,6 @@ const AddNewStockProductOrder: React.FC = () => {
             className="w-full gap-2 p-button-primary"
             onClick={handleSave}
           />
-          {/* <Button
-            label="Preview"
-            icon={<Eye size={20} />}
-            className="w-full gap-2 p-button-primary"
-          /> */}
 
           <Button
             label="Download"
@@ -518,9 +460,6 @@ const AddNewStockProductOrder: React.FC = () => {
                   },
                   to: {
                     name: selectedSupplier.refBranchName
-                    // address: formatSupplierAddress(selectedSupplier),
-                    // phone: selectedSupplier.supplierContactNumber,
-                    // taxNo: selectedSupplier.supplierGSTNumber
                   },
                   items: tableData,
                   invoiceNo,
@@ -547,9 +486,6 @@ const AddNewStockProductOrder: React.FC = () => {
                   },
                   to: {
                     name: selectedSupplier.refBranchName
-                    // address: formatSupplierAddress(selectedSupplier),
-                    // phone: selectedSupplier.supplierContactNumber,
-                    // taxNo: selectedSupplier.supplierGSTNumber
                   },
                   items: tableData,
                   invoiceNo,
@@ -559,12 +495,6 @@ const AddNewStockProductOrder: React.FC = () => {
               }
             }}
           />
-          {/* <Button
-            label="Box Count"
-            icon={<Box size={20} />}
-            className="w-full gap-2 p-button-primary"
-            onClick={() => setShowBoxDialog(true)}
-          /> */}
         </div>
         <div className="flex flex-column gap-2 pb-3 surface-100 border-round mt-20">
           <h4 className="mb-2 ">Payment Summary</h4>
@@ -577,26 +507,10 @@ const AddNewStockProductOrder: React.FC = () => {
               <span>Sub Total:</span>
               <span>₹{totalPurchasePrice.toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-content-between">
-              <span>Discount:</span>
-              <span>₹</span>
-              {/* <span>₹{discountAmount.toLocaleString('en-IN')}</span> */}
-            </div>
-            <div className="flex justify-content-between">
-              <span>Tax:</span>
-              <span>₹{taxAmount.toLocaleString('en-IN')}</span>
-            </div>
+
             <Divider className="my-2" />
             <div className="flex justify-content-between font-bold text-lg">
               <span>Total Amount:</span>
-              <span>₹{totalPurchasePrice.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-content-between">
-              <span>Paid:</span>
-              <span>₹{totalPaid.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-content-between text-red-600">
-              <span>Pending:</span>
               <span>₹{totalPurchasePrice.toLocaleString('en-IN')}</span>
             </div>
           </div>
