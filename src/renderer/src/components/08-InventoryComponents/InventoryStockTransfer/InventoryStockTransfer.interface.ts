@@ -1,91 +1,77 @@
-export interface SupplierDetails {
-  supplierId: number
-  supplierName: string
-  supplierCompanyName: string
-  supplierGSTNumber: string
-  supplierAddress: string
-  supplierPaymentTerms: string
-  supplierEmail: string
-  supplierContactNumber: string
+export interface MappedStockTransfer {
+  stockTransferId: number
+  totalSummary: {
+    poNumber: string
+    status: number
+    createdBy: string
+    createdAt: string
+  }
+  supplierDetails: {
+    supplierName: string
+  }
+  branchDetails: {
+    branchName: string
+  }
+  items: StockTransferItem[]
 }
 
-export interface BranchDetails {
-  branchId: number
-  branchName: string
-  branchEmail: string
-  branchAddress: string
-}
-
-export interface ProductDetails {
+export interface StockTransferItem {
+  stockTransferItemId: number
+  stockTransferId: number
+  productInstanceId: number
   productName: string
-  refCategoryid: number
-  refSubCategoryId: number
-  HSNCode: string
-  purchaseQuantity: string
-  purchasePrice: string
-  discountPrice: string
-  discountAmount: string
-  totalAmount: string
+  sku: string
   isReceived: boolean
   acceptanceStatus: string
-  createdAt: string
-  createdBy: string
-  updatedAt: string
-  updatedBy: string
-  isDelete: boolean
 }
 
-export interface TotalSummary {
-  poNumber: string
-  supplierId: number
-  branchId: number
-  status: number
-  expectedDate: string
+export interface StockTransfer {
+  stockTransferId: number
+  fromBranchId: number
+  fromBranchName: string
+  fromBranchEmail: string
+  fromBranchAddress: string
+  toBranchId: number
+  toBranchName: string
+  toBranchEmail: string
+  toBranchAddress: string
   modeOfTransport: string
   subTotal: string
   discountOverall: string
-  payAmount: string
-  isTaxApplied: boolean
-  taxPercentage: string
-  taxedAmount: string
   totalAmount: string
-  totalPaid: string
   paymentPending: string
+  poNumber: string
+  status: number
   createdAt: string
   createdBy: string
   updatedAt: string
   updatedBy: string
   isDelete: boolean
+  items: StockTransferItem[]
 }
 
-export interface PurchaseOrder {
-  supplierDetails: SupplierDetails
-  branchDetails: BranchDetails
-  productDetails: ProductDetails[]
-  totalSummary: TotalSummary
-  purchaseOrderId: number
+export interface MappedStockTransfer {
+  stockTransferId: number
+
+  totalSummary: {
+    poNumber: string
+    status: number
+    createdBy: string
+    createdAt: string
+  }
+
+  supplierDetails: {
+    supplierName: string
+  }
+
+  branchDetails: {
+    branchName: string
+  }
+
+  items: StockTransferItem[]
 }
 
-export interface InvoiceItem {
-  category: string
-  subCategory: string
-  productName?: string
-  productDescription: string
-  hsnCode?: string
-  quantity: number
-  purchasePrice: number
-  discount: number
-}
-export interface PartyDetails {
-  name: string
-  address?: string
-  email?: string
-  phone?: string
-  taxNo?: string
-}
-
-export interface InvoiceProps {
-  from: PartyDetails
-  to: PartyDetails
-  items: InvoiceItem[]
+export interface StockTransferResponse {
+  data: StockTransfer[]
+  status: boolean
 }
