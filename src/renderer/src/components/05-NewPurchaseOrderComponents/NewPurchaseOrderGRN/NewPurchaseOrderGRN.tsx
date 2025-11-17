@@ -50,7 +50,7 @@ const NewPurchaseOrderGRN: React.FC = () => {
 
   return (
     <div className="card">
-      <h3 className="mb-1">Purchase Orders</h3>
+      <h3 className="mb-1">Purchase Orders - Not In Use</h3>
 
       <DataTable value={POdata} showGridlines paginator rows={10} responsiveLayout="scroll">
         <Column
