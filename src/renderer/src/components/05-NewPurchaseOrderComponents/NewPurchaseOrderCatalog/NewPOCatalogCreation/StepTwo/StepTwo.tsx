@@ -25,6 +25,8 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   const [dialogVisible, setDialogVisible] = useState(false)
   const [editingRow, setEditingRow] = useState<TableRow | null>(null)
 
+  const [isUpdateMode, setIsUpdateMode] = useState(false)
+
   const [categoryOptions, setCategoryOptions] = useState<Category[]>([])
   const [subCategoryOptions, setSubCategoryOptions] = useState<SubCategory[]>([])
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
@@ -66,6 +68,14 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
   }
 
   const openAddDialog = () => {
+    if (remainingQuantity <= 0) {
+      toast.current?.show({
+        severity: 'info',
+        summary: 'All Products Created',
+        detail: 'You have already created all products for this purchase order.'
+      })
+      return
+    }
     setEditingRow(null)
     setSelectedCategory(null)
     setSelectedSubCategory(null)
@@ -359,6 +369,15 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
       }))
     }
 
+    if (isUpdateMode) {
+      console.log('📌 UPDATE MODE: Updating existing PO products')
+      console.log('Payload:', payload)
+      return
+    }
+
+    console.log('🆕 SAVE MODE: Creating new PO products')
+    console.log('Payload:', payload)
+
     console.log('✅ Validation Passed!')
     console.log('📦 Final Payload to send to backend:', payload)
 
@@ -384,7 +403,9 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     const response = await api.get(`/admin/indivPODetails/${purchaseOrder.purchaseOrderId}`)
     const data = response.data?.data
 
-    if (!data?.products?.length) return
+    if (data?.products?.length > 0) {
+      setIsUpdateMode(true)
+    }
 
     const mappedRows: TableRow[] = data.products.map((p: any, index: number) => ({
       id: Date.now() + index,
@@ -454,9 +475,29 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     <div>
       <Toast ref={toast} />
 
-      <div className="flex gap-3 justify-content-end mb-3">
-        <Button label="Add Product" icon={<Plus size={18} />} onClick={openAddDialog} />
-        <Button label="Save All" icon={<Check size={18} />} onClick={handleSaveAll} />
+      <div className="flex gap-3 align-items-center justify-content-between mb-3">
+        <div className="flex gap-3">
+          <div>
+            {' '}
+            <strong>Accepted Quantity:</strong> {usedQuantity}
+          </div>
+          <div>
+            <strong>Total Quantity: </strong>
+            {totalOrderedQuantity}
+          </div>
+          <div>
+            <strong>Remaining: </strong>
+            {remainingQuantity}
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Button label="Add Product" icon={<Plus size={18} />} onClick={openAddDialog} />
+          <Button
+            label={isUpdateMode ? 'Update All' : 'Save All'}
+            icon={<Check size={18} />}
+            onClick={handleSaveAll}
+          />
+        </div>
       </div>
 
       <DataTable value={rows} responsiveLayout="scroll" showGridlines rowHover>
