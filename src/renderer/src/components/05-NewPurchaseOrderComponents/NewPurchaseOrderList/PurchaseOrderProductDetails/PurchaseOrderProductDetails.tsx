@@ -108,6 +108,10 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
     setActiveStep(1)
   }
 
+  const totalReceived = products.reduce((sum, p) => sum + Number(p.received), 0)
+  const isSaveDisabled =
+    totalReceived > 0 || totalReceived === purchaseOrder.totalOrderedQuantity || hasExistingData
+
   return (
     <div>
       <Toast ref={toastRef} />
@@ -153,6 +157,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
               outlined
               onClick={handleSavePO}
               loading={loading}
+              disabled={isSaveDisabled}
             />
             {/* )} */}
 

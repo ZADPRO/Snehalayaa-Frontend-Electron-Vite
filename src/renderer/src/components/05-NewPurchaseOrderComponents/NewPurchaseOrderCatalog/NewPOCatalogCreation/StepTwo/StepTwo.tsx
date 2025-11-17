@@ -380,57 +380,53 @@ const StepTwo: React.FC<StepTwoProps> = ({ purchaseOrder }) => {
     }
   }
 
-  const getProductDataFromDB = async () => {
-    try {
-      const response = await api.get(`/admin/indivPODetails/${purchaseOrder.purchaseOrderId}`)
-      const data = response.data?.data
+  const getProductDataFromDB = async (categories, subCategories) => {
+    const response = await api.get(`/admin/indivPODetails/${purchaseOrder.purchaseOrderId}`)
+    const data = response.data?.data
 
-      if (!data?.products?.length) return
+    if (!data?.products?.length) return
 
-      const mappedRows: TableRow[] = data.products.map((p: any, index: number) => ({
-        id: Date.now() + index,
-        sNo: p.sNo || index + 1,
-        lineNumber: p.lineNumber,
-        productName: p.productName,
-        brand: p.brand || 'Snehalayaa',
-        taxClass: p.taxClass,
-        quantity: p.quantity,
-        cost: p.cost,
-        mrp: p.mrp,
-        profitMargin: p.profitMargin,
-        sellingPrice: p.sellingPrice,
-        discountPercent: p.discountPercent,
-        discountPrice: p.discountPrice,
-        category: categoryOptions.find((c) => c.refCategoryId === p.categoryId) || null,
-        subCategory:
-          subCategoryOptions.find((sc) => sc.refSubCategoryId === p.subCategoryId) || null,
-        dialogRows: p.dialogRows.map((d: any, i: number) => ({
-          ...d,
-          sNo: i + 1,
-          totalAmount: Number(d.totalAmount).toFixed(2)
-        }))
+    const mappedRows: TableRow[] = data.products.map((p: any, index: number) => ({
+      id: Date.now() + index,
+      sNo: index + 1,
+
+      // FIXED MAPPING
+      category: categories.find((c) => c.refCategoryId === p.categoryId) || null,
+      subCategory: subCategories.find((sc) => sc.refSubCategoryId === p.subCategoryId) || null,
+
+      lineNumber: p.dialogRows[0]?.lineNumber || p.lineNumber,
+      productName: p.productName || '',
+      brand: p.brand || '',
+      taxClass: p.taxClass || '',
+      quantity: p.dialogRows?.length || 0,
+      cost: p.dialogRows?.[0]?.price || 0,
+      profitMargin: p.dialogRows?.[0]?.margin || 0,
+      sellingPrice: p.dialogRows?.[0]?.totalAmount || 0,
+      mrp: p.mrp || 0,
+      discountPercent: p.dialogRows?.[0]?.discount || 0,
+      discountPrice: p.dialogRows?.[0]?.discountPrice || 0,
+
+      dialogRows: p.dialogRows.map((d: any, i: number) => ({
+        ...d,
+        sNo: i + 1
       }))
+    }))
 
-      setRows(mappedRows)
-    } catch (error) {
-      console.error('❌ Error fetching products:', error)
-      toast.current?.show({
-        severity: 'error',
-        summary: 'Fetch Failed',
-        detail: 'Failed to load products. Please try again.'
-      })
-    }
+    setRows(mappedRows)
   }
 
   useEffect(() => {
-    const loadOptions = async () => {
+    const load = async () => {
       const categories = await fetchCategories()
       const subCategories = await fetchSubCategories()
+
       setCategoryOptions(categories)
       setSubCategoryOptions(subCategories)
+
+      await getProductDataFromDB(categories, subCategories)
     }
-    loadOptions()
-    getProductDataFromDB()
+
+    load()
   }, [])
 
   useEffect(() => {
