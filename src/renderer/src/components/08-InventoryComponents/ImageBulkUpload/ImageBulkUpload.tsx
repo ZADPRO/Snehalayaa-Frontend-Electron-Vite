@@ -30,26 +30,51 @@ const ImageBulkUpload: React.FC = () => {
       const zip = await JSZip.loadAsync(file)
       const extractedImages: any[] = []
 
-      for (const [name, entry] of Object.entries(zip.files)) {
-        if (!entry.dir && /\.(jpg|jpeg|png)$/i.test(name)) {
-          if (
-            images.some((img) => img.name === name) ||
-            extractedImages.some((img) => img.name === name)
-          ) {
-            toast.current?.show({
-              severity: 'warn',
-              summary: 'Duplicate Found',
-              detail: `Duplicate image: ${name}`
-            })
-            continue
-          }
+      for (const [path, entry] of Object.entries(zip.files)) {
+        // Skip folders directly
+        if (entry.dir) continue
 
-          const blob = await entry.async('blob')
-          const url = URL.createObjectURL(blob)
-          extractedImages.push({ name, url, blob, uploading: false, progress: 0 })
+        // Split by /
+        const parts = path.split('/').filter(Boolean)
+
+        // ❌ Skip nested folders deeper than 1 level
+        if (parts.length > 2) {
+          console.log('Skipping nested folder file:', path)
+          continue
         }
-      }
 
+        // Get the actual file name
+        const fileName = parts[parts.length - 1]
+
+        // Only images
+        if (!/\.(jpg|jpeg|png)$/i.test(fileName)) continue
+
+        // Check duplicates
+        const isDuplicate =
+          images.some((img) => img.name === fileName) ||
+          extractedImages.some((img) => img.name === fileName)
+
+        if (isDuplicate) {
+          toast.current?.show({
+            severity: 'warn',
+            summary: 'Duplicate Found',
+            detail: `Duplicate image: ${fileName}`
+          })
+          continue
+        }
+
+        // Extract blob
+        const blob = await entry.async('blob')
+        const url = URL.createObjectURL(blob)
+
+        extractedImages.push({
+          name: fileName,
+          url,
+          blob,
+          uploading: false,
+          progress: 0
+        })
+      }
       setImages((prev) => [...prev, ...extractedImages])
     } catch (err) {
       console.error('Error reading ZIP file:', err)
@@ -106,24 +131,62 @@ const ImageBulkUpload: React.FC = () => {
     )
   }
 
+  const saveUploadedFileNames = async (uploadedFiles: string[]) => {
+    try {
+      const token = localStorage.getItem('token')
+
+      await axios.post(
+        `${baseURL}/admin/products/save`,
+        { fileNames: uploadedFiles },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Saved',
+        detail: 'File names saved successfully!'
+      })
+    } catch (error: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Save Failed',
+        detail: error.message || 'Could not save file names to backend'
+      })
+    }
+  }
+
   const handleSubmit = async () => {
     const fileNames = images.map((img) => img.name)
     const presignedData = await generatePresignedURLs(fileNames)
     if (!presignedData) return
 
+    const uploadedFiles: string[] = [] // <-- Collect fileNames returned from backend
+
     for (let i = 0; i < images.length; i++) {
       const img = images[i]
+
       const match = presignedData.find((p: any) => p.fileName === img.name.toUpperCase())
+
       if (match) {
+        // Upload image
         await uploadToMinio(match.uploadUrl, img.blob, i)
+
+        // Collect final filename for backend save
+        uploadedFiles.push(match.fileName)
       }
     }
+
+    // After all uploads
+    await saveUploadedFileNames(uploadedFiles)
 
     toast.current?.show({
       severity: 'success',
       summary: 'Upload Complete',
       detail: 'All images uploaded successfully!'
     })
+
     setImages([])
   }
 

@@ -5,6 +5,10 @@
   flex-direction: column;
 }
 
+.p-datatable-header {
+  padding: 3px;
+}
+
 /* Main layout under header */
 .settingsMain {
   flex: 1;
