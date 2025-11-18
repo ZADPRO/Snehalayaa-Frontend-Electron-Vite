@@ -7,6 +7,7 @@ import { MappedStockTransfer } from './InventoryStockTransfer.interface'
 import { fetchCategories } from './InventoryStockTransfer.function'
 import { Dialog } from 'primereact/dialog'
 import { Eye } from 'lucide-react'
+import { Button } from 'primereact/button'
 
 const InventoryStockTransfer: React.FC = () => {
   const toast = useRef<Toast>(null)
@@ -14,6 +15,8 @@ const InventoryStockTransfer: React.FC = () => {
   const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<MappedStockTransfer[]>([])
   const [purchaseOrders, setPurchaseOrders] = useState<MappedStockTransfer[]>([])
   const [selectedRowData, setSelectedRowData] = useState<MappedStockTransfer | null>(null)
+
+  const [selectedProducts, setSelectedProducts] = useState<any[]>([])
 
   useEffect(() => {
     fetchCategories()
@@ -41,14 +44,14 @@ const InventoryStockTransfer: React.FC = () => {
 
         setPurchaseOrders(formatted)
       })
-      .catch((err) => {
+      .catch((err) =>
         toast.current?.show({
           severity: 'error',
           summary: 'Error',
           detail: err.message,
           life: 3000
         })
-      })
+      )
   }, [])
 
   // -- VIEW BUTTON TEMPLATE --
@@ -58,6 +61,7 @@ const InventoryStockTransfer: React.FC = () => {
         className="p-button p-button-text p-0"
         onClick={() => {
           setSelectedRowData(rowData)
+          setSelectedProducts([])
           setVisible(true)
         }}
       >
@@ -66,7 +70,24 @@ const InventoryStockTransfer: React.FC = () => {
     )
   }
 
-  // -- DIALOG FOOTER --
+  const handleAccept = () => {
+    if (!selectedRowData) return
+
+    if (selectedProducts.length > 0) {
+      console.log('ACCEPT SELECTED PRODUCTS:', {
+        parent: selectedRowData,
+        selectedProducts: selectedProducts
+      })
+    } else {
+      console.log('ACCEPT ALL PRODUCTS:', {
+        parent: selectedRowData,
+        allProducts: selectedRowData.items
+      })
+    }
+  }
+
+  const acceptButtonLabel = selectedProducts.length > 0 ? 'Accept Selection' : 'Accept All'
+
   const dialogFooter = (
     <div className="flex justify-content-end">
       <button className="p-button p-button-secondary" onClick={() => setVisible(false)}>
@@ -95,16 +116,7 @@ const InventoryStockTransfer: React.FC = () => {
       >
         <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
         <Column header="View" body={viewTemplate} style={{ width: '50px', textAlign: 'center' }} />
-        <Column
-          field="totalSummary.poNumber"
-          header="Stock Transfer"
-          body={(rowData) => (
-            <span className="cursor-pointer font-bold underline">
-              {rowData.totalSummary.poNumber}
-            </span>
-          )}
-        />
-
+        <Column field="totalSummary.poNumber" header="Stock Transfer" />
         <Column field="supplierDetails.supplierName" header="From Branch" sortable />
         <Column field="branchDetails.branchName" header="To Branch" sortable />
         <Column
@@ -125,16 +137,26 @@ const InventoryStockTransfer: React.FC = () => {
         resizable={false}
         style={{ width: '90vw', height: '90vh' }}
       >
+        <div className="flex gap-3 mb-3">
+          <Button label={acceptButtonLabel} onClick={handleAccept} />
+          <Button label="Reject All" className="p-button-danger" />
+        </div>
+
         {selectedRowData && (
           <DataTable
             value={selectedRowData.items}
             paginator
-            rows={10}
+            rows={20}
             showGridlines
             stripedRows
             responsiveLayout="scroll"
-            style={{ height: '75vh' }}
+            rowsPerPageOptions={[20, 50, 100]}
+            selection={selectedProducts}
+            onSelectionChange={(e) => setSelectedProducts(e.value)}
+            selectionMode="multiple"
+            dataKey="stockTransferItemId"
           >
+            <Column selectionMode="multiple" />
             <Column header="SNo" body={(_, opts) => opts.rowIndex + 1} />
             <Column field="productName" header="Product Name" sortable />
             <Column field="sku" header="SKU" sortable />
@@ -143,6 +165,11 @@ const InventoryStockTransfer: React.FC = () => {
               header="Received?"
               body={(row) => (row.isReceived ? 'Yes' : 'No')}
             />
+            <Column
+              header="From Branch"
+              body={() => selectedRowData?.supplierDetails.supplierName}
+            />
+            <Column header="To Branch" body={() => selectedRowData?.branchDetails.branchName} />
             <Column field="acceptanceStatus" header="Status" />
           </DataTable>
         )}

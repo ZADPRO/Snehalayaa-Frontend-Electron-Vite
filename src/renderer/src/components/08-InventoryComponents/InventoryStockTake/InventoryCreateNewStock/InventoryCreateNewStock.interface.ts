@@ -43,7 +43,7 @@ export interface SubCategory {
   subCategoryName: string
   refCategoryId: number
   isDelete: boolean
-  categoryName: string; // ← Add this
+  categoryName: string // ← Add this
 }
 
 export interface ProductRow {

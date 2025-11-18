@@ -307,12 +307,24 @@ const NewPurchaseOrderList: React.FC = () => {
         rows={10}
         className="mt-2"
       >
-        <Column header="S.No" body={(_, { rowIndex }) => rowIndex + 1} style={{ width: '70px' }} />
-        <Column header="" body={scrollIconTemplate} />
+        <Column
+          header="S.No"
+          frozen
+          body={(_, { rowIndex }) => rowIndex + 1}
+          style={{ width: '70px' }}
+        />
+        <Column header="" frozen body={scrollIconTemplate} />
         <Column
           field="purchaseOrderNumber"
           header="Purchase Order No"
           body={purchaseOrderTemplate}
+          frozen
+          sortable
+          style={{ minWidth: '14rem' }}
+        />
+        <Column
+          field="invoice_final_number"
+          header="Invoice Number"
           sortable
           style={{ minWidth: '14rem' }}
         />

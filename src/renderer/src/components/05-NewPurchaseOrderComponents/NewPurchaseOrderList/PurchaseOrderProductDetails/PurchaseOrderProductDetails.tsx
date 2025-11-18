@@ -22,6 +22,12 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
   const toastRef = useRef<Toast>(null)
   const [loading, setLoading] = useState(false)
 
+  const isAlreadySaved = purchaseOrder.products.some(
+    (p: any) => Number(p.accepted_quantity) > 0 || Number(p.rejected_quantity) > 0
+  )
+  // const canEdit = !isAlreadySaved
+  // const isSaveDisabled = !canEdit
+
   // ✅ Initialize product data
   const [products, setProducts] = useState(() =>
     purchaseOrder.products.map((p: any) => {
@@ -108,9 +114,9 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
     setActiveStep(1)
   }
 
-  const totalReceived = products.reduce((sum, p) => sum + Number(p.received), 0)
-  const isSaveDisabled =
-    totalReceived > 0 || totalReceived === purchaseOrder.totalOrderedQuantity || hasExistingData
+  // const totalReceived = products.reduce((sum, p) => sum + Number(p.received), 0)
+  // const isSaveDisabled =
+  //   totalReceived > 0 || totalReceived === purchaseOrder.totalOrderedQuantity || hasExistingData
 
   return (
     <div>
@@ -157,7 +163,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
               outlined
               onClick={handleSavePO}
               loading={loading}
-              disabled={isSaveDisabled}
+              disabled={!canEdit}
             />
             {/* )} */}
 
@@ -187,7 +193,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
                   onValueChange={(e) => handleReceivedChange(e.value || 0, rowIndex)}
                   min={0}
                   max={rowData.quantity}
-                  disabled={hasExistingData || Number(rowData.received) > 0}
+                  disabled={isAlreadySaved}
                 />
               )}
             />

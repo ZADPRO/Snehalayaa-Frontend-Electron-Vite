@@ -100,14 +100,16 @@ const AddNewStockProductOrder: React.FC = () => {
       supplierId: selectedSupplier.refBranchId,
       supplierName: selectedSupplier.refBranchName,
       supplierCompanyName: selectedSupplier.refEmail,
-      supplierGSTNumber: selectedSupplier.refLocation
+      supplierGSTNumber: selectedSupplier.refLocation,
+      supplierCode: selectedSupplier.refBranchCode
     }
 
     const branchDetails = selectedBranch && {
       branchId: selectedBranch.refBranchId,
       branchName: selectedBranch.refBranchName,
       branchEmail: selectedBranch.refEmail,
-      branchAddress: selectedBranch.refLocation
+      branchAddress: selectedBranch.refLocation,
+      branchCode: selectedBranch.refBranchCode
     }
 
     const productDetails = tableData.map((item) => ({
