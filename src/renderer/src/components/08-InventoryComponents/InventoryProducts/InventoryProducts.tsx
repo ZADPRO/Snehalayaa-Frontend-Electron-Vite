@@ -7,7 +7,7 @@ import { Column } from 'primereact/column'
 import { MultiSelect } from 'primereact/multiselect'
 import { Button } from 'primereact/button'
 import { InputText } from 'primereact/inputtext'
-import { Eye, File, FileDown, FileSpreadsheet } from 'lucide-react'
+import { Eye, FileDown, FileSpreadsheet, Trash2 } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
 import { baseURL } from '../../../utils/helper'
@@ -39,6 +39,25 @@ const InventoryProducts: React.FC = () => {
     return data ? data : '-'
   }
 
+  const fetchProductDetails = async (productInstanceId: number) => {
+    try {
+      const token = localStorage.getItem('token')
+
+      const response = await axios.get(
+        `${baseURL}/admin/products/purchaseOrderAcceptedProducts/${productInstanceId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      return response.data.data
+    } catch (error: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: error.message || 'Failed to fetch product details'
+      })
+    }
+  }
+
   // ✅ Load Products
   const loadProducts = async () => {
     try {
@@ -57,6 +76,11 @@ const InventoryProducts: React.FC = () => {
         life: 3000
       })
     }
+  }
+
+  const handleDeleteImage = (fileName: string) => {
+    const updatedImages = selectedProduct.images.filter((img: any) => img.fileName !== fileName)
+    setSelectedProduct({ ...selectedProduct, images: updatedImages })
   }
 
   // ✅ Load Dropdown Data
@@ -262,9 +286,14 @@ const InventoryProducts: React.FC = () => {
             <Button
               icon={<Eye size={16} />}
               text
-              onClick={() => {
-                setSelectedProduct(rowData)
-                setVisibleDialog(true)
+              onClick={async () => {
+                const id = rowData.productInstanceId
+                console.log('Selected productInstanceId:', id)
+                const fullDetails = await fetchProductDetails(id)
+                if (fullDetails) {
+                  setSelectedProduct(fullDetails)
+                  setVisibleDialog(true)
+                }
               }}
             />
           )}
@@ -363,16 +392,57 @@ const InventoryProducts: React.FC = () => {
             {/* Image and Basic Info */}
             <div className="flex flex-column gap-4">
               {/* Image Preview */}
-              <div className="flex justify-content-center flex-1">
-                {selectedProduct.imageUrl ? (
-                  <img
-                    src={selectedProduct.imageUrl}
-                    alt={selectedProduct.productName}
-                    style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-                    onError={(e) => ((e.target as HTMLImageElement).src = '')}
-                  />
+              <div className="mt-3">
+                <strong>Images:</strong>
+
+                {selectedProduct.images?.length > 0 ? (
+                  <div
+                    className="grid mt-2"
+                    style={{
+                      gap: '1rem',
+                      gridTemplateColumns: 'repeat(auto-fill, 150px)',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {selectedProduct.images.map((img: any, index: number) => (
+                      <div
+                        key={index}
+                        className="relative p-2"
+                        style={{
+                          width: '150px',
+                          height: '150px',
+                          overflow: 'hidden',
+                          position: 'relative',
+                          borderRadius: '10px'
+                        }}
+                      >
+                        <Button
+                          icon={<Trash2 size={18} color="red" />}
+                          rounded
+                          text
+                          severity="danger"
+                          className="absolute top-0 right-0"
+                          onClick={() => handleDeleteImage(img.fileName)}
+                        />
+
+                        <img
+                          src={img.viewUrl}
+                          alt={img.fileName}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                          onError={(e) => ((e.target as HTMLImageElement).src = '')}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 ) : (
-                  <File size={64} />
+                  <div className="mt-2">No Images Found</div>
                 )}
               </div>
 
