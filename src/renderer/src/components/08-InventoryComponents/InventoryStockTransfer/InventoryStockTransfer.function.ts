@@ -15,3 +15,13 @@ export const fetchCategories = async (): Promise<StockTransferResponse> => {
     throw new Error(response.data.message || 'Failed to fetch stock transfers')
   }
 }
+
+export const receiveStockTransferProducts = async (payload: any) => {
+  const response = await axios.put(`${baseURL}/admin/products/stock-transfer/receive`, payload, {
+    headers: {
+      Authorization: localStorage.getItem('token') || ''
+    }
+  })
+
+  return response.data
+}

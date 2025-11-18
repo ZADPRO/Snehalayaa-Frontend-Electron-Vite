@@ -4,7 +4,7 @@ import { Toast } from 'primereact/toast'
 import { Tooltip } from 'primereact/tooltip'
 import React, { useEffect, useRef, useState } from 'react'
 import { MappedStockTransfer } from './InventoryStockTransfer.interface'
-import { fetchCategories } from './InventoryStockTransfer.function'
+import { fetchCategories, receiveStockTransferProducts } from './InventoryStockTransfer.function'
 import { Dialog } from 'primereact/dialog'
 import { Eye } from 'lucide-react'
 import { Button } from 'primereact/button'
@@ -70,18 +70,43 @@ const InventoryStockTransfer: React.FC = () => {
     )
   }
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (!selectedRowData) return
 
+    let payload: any
+
     if (selectedProducts.length > 0) {
-      console.log('ACCEPT SELECTED PRODUCTS:', {
-        parent: selectedRowData,
-        selectedProducts: selectedProducts
-      })
+      // SELECTED ROWS ONLY
+      payload = {
+        stockTransferId: selectedRowData.stockTransferId,
+        allProducts: selectedProducts
+      }
     } else {
-      console.log('ACCEPT ALL PRODUCTS:', {
-        parent: selectedRowData,
+      // ALL ROWS
+      payload = {
+        stockTransferId: selectedRowData.stockTransferId,
         allProducts: selectedRowData.items
+      }
+    }
+
+    try {
+      const res = await receiveStockTransferProducts(payload)
+      console.log('res', res)
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Products received successfully!',
+        life: 3000
+      })
+
+      setVisible(false) // close popup after success
+    } catch (err: any) {
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.response?.data?.message || 'Failed to receive products',
+        life: 3000
       })
     }
   }
