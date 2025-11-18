@@ -25,7 +25,7 @@ const PurchaseOrderProductDetails: React.FC<PurchaseOrderProductDetailsProps> = 
   const isAlreadySaved = purchaseOrder.products.some(
     (p: any) => Number(p.accepted_quantity) > 0 || Number(p.rejected_quantity) > 0
   )
-  // const canEdit = !isAlreadySaved
+  const canEdit = !isAlreadySaved
   // const isSaveDisabled = !canEdit
 
   // ✅ Initialize product data
